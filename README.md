@@ -1,49 +1,95 @@
-Multi-Agent Test Automation System with LangGraph
-Project Structure
+# Multi-Agent Test Automation System with LangGraph
+
+## Project Structure
+
 test-automation-langgraph/
 ├── agents/
-│   ├── __init__.py
-│   ├── gherkin_generator.py      # Agent 2
-│   ├── gherkin_validator.py      # Agent 3
-│   ├── test_writer.py            # Agent 4
-│   ├── test_executor.py          # Agent 5
-│   ├── coverage_analyst.py       # Agent 6
-│   └── self_healing.py           # Agent 7
+│ ├── init.py
+│ ├── gherkin_generator.py # Agent 2: Converts user stories to Gherkin
+│ ├── gherkin_validator.py # Agent 3: Validates .feature files
+│ ├── test_writer.py # Agent 4: Generates executable tests
+│ ├── test_executor.py # Agent 5: Runs tests
+│ ├── coverage_analyst.py # Agent 6: Measures test coverage
+│ └── self_healing.py # Agent 7: Auto-fixes failing tests
 ├── graph/
-│   ├── __init__.py
-│   ├── state.py                  # State definition
-│   └── workflow.py               # LangGraph workflow
+│ ├── init.py
+│ ├── state.py # Defines core state structure
+│ └── workflow.py # LangGraph workflow orchestrating agents
 ├── tools/
-│   ├── __init__.py
-│   ├── swagger_parser.py
-│   ├── gherkin_lint.py
-│   └── coverage_tools.py
+│ ├── init.py
+│ ├── swagger_parser.py # Parses Swagger/OpenAPI definitions
+│ ├── gherkin_lint.py # Lints Gherkin files
+│ └── coverage_tools.py # Additional coverage utilities
 ├── config/
-│   ├── __init__.py
-│   └── settings.py
+│ ├── init.py
+│ └── settings.py # Configuration and environment settings
 ├── examples/
-│   ├── sample_user_story.md
-│   └── sample_swagger.JSON
-|   |__ test_swagger_reader.py
+│ ├── sample_user_story.md
+│ ├── sample_swagger.json
+│ └── test_swagger_reader.py
 ├── tests/
-│   └── __init__.py
-├── main.py
-├── requirements.txt
+│ └── init.py
+├── main.py # Entry point for the system
+├── requirements.txt # Python dependencies
 └── README.md
-Build Order
-We'll build agents in this order:
 
-State Definition - Core data structure
-Gherkin Generator - Convert user stories to Gherkin
-Gherkin Validator - Validate .feature files
-Test Writer - Generate executable tests
-Test Executor - Run tests
-Coverage Analyst - Measure coverage
-Self-Healing - Auto-fix failures
-LangGraph Workflow - Orchestrate all agents
 
-Getting Started
+---
 
-Install dependencies: pip install -r requirements.txt
-Set up environment variables in .env
-Follow the step-by-step guide to build each agent
+## Build Order
+
+The agents should be built in the following sequence:
+
+1. **State Definition** - Core data structure for storing workflow state.  
+2. **Gherkin Generator** - Converts user stories to Gherkin `.feature` files.  
+3. **Gherkin Validator** - Validates `.feature` files for syntax and rules.  
+4. **Test Writer** - Generates executable test scripts from validated Gherkin.  
+5. **Test Executor** - Runs the generated tests and logs results.  
+6. **Coverage Analyst** - Measures test coverage and provides metrics.  
+7. **Self-Healing** - Automatically fixes failing tests or retries.  
+8. **LangGraph Workflow** - Orchestrates all agents and manages the process.
+
+---
+
+## Getting Started
+
+1. **Install dependencies**
+
+```bash
+pip install -r requirements.txt
+Set up environment variables
+
+Create a .env file in the root directory.
+
+Define necessary environment variables (e.g., API keys, paths).
+
+Build agents step-by-step
+
+Start by implementing the State Definition.
+
+Follow the build order to implement agents sequentially.
+
+Once all agents are implemented, you can run the LangGraph Workflow via main.py.
+
+Run the system
+
+python main.py
+Test with examples
+
+Check examples/sample_user_story.md and examples/sample_swagger.json.
+
+Use these to validate that agents generate and execute tests correctly.
+
+Notes
+Ensure your Python environment is compatible with the requirements.txt.
+
+Consider using a virtual environment to isolate dependencies:
+
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
+Keep tests/ updated with new unit tests as you build agents.
+
+<img width="526" height="378" alt="image" src="https://github.com/user-attachments/assets/e4d048f4-44ab-44f1-ab64-d257e3496191" />
+<img width="840" height="394" alt="image" src="https://github.com/user-attachments/assets/a079d1e1-2656-405e-a188-6e33d2e40b46" />
+
