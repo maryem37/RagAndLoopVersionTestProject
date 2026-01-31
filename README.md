@@ -50,6 +50,9 @@ The agents should be built in the following sequence:
 8. **LangGraph Workflow** - Orchestrates all agents and manages the process.
 
 ---
+<img width="526" height="378" alt="image" src="https://github.com/user-attachments/assets/e4d048f4-44ab-44f1-ab64-d257e3496191" />
+<img width="840" height="394" alt="image" src="https://github.com/user-attachments/assets/a079d1e1-2656-405e-a188-6e33d2e40b46" />
+
 
 ## Getting Started
 
@@ -89,7 +92,4 @@ python -m venv venv
 source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 Keep tests/ updated with new unit tests as you build agents.
-
-<img width="526" height="378" alt="image" src="https://github.com/user-attachments/assets/e4d048f4-44ab-44f1-ab64-d257e3496191" />
-<img width="840" height="394" alt="image" src="https://github.com/user-attachments/assets/a079d1e1-2656-405e-a188-6e33d2e40b46" />
 
