@@ -1,0 +1,20 @@
+{
+  "name": "project_test",
+  "version": "1.0.0",
+  "description": "Multi-Agent Test Automation System with LangGraph\r Project Structure\r test-automation-langgraph/\r ├── agents/\r │   ├── __init__.py\r │   ├── gherkin_generator.py      # Agent 2\r │   ├── gherkin_validator.py      # Agent 3\r │   ├── test_writer.py            # Agent 4\r │   ├── test_executor.py          # Agent 5\r │   ├── coverage_analyst.py       # Agent 6\r │   └── self_healing.py           # Agent 7\r ├── graph/\r │   ├── __init__.py\r │   ├── state.py                  # State definition\r │   └── workflow.py               # LangGraph workflow\r ├── tools/\r │   ├── __init__.py\r │   ├── swagger_parser.py\r │   ├── gherkin_lint.py\r │   └── coverage_tools.py\r ├── config/\r │   ├── __init__.py\r │   └── settings.py\r ├── examples/\r │   ├── sample_user_story.md\r │   └── sample_swagger.yaml\r ├── tests/\r │   └── __init__.py\r ├── main.py\r ├── requirements.txt\r └── README.md\r Build Order\r We'll build agents in this order:",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "gherkin-lint": "^4.2.4"
+  }
+}
