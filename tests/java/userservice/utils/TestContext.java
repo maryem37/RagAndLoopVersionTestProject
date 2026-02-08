@@ -5,17 +5,21 @@ import io.restassured.http.ContentType;
 import static io.restassured.RestAssured.*;
 import java.util.concurrent.ThreadLocal;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.response.Response;
+import io.restassured.http.Header;
 import static io.restassured.RestAssured.*;
 
 public class TestContext {
-    private static final ThreadLocal<String> AUTH_TOKEN = new ThreadLocal<>();
+    private static final ThreadLocal<Object> CONTEXT = new ThreadLocal<>();
 
-    public static void setAuthToken(String authToken) {
-        AUTH_TOKEN.set(authToken);
+    public static void set(Object value) {
+        CONTEXT.set(value);
     }
 
-    public static String getAuthToken() {
-        return AUTH_TOKEN.get();
+    public static Object get() {
+        return CONTEXT.get();
+    }
+
+    public static void remove() {
+        CONTEXT.remove();
     }
 }

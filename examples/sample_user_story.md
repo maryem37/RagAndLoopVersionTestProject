@@ -19,8 +19,7 @@ Upon submission, the system must verify the available balance corresponding to t
 The minimum gap between the creation date and the leave start date must comply with the defined notice period of at least 48 hours.
 A new request remains unapproved until both the Administrator and the Line Manager have granted their approval.
 
-Acceptance Criteria — Add Leave Request
-Initial Display
+
 When the employee accesses the "Add Leave Request" option, the application automatically displays: first name, last name, employee ID, and the relevant balance based on the leave type.
 The application must display the list of available leave types.
 Type Selection

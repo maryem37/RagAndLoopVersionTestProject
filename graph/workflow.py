@@ -18,6 +18,9 @@ from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 
+# LangGraph imports
+from langgraph.graph import StateGraph, END
+
 from graph.state import (
     TestAutomationState,
     AgentOutput,
@@ -292,6 +295,31 @@ def gherkin_validator_node(state: TestAutomationState) -> TestAutomationState:
 
 
 # ---------------------------------------------
+# BUILD LANGGRAPH WORKFLOW - ADD THIS FUNCTION!
+# ---------------------------------------------
+def build_workflow() -> StateGraph:
+    """Build the complete test automation workflow as a LangGraph"""
+    
+    workflow = StateGraph(TestAutomationState)
+    
+    # Add nodes
+    workflow.add_node("generate_gherkin", gherkin_generator_node)
+    workflow.add_node("validate_gherkin", gherkin_validator_node)
+    workflow.add_node("write_tests", test_writer_node)
+    
+    # Define edges (workflow flow)
+    workflow.set_entry_point("generate_gherkin")
+    workflow.add_edge("generate_gherkin", "validate_gherkin")
+    workflow.add_edge("validate_gherkin", "write_tests")
+    workflow.add_edge("write_tests", END)
+    
+    return workflow.compile()
+
+
+# ---------------------------------------------
+# Main Workflow Execution
+# ---------------------------------------------
+# ---------------------------------------------
 # Main Workflow Execution
 # ---------------------------------------------
 if __name__ == "__main__":
@@ -308,6 +336,35 @@ if __name__ == "__main__":
         swagger_spec = load_swagger_file(str(swagger_file))
         logger.info("✅ Loaded Swagger specification")
 
+    # Build the workflow graph
+    app = build_workflow()
+    
+    # Generate and save Mermaid diagram
+    try:
+        from langgraph.graph import draw_mermaid_png
+        
+        output_dir = Path("output")
+        output_dir.mkdir(exist_ok=True)
+        
+        # Save as PNG
+        png_data = draw_mermaid_png(app.get_graph())
+        png_path = output_dir / "workflow_graph.png"
+        with open(png_path, "wb") as f:
+            f.write(png_data)
+        logger.success(f"✅ Workflow graph saved to: {png_path}")
+        
+        # Also save as Mermaid text
+        mermaid_text = app.get_graph().draw_mermaid()
+        mermaid_path = output_dir / "workflow_graph.mmd"
+        with open(mermaid_path, "w") as f:
+            f.write(mermaid_text)
+        logger.success(f"✅ Mermaid diagram saved to: {mermaid_path}")
+        
+    except ImportError:
+        logger.warning("⚠️ Could not generate graph visualization. Install: pip install grandalf")
+    except Exception as e:
+        logger.warning(f"⚠️ Graph generation failed: {e}")
+
     # Initialize state
     state = TestAutomationState(
         workflow_id=str(uuid.uuid4()),
@@ -318,32 +375,48 @@ if __name__ == "__main__":
         swagger_spec=swagger_spec
     )
 
-    # 1️⃣ Generate Gherkin
-    state = gherkin_generator_node(state)
-
-    # 2️⃣ Validate Gherkin
-    state = gherkin_validator_node(state)
-
-    # 3️⃣ Generate Tests (NOW USING THE VERSION WITH VALIDATION)
-    state = test_writer_node(state)
+    # Run the workflow
+    logger.info("🚀 Starting Test Automation Workflow")
+    result = app.invoke(state)
+    
+    # Convert dict result back to TestAutomationState
+    final_state = TestAutomationState(**result)
 
     # Display results
-    rprint("\n📊 WORKFLOW RESULTS")
-    rprint(f"✅ Valid: {state.validation_result.is_valid if state.validation_result else 'N/A'}")
-    rprint(f"📊 Coverage: {state.validation_result.coverage_score if state.validation_result else 'N/A'}%")
-    rprint(f"⚠️  Issues: {len(state.validation_result.issues) if state.validation_result else 0}")
+    rprint("\n" + "="*70)
+    rprint("📊 WORKFLOW RESULTS")
+    rprint("="*70)
+    rprint(f"✅ Valid: {final_state.validation_result.is_valid if final_state.validation_result else 'N/A'}")
+    rprint(f"📊 Coverage: {final_state.validation_result.coverage_score if final_state.validation_result else 'N/A'}%")
+    rprint(f"⚠️  Issues: {len(final_state.validation_result.issues) if final_state.validation_result else 0}")
 
-    if hasattr(state, "test_files") and state.test_files:
-        rprint(f"\n💻 Generated test files ({len(state.test_files)}):")
-        for f in state.test_files:
+    if hasattr(final_state, "test_files") and final_state.test_files:
+        rprint(f"\n💻 Generated test files ({len(final_state.test_files)}):")
+        for f in final_state.test_files:
             rprint(f" - {f}")
         
-        # Show validation warnings if any
-        if state.warnings:
-            rprint(f"\n⚠️  Code Quality Warnings ({len(state.warnings)}):")
-            for warning in state.warnings[:10]:
+        if final_state.warnings:
+            rprint(f"\n⚠️  Code Quality Warnings ({len(final_state.warnings)}):")
+            for warning in final_state.warnings[:10]:
                 rprint(f"  • {warning}")
 
-    if state.gherkin_content:
-        rprint("\n=== GENERATED GHERKIN (first 20 lines) ===\n")
-        rprint("\n".join(state.gherkin_content.splitlines()[:20]))
+    if final_state.gherkin_content:
+        rprint("\n" + "="*70)
+        rprint("GENERATED GHERKIN (first 20 lines)")
+        rprint("="*70)
+        rprint("\n".join(final_state.gherkin_content.splitlines()[:20]))
+    
+    # Show agent execution summary
+    rprint("\n" + "="*70)
+    rprint("⏱️  AGENT EXECUTION SUMMARY")
+    rprint("="*70)
+    for agent_output in final_state.agent_outputs:
+        status_icon = "✅" if agent_output.status == AgentStatus.SUCCESS else "❌"
+        rprint(f"{status_icon} {agent_output.agent_name}: {agent_output.duration_ms:.0f}ms")
+        if agent_output.error_message:
+            rprint(f"   Error: {agent_output.error_message}")
+    
+    rprint("\n" + "="*70)
+    rprint(f"📈 Workflow graph saved to: output/workflow_graph.png")
+    rprint(f"📁 Mermaid diagram saved to: output/workflow_graph.mmd")
+    rprint("="*70)
