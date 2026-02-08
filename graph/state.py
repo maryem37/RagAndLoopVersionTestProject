@@ -77,8 +77,22 @@ class TestAutomationState(BaseModel):
     # Input data
     # ----------------------------
     user_story: str
-    swagger_spec: Optional[Dict] = None
+    
+    # CRITICAL: Support both single and multi-service Swagger specs
+    swagger_spec: Dict = Field(
+        default_factory=dict,
+        description="Single Swagger/OpenAPI spec (for backward compatibility with gherkin_generator)"
+    )
+    
+    swagger_specs: Dict[str, Dict] = Field(
+        default_factory=dict,
+        description="Dictionary mapping service names to their Swagger/OpenAPI specs (for test_writer)"
+    )
+    
     source_code_context: Optional[str] = None
+    
+    # Configuration
+    config: Dict = Field(default_factory=dict)
 
     # ----------------------------
     # Gherkin Generation (Agent 2)
@@ -183,6 +197,7 @@ class TestAutomationState(BaseModel):
             "warnings": len(self.warnings),
             "validation_passed": self.validation_passed,
             "test_files_generated": len(self.test_files),
+            "swagger_specs_count": len(self.swagger_specs),
             "total_duration_ms": sum(
                 output.duration_ms for output in self.agent_outputs 
                 if output.duration_ms

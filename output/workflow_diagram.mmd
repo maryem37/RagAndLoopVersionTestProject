@@ -1,0 +1,19 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	generate_gherkin(generate_gherkin)
+	validate_gherkin(validate_gherkin)
+	write_tests(write_tests)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> generate_gherkin;
+	generate_gherkin --> validate_gherkin;
+	validate_gherkin -. &nbsp;end&nbsp; .-> __end__;
+	validate_gherkin -. &nbsp;proceed&nbsp; .-> write_tests;
+	write_tests --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

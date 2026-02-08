@@ -1,422 +1,546 @@
 """
-workflow.py
-Full LangGraph-style workflow for Gherkin generation, validation, and test writing
+LangGraph Workflow for Multi-Agent Test Automation
+Orchestrates all agents in the test automation pipeline with CONTRACT-LEVEL testing philosophy
 """
 
-import re
-import time
-import uuid
-import subprocess
-from pathlib import Path
-from typing import List, Dict, Optional
-from datetime import datetime
-
+from typing import Literal
 from loguru import logger
-from rich import print as rprint
-from pydantic import BaseModel, Field
-from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
-
-# LangGraph imports
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
 
-from graph.state import (
-    TestAutomationState,
-    AgentOutput,
-    AgentStatus,
-    ValidationResult,
-    ValidationIssue
-)
-from config.settings import get_settings
-from tools.swagger_parser import load_swagger_file, get_api_context
+from graph.state import TestAutomationState, AgentStatus
+from agents.gherkin_generator import gherkin_generator_node
+from agents.gherkin_validator import gherkin_validator_node
+from agents.test_writer import test_writer_node
 
-# Import Test Writer from agents module
-from agents.test_writer import TestWriterAgent, test_writer_node
 
-# ---------------------------------------------
-# Gherkin Generator Agent
-# ---------------------------------------------
-class GherkinGeneratorAgent:
+class TestAutomationWorkflow:
+    """
+    Main workflow orchestrating all test automation agents using LangGraph
+    
+    WORKFLOW PHILOSOPHY:
+    1. Generate Gherkin scenarios from user stories
+    2. Validate Gherkin quality and coverage
+    3. Generate CONTRACT-LEVEL E2E tests (NOT business logic tests)
+    """
+    
     def __init__(self):
-        self.settings = get_settings()
-        self.llm = OllamaLLM(
-            base_url=self.settings.ollama.base_url,
-            model=self.settings.ollama.model,
-            temperature=0.0,
-            num_predict=3000,
+        """Initialize the workflow with memory checkpointing"""
+        # CRITICAL: Initialize memory BEFORE building graph
+        self.memory = MemorySaver()
+        
+        # Build the graph (this uses self.memory)
+        self.graph = self._build_graph()
+        
+        logger.info("✅ Test Automation Workflow initialized")
+        logger.info("📋 Test Type: CONTRACT-LEVEL E2E (API Structure & Interoperability)")
+    
+    def _build_graph(self) -> StateGraph:
+        """
+        Build the LangGraph workflow graph
+        
+        Flow:
+        1. Gherkin Generator → Convert user stories to Gherkin
+        2. Gherkin Validator → Validate generated scenarios
+        3. Contract-Level Test Writer → Generate executable API contract tests
+        
+        Future Extensions:
+        4. Test Executor → Run tests
+        5. Coverage Analyst → Measure coverage
+        6. Self-Healing → Fix failures
+        """
+        
+        # Create workflow
+        workflow = StateGraph(TestAutomationState)
+        
+        # Add nodes
+        workflow.add_node("gherkin_generator", gherkin_generator_node)
+        workflow.add_node("gherkin_validator", gherkin_validator_node)
+        workflow.add_node("test_writer", test_writer_node)
+        
+        # Define entry point
+        workflow.set_entry_point("gherkin_generator")
+        
+        # Add edges with conditional routing
+        workflow.add_conditional_edges(
+            "gherkin_generator",
+            self._should_continue_after_generation,
+            {
+                "validate": "gherkin_validator",
+                "end": END
+            }
         )
-        self.parser = StrOutputParser()
-        logger.info(f"✅ Gherkin Generator initialized (model={self.settings.ollama.model})")
-
-    def _create_prompt(self) -> ChatPromptTemplate:
-        return ChatPromptTemplate.from_messages([
-            ("system", """You are a senior BDD/QA expert.
-STRICT RULES: Generate only valid Gherkin, max 10 scenarios per feature, proper Given-When-Then order, no explanations.
-Include all acceptance criteria and business rules."""),
-            ("human", "SPECIFICATION: {story}\n{swagger_context}\nGenerate the Gherkin feature:")
-        ])
-
-    def extract_features(self, text: str) -> List[str]:
-        blocks = []
-        current = []
-        inside_gherkin = False
-        for line in text.splitlines():
-            if line.strip().startswith("Gherkin"):
-                inside_gherkin = True
-            if re.match(r"(User Story|Feature)\s*[-:]", line, re.IGNORECASE):
-                if current:
-                    blocks.append("\n".join(current).strip())
-                    current = []
-                inside_gherkin = False
-            if not inside_gherkin and line.strip():
-                current.append(line)
-        if current:
-            blocks.append("\n".join(current).strip())
-        logger.info(f"📋 Extracted {len(blocks)} feature specifications")
-        return blocks
-
-    def generate_single(self, story: str, swagger_context: str = "") -> str:
-        prompt = self._create_prompt()
-        chain = prompt | self.llm | self.parser
-        logger.info("🤖 Generating Gherkin with LLM...")
-        result = chain.invoke({"story": story, "swagger_context": swagger_context})
-        return self._clean_output(result)
-
-    def _clean_output(self, text: str) -> str:
-        text = re.sub(r"```gherkin\s*", "", text)
-        text = re.sub(r"```\s*", "", text)
-        return "\n".join([line.rstrip() for line in text.strip().splitlines()])
-
-    def _format_swagger_context(self, swagger_spec: dict) -> str:
-        if not swagger_spec or "paths" not in swagger_spec:
-            return ""
-        return get_api_context(swagger_spec)
-
-    def save_feature_file(self, content: str, service_name: str = None) -> Path:
-        match = re.search(r"Feature:\s*(.+)", content)
-        feature_name = match.group(1) if match else (service_name or "feature")
-        safe_name = re.sub(r"[^a-z0-9]+", "-", feature_name.lower()).strip("-")
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{safe_name}_{timestamp}.feature"
-        filepath = self.settings.paths.features_dir / filename
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        filepath.write_text(content, encoding="utf-8")
-        logger.success(f"✔ Saved: {filepath.name}")
-        return filepath
-
-    def generate(self, state: TestAutomationState) -> TestAutomationState:
-        start_time = time.time()
-        try:
-            swagger_context = self._format_swagger_context(state.swagger_spec) if state.swagger_spec else ""
-            features = self.extract_features(state.user_story)
-            if not features:
-                raise ValueError("No features found in user story")
-            feature_spec = features[0]
-            gherkin_content = self.generate_single(feature_spec, swagger_context)
-            feature_file = self.save_feature_file(gherkin_content, state.service_name)
-            state.gherkin_content = gherkin_content
-            state.gherkin_files = [str(feature_file)]
-            duration = (time.time() - start_time) * 1000
-            state.add_agent_output(AgentOutput(
-                agent_name="gherkin_generator",
-                status=AgentStatus.SUCCESS,
-                duration_ms=duration,
-                output_data={
-                    "features_extracted": len(features),
-                    "features_generated": 1,
-                    "feature_file": str(feature_file),
-                    "gherkin_length": len(gherkin_content),
-                    "lines_generated": len(gherkin_content.splitlines())
-                }
-            ))
-            logger.success(f"✅ Gherkin generated successfully in {duration:.0f}ms")
-        except Exception as e:
-            duration = (time.time() - start_time) * 1000
-            logger.error(f"❌ Gherkin generation failed: {str(e)}")
-            state.add_agent_output(AgentOutput(
-                agent_name="gherkin_generator",
-                status=AgentStatus.FAILED,
-                duration_ms=duration,
-                error_message=str(e)
-            ))
-            state.add_error(f"Gherkin generation failed: {str(e)}")
-        return state
-
-
-def gherkin_generator_node(state: TestAutomationState) -> TestAutomationState:
-    return GherkinGeneratorAgent().generate(state)
-
-
-# ---------------------------------------------
-# Gherkin Validator Agent
-# ---------------------------------------------
-class LLMValidationOutput(BaseModel):
-    coverage_score: float = Field(..., ge=0, le=100)
-    missing_scenarios: List[str] = Field(default_factory=list)
-    issues: List[str] = Field(default_factory=list)
-    suggestions: List[str] = Field(default_factory=list)
-
-
-class GherkinValidatorAgent:
-    def __init__(self):
-        self.settings = get_settings()
-        self.llm = OllamaLLM(
-            base_url=self.settings.ollama.base_url,
-            model=self.settings.ollama.model,
-            temperature=0.0
+        
+        workflow.add_conditional_edges(
+            "gherkin_validator",
+            self._should_continue_after_validation,
+            {
+                "write_tests": "test_writer",
+                "end": END
+            }
         )
-        self.output_parser = JsonOutputParser(pydantic_object=LLMValidationOutput)
-        self.has_gherkin_lint = self._check_gherkin_lint()
-        logger.info(f"✅ Gherkin Validator initialized (gherkin-lint: {self.has_gherkin_lint})")
-
-    def _check_gherkin_lint(self) -> bool:
+        
+        workflow.add_edge("test_writer", END)
+        
+        logger.info("📊 Workflow graph built successfully")
+        logger.info("   Nodes: gherkin_generator → gherkin_validator → test_writer")
+        
+        # Compile with memory checkpointing
+        return workflow.compile(checkpointer=self.memory)
+    
+    def _should_continue_after_generation(self, state: TestAutomationState) -> Literal["validate", "end"]:
+        """
+        Decide whether to continue to validation after Gherkin generation
+        """
+        # Check if generation was successful
+        last_output = state.agent_outputs[-1] if state.agent_outputs else None
+        
+        if last_output and last_output.status == AgentStatus.SUCCESS:
+            if state.gherkin_content and state.gherkin_files:
+                logger.info("✓ Gherkin generation successful → Proceeding to validation")
+                return "validate"
+            else:
+                logger.warning("✗ No Gherkin content generated → Ending workflow")
+                return "end"
+        
+        logger.warning("✗ Gherkin generation failed → Ending workflow")
+        return "end"
+    
+    def _should_continue_after_validation(self, state: TestAutomationState) -> Literal["write_tests", "end"]:
+        """
+        Decide whether to continue to test writing after validation
+        
+        IMPORTANT: Contract tests may have warnings (e.g., missing business scenarios)
+        but we proceed if there are no critical errors
+        """
+        # Check validation result
+        if state.validation_result:
+            if state.validation_result.is_valid:
+                logger.info("✓ Validation passed → Proceeding to contract-level test writing")
+                return "write_tests"
+            else:
+                # Count errors vs warnings
+                errors = sum(1 for issue in state.validation_result.issues if issue.level == "error")
+                warnings = sum(1 for issue in state.validation_result.issues if issue.level == "warning")
+                
+                logger.warning(f"⚠ Validation issues found: {errors} errors, {warnings} warnings")
+                
+                # Only proceed if no critical errors
+                if errors == 0:
+                    logger.info("✓ No critical errors → Proceeding to contract-level test writing")
+                    logger.info("   (Warnings are acceptable for contract tests)")
+                    return "write_tests"
+                else:
+                    logger.error("✗ Critical validation errors → Ending workflow")
+                    logger.error("   Fix Gherkin syntax errors before generating tests")
+                    return "end"
+        
+        logger.warning("✗ No validation result → Ending workflow")
+        return "end"
+    
+    def run(
+        self,
+        user_story: str,
+        service_name: str,
+        swagger_spec: dict = None,
+        swagger_specs: dict = None,
+        config: dict = None
+    ) -> TestAutomationState:
+        """
+        Run the complete test automation workflow
+        
+        Args:
+            user_story: User story or functional specification
+            service_name: Name of the service being tested
+            swagger_spec: Single Swagger/OpenAPI specification (for backward compatibility)
+            swagger_specs: Multiple Swagger specifications (recommended for multi-service)
+            config: Additional configuration (optional)
+        
+        Returns:
+            Final state with all generated artifacts
+        
+        Example:
+            >>> workflow = TestAutomationWorkflow()
+            >>> state = workflow.run(
+            ...     user_story=story_text,
+            ...     service_name="leave-request",
+            ...     swagger_specs={
+            ...         "auth": auth_swagger,
+            ...         "leave": leave_swagger
+            ...     }
+            ... )
+        """
+        import uuid
+        from datetime import datetime
+        
+        logger.info("=" * 80)
+        logger.info(f"🚀 Starting CONTRACT-LEVEL Test Automation Workflow")
+        logger.info(f"   Service: {service_name}")
+        logger.info(f"   Test Type: Contract-Level E2E (API Structure Validation)")
+        logger.info("=" * 80)
+        
+        # Generate workflow ID
+        workflow_id = f"{service_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{str(uuid.uuid4())[:8]}"
+        
+        # Prepare Swagger specs
+        # Priority: swagger_specs (multi-service) > swagger_spec (single)
+        final_swagger_specs = swagger_specs or {}
+        
+        # Backward compatibility: if only swagger_spec provided, use it
+        if not final_swagger_specs and swagger_spec:
+            final_swagger_specs = {"primary": swagger_spec}
+            logger.info("   Using single Swagger spec (legacy mode)")
+        
+        if final_swagger_specs:
+            logger.info(f"   Swagger specs: {len(final_swagger_specs)} service(s)")
+            for service_key in final_swagger_specs.keys():
+                logger.info(f"      - {service_key}")
+        else:
+            logger.warning("   ⚠️ No Swagger specs provided - tests may be incomplete")
+        
+        # Initialize state
+        initial_state = TestAutomationState(
+            workflow_id=workflow_id,
+            user_story=user_story,
+            service_name=service_name,
+            swagger_spec=swagger_spec or {},  # For gherkin_generator compatibility
+            swagger_specs=final_swagger_specs,  # For test_writer
+            config=config or {}
+        )
+        
+        # Run workflow
         try:
-            subprocess.run(['gherkin-lint', '--version'], capture_output=True, check=True)
-            return True
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            logger.warning("⚠️ gherkin-lint not found. Install with: npm install -g @cucumber/gherkin-lint")
-            return False
-
-    def validate(self, state: TestAutomationState) -> TestAutomationState:
-        start_time = time.time()
-        all_issues = []
-        try:
-            if self.has_gherkin_lint and self.settings.gherkin.use_gherkin_lint:
-                for feature_file in state.gherkin_files:
-                    all_issues.extend(self._validate_syntax(Path(feature_file)))
-            for feature_file in state.gherkin_files:
-                all_issues.extend(self._validate_semantics(Path(feature_file)))
-            llm_result = self._validate_with_llm(state.gherkin_content, state.user_story)
-            validation_result = ValidationResult(
-                is_valid=not any(issue.level == "error" for issue in all_issues),
-                issues=all_issues,
-                coverage_score=llm_result.coverage_score,
-                missing_scenarios=llm_result.missing_scenarios,
-                suggestions=llm_result.suggestions
+            # Execute the graph
+            logger.info("\n🎯 Executing workflow...")
+            result = self.graph.invoke(
+                initial_state,
+                config={"configurable": {"thread_id": service_name}}
             )
-            state.validation_result = validation_result
-            duration = (time.time() - start_time) * 1000
-            state.add_agent_output(AgentOutput(
-                agent_name="gherkin_validator",
-                status=AgentStatus.SUCCESS if validation_result.is_valid else AgentStatus.FAILED,
-                duration_ms=duration,
-                output_data={
-                    "is_valid": validation_result.is_valid,
-                    "total_issues": len(all_issues),
-                    "coverage_score": llm_result.coverage_score
-                }
-            ))
+            
+            # LangGraph returns a dict, convert back to TestAutomationState
+            if isinstance(result, dict):
+                final_state = TestAutomationState(**result)
+            else:
+                final_state = result
+            
+            # Update workflow status
+            if final_state.errors:
+                final_state.workflow_status = "failed"
+            else:
+                final_state.workflow_status = "completed"
+            
+            # Log summary
+            self._log_workflow_summary(final_state)
+            
+            return final_state
+            
         except Exception as e:
-            logger.error(f"❌ Validation error: {str(e)}")
-            duration = (time.time() - start_time) * 1000
-            state.add_agent_output(AgentOutput(
-                agent_name="gherkin_validator",
-                status=AgentStatus.FAILED,
-                duration_ms=duration,
-                error_message=str(e)
-            ))
-            state.add_error(f"Validation failed: {str(e)}")
-        return state
-
-    def _validate_syntax(self, feature_file: Path) -> List[ValidationIssue]:
-        issues = []
+            logger.error(f"❌ Workflow execution failed: {str(e)}")
+            import traceback
+            logger.debug(traceback.format_exc())
+            raise
+    
+    def _log_workflow_summary(self, state: TestAutomationState):
+        """Log a comprehensive summary of the workflow execution"""
+        logger.info("\n" + "=" * 80)
+        logger.info("📊 WORKFLOW EXECUTION SUMMARY")
+        logger.info("=" * 80)
+        
+        # Basic info
+        logger.info(f"Workflow ID: {state.workflow_id}")
+        logger.info(f"Service: {state.service_name}")
+        logger.info(f"Status: {state.workflow_status.upper()}")
+        
+        # Agent execution summary
+        logger.info(f"\n📋 Agent Execution:")
+        total_duration = 0
+        for output in state.agent_outputs:
+            status_icon = "✓" if output.status == AgentStatus.SUCCESS else "✗"
+            duration = output.duration_ms or 0
+            total_duration += duration
+            
+            logger.info(f"  {status_icon} {output.agent_name}")
+            logger.info(f"      Status: {output.status}")
+            logger.info(f"      Duration: {duration:.0f}ms")
+            
+            # Show key metrics
+            if output.output_data:
+                if output.agent_name == "gherkin_generator":
+                    logger.info(f"      Features: {output.output_data.get('features_generated', 0)}")
+                    logger.info(f"      Files: {output.output_data.get('feature_files', [])}")
+                elif output.agent_name == "gherkin_validator":
+                    logger.info(f"      Valid: {output.output_data.get('is_valid', False)}")
+                    logger.info(f"      Coverage: {output.output_data.get('coverage_score', 0)}%")
+                    logger.info(f"      Issues: {output.output_data.get('total_issues', 0)}")
+                elif output.agent_name == "test_writer":
+                    logger.info(f"      Test Type: {output.output_data.get('test_type', 'N/A')}")
+                    logger.info(f"      Files: {output.output_data.get('files_generated', 0)}")
+                    logger.info(f"      Critical Violations: {output.output_data.get('critical_violations', 0)}")
+        
+        logger.info(f"\nTotal Duration: {total_duration:.0f}ms ({total_duration/1000:.1f}s)")
+        
+        # Artifacts generated
+        logger.info(f"\n📁 Generated Artifacts:")
+        logger.info(f"  Gherkin files: {len(state.gherkin_files)}")
+        for gherkin_file in state.gherkin_files:
+            logger.info(f"    - {gherkin_file}")
+        
+        logger.info(f"  Test files: {len(state.test_files)}")
+        for test_file in state.test_files:
+            logger.info(f"    - {test_file}")
+        
+        # Validation summary
+        if state.validation_result:
+            logger.info(f"\n✅ Validation Results:")
+            logger.info(f"  Valid: {state.validation_result.is_valid}")
+            logger.info(f"  Coverage Score: {state.validation_result.coverage_score}%")
+            
+            errors = [i for i in state.validation_result.issues if i.level == "error"]
+            warnings = [i for i in state.validation_result.issues if i.level == "warning"]
+            
+            logger.info(f"  Errors: {len(errors)}")
+            logger.info(f"  Warnings: {len(warnings)}")
+            
+            if state.validation_result.missing_scenarios:
+                logger.info(f"  Missing Scenarios: {len(state.validation_result.missing_scenarios)}")
+                for scenario in state.validation_result.missing_scenarios[:3]:
+                    logger.info(f"    - {scenario}")
+                if len(state.validation_result.missing_scenarios) > 3:
+                    logger.info(f"    ... and {len(state.validation_result.missing_scenarios) - 3} more")
+        
+        # Test code summary
+        if state.test_code:
+            logger.info(f"\n🧪 Test Code Generated:")
+            for code_type, code_content in state.test_code.items():
+                lines = len(code_content.splitlines())
+                logger.info(f"  {code_type}: {lines} lines")
+        
+        # Errors and warnings
+        if state.errors:
+            logger.info(f"\n❌ Errors ({len(state.errors)}):")
+            for error in state.errors:
+                logger.error(f"  - {error}")
+        
+        if state.warnings:
+            logger.info(f"\n⚠️ Warnings ({len(state.warnings)}):")
+            for warning in state.warnings[:5]:  # Show first 5
+                logger.warning(f"  - {warning}")
+            if len(state.warnings) > 5:
+                logger.info(f"  ... and {len(state.warnings) - 5} more")
+        
+        # Final status
+        logger.info("\n" + "=" * 80)
+        if state.errors:
+            logger.error("❌ WORKFLOW COMPLETED WITH ERRORS")
+            logger.error("   Fix the errors above and retry")
+        elif state.warnings:
+            logger.warning("⚠️ WORKFLOW COMPLETED WITH WARNINGS")
+            logger.info("   Review warnings - tests may need manual refinement")
+        else:
+            logger.success("✅ WORKFLOW COMPLETED SUCCESSFULLY")
+            logger.success("   CONTRACT-LEVEL E2E tests are ready!")
+        
+        logger.info("=" * 80 + "\n")
+        
+        # Next steps
+        if state.test_files:
+            logger.info("📋 Next Steps:")
+            logger.info("   1. Review generated test files")
+            logger.info("   2. Set TEST_JWT_TOKEN environment variable")
+            logger.info("   3. Configure test data in your test environment")
+            logger.info("   4. Run: mvn test -Dtest=ContractTestRunner")
+            logger.info("   5. Review CONTRACT_TEST_SETUP.md for details\n")
+    
+    async def arun(
+        self,
+        user_story: str,
+        service_name: str,
+        swagger_spec: dict = None,
+        swagger_specs: dict = None,
+        config: dict = None
+    ) -> TestAutomationState:
+        """
+        Async version of run() for concurrent execution
+        
+        Args:
+            user_story: User story or functional specification
+            service_name: Name of the service being tested
+            swagger_spec: Single Swagger/OpenAPI specification (optional)
+            swagger_specs: Multiple Swagger specifications (recommended)
+            config: Additional configuration (optional)
+        
+        Returns:
+            Final state with all generated artifacts
+        """
+        import uuid
+        from datetime import datetime
+        
+        logger.info("=" * 80)
+        logger.info(f"🚀 Starting ASYNC CONTRACT-LEVEL Test Automation Workflow")
+        logger.info(f"   Service: {service_name}")
+        logger.info("=" * 80)
+        
+        # Generate workflow ID
+        workflow_id = f"{service_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{str(uuid.uuid4())[:8]}"
+        
+        # Prepare Swagger specs
+        final_swagger_specs = swagger_specs or {}
+        if not final_swagger_specs and swagger_spec:
+            final_swagger_specs = {"primary": swagger_spec}
+        
+        # Initialize state
+        initial_state = TestAutomationState(
+            workflow_id=workflow_id,
+            user_story=user_story,
+            service_name=service_name,
+            swagger_spec=swagger_spec or {},
+            swagger_specs=final_swagger_specs,
+            config=config or {}
+        )
+        
+        # Run workflow asynchronously
         try:
-            result = subprocess.run(['gherkin-lint', str(feature_file)], capture_output=True, text=True)
-            if result.returncode != 0:
-                for line in result.stdout.splitlines():
-                    if ':' in line and ('error' in line.lower() or 'warning' in line.lower()):
-                        parts = line.split(':', 3)
-                        if len(parts) >= 4:
-                            line_num = int(parts[1]) if parts[1].isdigit() else 0
-                            level = "error" if "error" in parts[2].lower() else "warning"
-                            issues.append(ValidationIssue(
-                                level=level,
-                                message=parts[3].strip(),
-                                line_number=line_num,
-                                scenario="Syntax"
-                            ))
-        except Exception as e:
-            logger.warning(f"Error running gherkin-lint: {str(e)}")
-        return issues
-
-    def _validate_semantics(self, feature_file: Path) -> List[ValidationIssue]:
-        issues = []
-        with open(feature_file, 'r', encoding='utf-8') as f:
-            lines = f.read().splitlines()
-        current_scenario = ""
-        last_step_type = None
-        step_order = {"Given": 0, "When": 1, "Then": 2}
-        for line_num, line in enumerate(lines, 1):
-            stripped = line.strip()
-            if stripped.startswith("Scenario"):
-                current_scenario = stripped
-                last_step_type = None
-                continue
-            for keyword in ["Given", "When", "Then"]:
-                if stripped.startswith(keyword):
-                    if last_step_type and step_order[keyword] < step_order.get(last_step_type, 0):
-                        issues.append(ValidationIssue(
-                            level="warning",
-                            message=f"Unexpected step order: {keyword} after {last_step_type}",
-                            line_number=line_num,
-                            scenario=current_scenario
-                        ))
-                    last_step_type = keyword
-                    break
-        return issues
-
-    def _validate_with_llm(self, gherkin_content: str, user_story: str) -> LLMValidationOutput:
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a QA expert validating BDD scenarios against requirements.
-STRICT RULES:
-1. Respond ONLY in valid JSON.
-2. JSON must have keys: coverage_score (0-100), missing_scenarios (list of strings), issues (list of strings), suggestions (list of strings).
-3. Do NOT include any explanation or text outside the JSON.
-4. If no issues, return empty lists."""),
-            ("human", f"User Story:\n{user_story}\nGenerated Gherkin:\n{gherkin_content}")
-        ])
-        chain = prompt | self.llm | self.output_parser
-        try:
-            result = chain.invoke({})
-            return LLMValidationOutput(**result)
-        except Exception as e:
-            logger.warning(f"LLM validation error: {str(e)}")
-            return LLMValidationOutput(
-                coverage_score=0,
-                missing_scenarios=[],
-                issues=[f"LLM error: {str(e)}"],
-                suggestions=[]
+            # Execute the graph
+            result = await self.graph.ainvoke(
+                initial_state,
+                config={"configurable": {"thread_id": service_name}}
             )
-
-
-def gherkin_validator_node(state: TestAutomationState) -> TestAutomationState:
-    return GherkinValidatorAgent().validate(state)
-
-
-# ---------------------------------------------
-# BUILD LANGGRAPH WORKFLOW - ADD THIS FUNCTION!
-# ---------------------------------------------
-def build_workflow() -> StateGraph:
-    """Build the complete test automation workflow as a LangGraph"""
+            
+            # LangGraph returns a dict, convert back to TestAutomationState
+            if isinstance(result, dict):
+                final_state = TestAutomationState(**result)
+            else:
+                final_state = result
+            
+            # Update workflow status
+            if final_state.errors:
+                final_state.workflow_status = "failed"
+            else:
+                final_state.workflow_status = "completed"
+            
+            # Log summary
+            self._log_workflow_summary(final_state)
+            
+            return final_state
+            
+        except Exception as e:
+            logger.error(f"❌ Async workflow execution failed: {str(e)}")
+            import traceback
+            logger.debug(traceback.format_exc())
+            raise
     
-    workflow = StateGraph(TestAutomationState)
-    
-    # Add nodes
-    workflow.add_node("generate_gherkin", gherkin_generator_node)
-    workflow.add_node("validate_gherkin", gherkin_validator_node)
-    workflow.add_node("write_tests", test_writer_node)
-    
-    # Define edges (workflow flow)
-    workflow.set_entry_point("generate_gherkin")
-    workflow.add_edge("generate_gherkin", "validate_gherkin")
-    workflow.add_edge("validate_gherkin", "write_tests")
-    workflow.add_edge("write_tests", END)
-    
-    return workflow.compile()
+    def get_workflow_state(self, thread_id: str) -> TestAutomationState:
+        """
+        Retrieve the current state of a workflow by thread ID
+        
+        Args:
+            thread_id: The thread ID (usually service_name)
+        
+        Returns:
+            Current workflow state
+        """
+        try:
+            # Get state from memory checkpoint
+            config = {"configurable": {"thread_id": thread_id}}
+            state_snapshot = self.graph.get_state(config)
+            
+            if state_snapshot and state_snapshot.values:
+                return TestAutomationState(**state_snapshot.values)
+            else:
+                logger.warning(f"No state found for thread_id: {thread_id}")
+                return None
+        except Exception as e:
+            logger.error(f"Error retrieving workflow state: {e}")
+            return None
 
 
-# ---------------------------------------------
-# Main Workflow Execution
-# ---------------------------------------------
-# ---------------------------------------------
-# Main Workflow Execution
-# ---------------------------------------------
+def create_workflow() -> TestAutomationWorkflow:
+    """
+    Factory function to create a new workflow instance
+    
+    Returns:
+        Configured TestAutomationWorkflow
+    
+    Example:
+        >>> workflow = create_workflow()
+        >>> result = workflow.run(
+        ...     user_story="...",
+        ...     service_name="my-service",
+        ...     swagger_specs={"auth": {...}, "api": {...}}
+        ... )
+    """
+    return TestAutomationWorkflow()
+
+
+# For direct execution testing
 if __name__ == "__main__":
-    # Load example user story
-    user_story_file = Path("examples/sample_user_story.md")
-    if not user_story_file.exists():
-        raise FileNotFoundError(f"{user_story_file} not found.")
-    user_story_text = user_story_file.read_text(encoding="utf-8")
-
-    # Load Swagger spec (optional)
-    swagger_spec = None
-    swagger_file = Path("examples/sample_swagger.json")
-    if swagger_file.exists():
-        swagger_spec = load_swagger_file(str(swagger_file))
-        logger.info("✅ Loaded Swagger specification")
-
-    # Build the workflow graph
-    app = build_workflow()
+    import json
+    from pathlib import Path
     
-    # Generate and save Mermaid diagram
+    # Example usage
+    logger.info("Testing workflow creation...")
+    
+    workflow = create_workflow()
+    
+    # Load example data
+    examples_dir = Path(__file__).parent.parent / "examples"
+    
+    # Load user story
+    user_story_path = examples_dir / "sample_user_story.md"
+    if user_story_path.exists():
+        user_story = user_story_path.read_text(encoding="utf-8")
+    else:
+        user_story = """
+User Story: Employee Leave Request
+
+As an employee
+I want to submit leave requests through the API
+So that I can manage my time off programmatically
+
+Acceptance Criteria:
+- AC1: Employee can submit leave request with start date, end date, and leave type
+- AC2: System validates leave balance exists (API returns balance field)
+- AC3: System returns request ID and status in response
+
+Business Rules:
+- BR1: API must return 200 OK for valid requests
+- BR2: API must return request status field
+- BR3: API response must include request ID
+"""
+    
+    # Load Swagger specs
+    swagger_spec1_path = examples_dir / "sample_swagger1.json"
+    swagger_spec2_path = examples_dir / "sample_swagger2.json"
+    
+    swagger_specs = {}
+    
+    if swagger_spec1_path.exists():
+        with open(swagger_spec1_path, 'r', encoding="utf-8") as f:
+            swagger_specs["auth"] = json.load(f)
+    
+    if swagger_spec2_path.exists():
+        with open(swagger_spec2_path, 'r', encoding="utf-8") as f:
+            swagger_specs["leave"] = json.load(f)
+    
+    # Run workflow
+    logger.info("Running test workflow...")
+    
     try:
-        from langgraph.graph import draw_mermaid_png
+        final_state = workflow.run(
+            user_story=user_story,
+            service_name="leave-request-service",
+            swagger_specs=swagger_specs
+        )
         
-        output_dir = Path("output")
-        output_dir.mkdir(exist_ok=True)
+        logger.success("✅ Workflow test completed successfully!")
         
-        # Save as PNG
-        png_data = draw_mermaid_png(app.get_graph())
-        png_path = output_dir / "workflow_graph.png"
-        with open(png_path, "wb") as f:
-            f.write(png_data)
-        logger.success(f"✅ Workflow graph saved to: {png_path}")
+        # Show summary
+        summary = final_state.get_workflow_summary()
+        logger.info("\n📊 Summary:")
+        for key, value in summary.items():
+            logger.info(f"  {key}: {value}")
         
-        # Also save as Mermaid text
-        mermaid_text = app.get_graph().draw_mermaid()
-        mermaid_path = output_dir / "workflow_graph.mmd"
-        with open(mermaid_path, "w") as f:
-            f.write(mermaid_text)
-        logger.success(f"✅ Mermaid diagram saved to: {mermaid_path}")
-        
-    except ImportError:
-        logger.warning("⚠️ Could not generate graph visualization. Install: pip install grandalf")
     except Exception as e:
-        logger.warning(f"⚠️ Graph generation failed: {e}")
-
-    # Initialize state
-    state = TestAutomationState(
-        workflow_id=str(uuid.uuid4()),
-        service_name="user-service",
-        user_story=user_story_text,
-        gherkin_content="",
-        gherkin_files=[],
-        swagger_spec=swagger_spec
-    )
-
-    # Run the workflow
-    logger.info("🚀 Starting Test Automation Workflow")
-    result = app.invoke(state)
-    
-    # Convert dict result back to TestAutomationState
-    final_state = TestAutomationState(**result)
-
-    # Display results
-    rprint("\n" + "="*70)
-    rprint("📊 WORKFLOW RESULTS")
-    rprint("="*70)
-    rprint(f"✅ Valid: {final_state.validation_result.is_valid if final_state.validation_result else 'N/A'}")
-    rprint(f"📊 Coverage: {final_state.validation_result.coverage_score if final_state.validation_result else 'N/A'}%")
-    rprint(f"⚠️  Issues: {len(final_state.validation_result.issues) if final_state.validation_result else 0}")
-
-    if hasattr(final_state, "test_files") and final_state.test_files:
-        rprint(f"\n💻 Generated test files ({len(final_state.test_files)}):")
-        for f in final_state.test_files:
-            rprint(f" - {f}")
-        
-        if final_state.warnings:
-            rprint(f"\n⚠️  Code Quality Warnings ({len(final_state.warnings)}):")
-            for warning in final_state.warnings[:10]:
-                rprint(f"  • {warning}")
-
-    if final_state.gherkin_content:
-        rprint("\n" + "="*70)
-        rprint("GENERATED GHERKIN (first 20 lines)")
-        rprint("="*70)
-        rprint("\n".join(final_state.gherkin_content.splitlines()[:20]))
-    
-    # Show agent execution summary
-    rprint("\n" + "="*70)
-    rprint("⏱️  AGENT EXECUTION SUMMARY")
-    rprint("="*70)
-    for agent_output in final_state.agent_outputs:
-        status_icon = "✅" if agent_output.status == AgentStatus.SUCCESS else "❌"
-        rprint(f"{status_icon} {agent_output.agent_name}: {agent_output.duration_ms:.0f}ms")
-        if agent_output.error_message:
-            rprint(f"   Error: {agent_output.error_message}")
-    
-    rprint("\n" + "="*70)
-    rprint(f"📈 Workflow graph saved to: output/workflow_graph.png")
-    rprint(f"📁 Mermaid diagram saved to: output/workflow_graph.mmd")
-    rprint("="*70)
+        logger.error(f"❌ Workflow test failed: {e}")
+        import traceback
+        traceback.print_exc()

@@ -7,11 +7,12 @@ def get_settings():
     return SimpleNamespace(
         ollama=SimpleNamespace(
             base_url="http://localhost:11434",
-            model="mistral"  # ✅ Changed from "mistral" to "llama3.2"
+            model="mistral"  # ✅ "mistral" to "llama3.2"
         ),
         gherkin=SimpleNamespace(
-            use_gherkin_lint=True
-        ),
+            use_gherkin_lint=True,  # Enable/disable gherkin-lint
+            lint_config_file=base_dir / ".gherkin-lintrc"
+              ),
         paths=SimpleNamespace(
             features_dir=base_dir / "features",   # folder for .feature files
             tests_dir=base_dir / "tests"          # folder to save generated test files

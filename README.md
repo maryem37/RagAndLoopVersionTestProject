@@ -15,21 +15,24 @@ test-automation-langgraph/
 │   └── workflow.py               # LangGraph workflow
 ├── tools/
 │   ├── __init__.py
-│   ├── swagger_parser.py
+│   ├___swagger_parser1.py
+     ── swagger_parser.py
 │   ├── gherkin_lint.py
 │   └── coverage_tools.py
 ├── config/
 │   ├── __init__.py
 │   └── settings.py
 ├── examples/
-│   ├── sample_user_story.md
-│   └── sample_swagger.JSON
+│   ├── sample_swagger1.json
+|   |__sample_swagger2.json
+│   └── sample_user_story.md
 |   |__ test_swagger_reader.py
 ├── tests/
 │   └── __init__.py
 ├── main.py
 ├── requirements.txt
 └── README.md
+|__ .gherkin-lintrc
 Build Order
 We'll build agents in this order:
 

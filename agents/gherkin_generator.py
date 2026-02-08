@@ -14,6 +14,8 @@ from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
+
+from graph import state
 from graph.state import TestAutomationState, AgentOutput, AgentStatus
 from config.settings import get_settings
 
@@ -42,25 +44,61 @@ class GherkinGeneratorAgent:
         return ChatPromptTemplate.from_messages([
             (
                 "system",
-                """You are a senior expert in BDD and Test Automation.  
-STRICT RULES: 
-- Generate ONLY valid Gherkin format
-- ONE Feature per response
-- Use Background section when there are common preconditions
-- Respect EXACT error messages provided in the specification
-- Cover: happy path + all business error cases
-- No markdown code blocks, no explanations
+                """You are a senior expert in BDD and Enterprise Test Automation.
+
+MANDATORY OUTPUT STRUCTURE (DO NOT DEVIATE):
+
+Feature: <added leave request>
+  Background:
+    Given the employee is authenticated
+    And required reference data exists
+    And at least one leave type is available
+
+  Scenario: <happy path title>
+    Given ...
+    When ...
+    Then ...
+
+  Scenario: <one business rule violation>
+    Given ...
+    When ...
+    Then the system displays "<EXACT error message>"
+
+STRICT RULES:
+- Generate ONLY valid Gherkin (no markdown, no explanations)
+- EXACT error messages as written in the specification
+- ONE business rule per scenario
+- Use Background when steps are shared
+- Use concrete dates, values, and leave types
+- Verify SYSTEM BEHAVIOR (status, flags, calculations)
+- No abstract steps like "fills in correctly"
+- Maximum 10 scenarios
 - Language: English
-- Maximum 10 scenarios per feature
-- Follow strict Given-When-Then structure
-- Use proper indentation (2 spaces)  
+- Indentation: 2 spaces
+
 
 QUALITY REQUIREMENTS:
 - Each scenario must be independent and executable
 - Steps must be clear and actionable
 - Use realistic test data
 - Include all acceptance criteria from the specification
-- Cover all business rules with separate scenarios"""
+- Cover all business rules with separate scenarios
+
+
+
+FORBIDDEN:
+- Generic steps (e.g. "fills in valid data")
+- UI-only wording without system effect
+- Missing Given/When/Then
+
+
+
+
+
+"""
+
+
+
             ),
             (
                 "human",
@@ -102,9 +140,85 @@ Generate the Gherkin feature:"""
 
         logger.info(f"📋 Extracted {len(blocks)} feature specifications")
         return blocks
+    
+
+    def _normalize_scenario_steps(self, gherkin_text: str) -> str:
+        """
+        Enforce exactly ONE When per Scenario.
+        - All actions before the trigger become Given
+        - The LAST When becomes the real trigger
+        - All assertions stay Then
+        """
+
+        scenarios = re.split(r"(?=^\s*Scenario:)", gherkin_text, flags=re.MULTILINE)
+        normalized = []
+
+        for block in scenarios:
+            if not block.strip().startswith("Scenario:"):
+                normalized.append(block)
+                continue
+
+            lines = block.splitlines()
+            header = lines[0]
+
+            givens, whens, thens, others = [], [], [], []
+            current_phase = None
+
+            for line in lines[1:]:
+                stripped = line.strip()
+
+                if stripped.startswith("Given"):
+                    current_phase = "Given"
+                    givens.append(line)
+
+                elif stripped.startswith("When"):
+                    current_phase = "When"
+                    whens.append(line)
+
+                elif stripped.startswith("Then"):
+                    current_phase = "Then"
+                    thens.append(line)
+
+                elif stripped.startswith("And"):
+                    if current_phase == "Given":
+                        givens.append(line)
+                    elif current_phase == "When":
+                        whens.append(line)
+                    elif current_phase == "Then":
+                        thens.append(line)
+                    else:
+                        others.append(line)
+                else:
+                    others.append(line)
+
+            # 🔑 Enforce ONE When: keep only the LAST one
+            final_whens = whens[-1:] if whens else []
+
+            rebuilt = (
+                [header]
+                + givens
+                + final_whens
+                + thens
+                + others
+            )
+
+            normalized.append("\n".join(rebuilt))
+
+        return "\n".join(normalized)
+
 
     def generate_single(self, story: str, swagger_context: str = "") -> str:
         """Generate Gherkin for a single feature specification"""
+    
+        # Parse the story for business rules and acceptance criteria
+        business_rules_text = self._extract_section(story, "Business Rules:")
+        acceptance_criteria_text = self._extract_section(story, "Acceptance Criteria:")
+
+        combined_context = ""
+        if business_rules_text:
+            combined_context += "BUSINESS RULES:\n" + business_rules_text.strip() + "\n\n"
+        if acceptance_criteria_text:
+            combined_context += "ACCEPTANCE CRITERIA:\n" + acceptance_criteria_text.strip() + "\n\n"
 
         prompt = self._create_prompt()
         chain = prompt | self.llm | self.parser
@@ -112,14 +226,28 @@ Generate the Gherkin feature:"""
         logger.info("🤖 Generating Gherkin with LLM...")
 
         result = chain.invoke({
-            "story": story,
+            "story": combined_context + story,
             "swagger_context": swagger_context
         })
 
+        result = self._normalize_scenario_steps(result)
         return self._clean_output(result)
+    
 
+
+    
+
+
+    def _extract_section(self, text: str, header: str) -> str:
+        """Extract a section from a markdown or text story"""
+        pattern = rf"{header}(.*?)(\n\n|$)"
+        match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+        return match.group(1).strip() if match else ""
+
+
+ 
     def _clean_output(self, text: str) -> str:
-        """Clean LLM output to ensure valid Gherkin"""
+        """Clean LLM output to ensure valid Gherkin with proper formatting"""
 
         # Remove any markdown code blocks
         text = re.sub(r"```gherkin\s*", "", text)
@@ -127,7 +255,35 @@ Generate the Gherkin feature:"""
 
         # Remove trailing whitespace from each line
         lines = [line.rstrip() for line in text.strip().splitlines()]
-        return "\n".join(lines)
+        
+        # Join lines and ensure blank line at EOF
+        cleaned_text = "\n".join(lines)
+        
+        # Ensure file ends with a newline (blank line at EOF)
+        # This is required by gherkin-lint's new-line-at-eof rule
+        if not cleaned_text.endswith("\n"):
+            cleaned_text += "\n"
+        
+        return cleaned_text
+
+    def _validate_required_errors(self, text: str):
+        """Ensure all required business error messages are present"""
+    
+        REQUIRED_ERRORS = [
+            "Warning! Please check the Employee ID and/or number of days and/or start date and/or end date!",
+            "Warning: 'From' date is later than 'To' date.",
+            "Number of days is zero.",
+            "Other requests exist during this period.",
+            "Insufficient balance.",
+            "The mandatory 48-hour notice period is not respected."
+        ]
+        
+        for err in REQUIRED_ERRORS:
+            if err not in text:
+                logger.warning(f"⚠ Missing expected error message: {err}")
+
+
+
 
     def _format_swagger_context(self, swagger_spec: dict) -> str:
         """Format Swagger specification for context"""
@@ -157,18 +313,24 @@ Generate the Gherkin feature:"""
         # Save to features directory
         filepath = self.settings.paths.features_dir / filename
 
-        # ✅ Make sure the folder exists
+        # Make sure the folder exists
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-        filepath.write_text(content, encoding="utf-8")
+        # Ensure content ends with newline before saving
+        if not content.endswith("\n"):
+            content += "\n"
+        
+        # Write with newline parameter to preserve line endings
+        filepath.write_text(content, encoding="utf-8", newline="\n")
 
         logger.success(f"✔ Saved: {filepath.name}")
         return filepath
-
+        
     def generate(self, state: TestAutomationState) -> TestAutomationState:
         """
-        Main entry point for LangGraph node
-        Generates Gherkin from user story in state
+        Main entry point for LangGraph node.
+        Generates Gherkin from all user stories/features in state.user_story.
+        Supports multiple features, each saved as a separate .feature file.
         """
         start_time = time.time()
         logger.info(f"🚀 Gherkin Generator starting for service: {state.service_name}")
@@ -179,25 +341,47 @@ Generate the Gherkin feature:"""
             if state.swagger_spec:
                 swagger_context = self._format_swagger_context(state.swagger_spec)
 
-            # Extract features from user story
+            # Extract features/user stories from state
             features = self.extract_features(state.user_story)
 
-            if len(features) == 0:
+            if not features:
                 raise ValueError("No features found in user story")
 
-            # Generate for first feature (can be extended for multiple)
-            feature_spec = features[0]
-            logger.info(f"📝 Generating Gherkin for feature 1 of {len(features)}")
+            logger.info(f"📌 Found {len(features)} feature(s) to generate Gherkin for")
 
-            # Generate Gherkin
-            gherkin_content = self.generate_single(feature_spec, swagger_context)
+            gherkin_files = []
+            all_gherkin_content = []
 
-            # Save to file
-            feature_file = self.save_feature_file(gherkin_content, state.service_name)
+            # Loop through all features and generate Gherkin
+            for i, feature in enumerate(features, start=1):
+                # Further split by individual User Story within this feature
+                user_stories = re.split(r"(User Story\s*:)", feature, flags=re.IGNORECASE)
+                
+                # Combine the split pieces properly
+                combined_stories = []
+                for j in range(0, len(user_stories), 2):
+                    header = user_stories[j].strip()
+                    body = user_stories[j+1].strip() if j+1 < len(user_stories) else ""
+                    combined_stories.append(header + "\n" + body)
 
-            # Update state
-            state.gherkin_content = gherkin_content
-            state.gherkin_files = [str(feature_file)]
+                for k, story_text in enumerate(combined_stories, start=1):
+                    if story_text.strip():
+                        logger.info(f"📝 Generating Gherkin for a user story {k} in feature {i}")
+                        
+                        gherkin_content = self.generate_single(story_text, swagger_context)
+                        
+                        # Validate required business rule errors
+                        self._validate_required_errors(gherkin_content)
+                        
+                        # Save each user story as a separate .feature file with unique name
+                        feature_file = self.save_feature_file(gherkin_content, f"{state.service_name}_{i}_{k}")
+                        gherkin_files.append(str(feature_file))
+                        all_gherkin_content.append(gherkin_content)
+
+
+            # Update state with all generated content and files
+            state.gherkin_content = "\n\n".join(all_gherkin_content)
+            state.gherkin_files = gherkin_files
 
             # Record agent output
             duration = (time.time() - start_time) * 1000
@@ -207,15 +391,15 @@ Generate the Gherkin feature:"""
                 duration_ms=duration,
                 output_data={
                     "features_extracted": len(features),
-                    "features_generated": 1,
-                    "feature_file": str(feature_file),
-                    "gherkin_length": len(gherkin_content),
-                    "lines_generated": len(gherkin_content.splitlines())
+                    "features_generated": len(features),
+                    "feature_files": gherkin_files,
+                    "gherkin_total_length": sum(len(f) for f in all_gherkin_content),
+                    "lines_generated": sum(len(f.splitlines()) for f in all_gherkin_content)
                 }
             )
             state.add_agent_output(agent_output)
 
-            logger.success(f"✅ Gherkin generated successfully in {duration:.0f}ms")
+            logger.success(f"✅ Gherkin generated successfully for {len(features)} feature(s) in {duration:.0f}ms")
 
         except Exception as e:
             logger.error(f"❌ Gherkin generation failed: {str(e)}")
@@ -231,6 +415,8 @@ Generate the Gherkin feature:"""
             state.add_error(f"Gherkin generation failed: {str(e)}")
 
         return state
+
+
 
 
 def gherkin_generator_node(state: TestAutomationState) -> TestAutomationState:
