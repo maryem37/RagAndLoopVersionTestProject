@@ -6,18 +6,17 @@ Adapted for large functional specifications with LangGraph integration
 import re
 import time
 from pathlib import Path
+import traceback
 from typing import List
 from datetime import datetime
 
 from loguru import logger
-from langchain_ollama import OllamaLLM
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-
-
 from graph import state
 from graph.state import TestAutomationState, AgentOutput, AgentStatus
 from config.settings import get_settings
+
 
 
 class GherkinGeneratorAgent:
@@ -25,18 +24,31 @@ class GherkinGeneratorAgent:
     Enterprise-grade Gherkin Generator
     Handles large functional specifications and generates complete Gherkin features
     """
-
+        # self.llm = OllamaLLM(
+        #     base_url=self.settings.ollama.base_url,
+        #     model=self.settings.ollama.model,
+        #     temperature=0.2,  # Lower for more consistent output
+        #     num_predict=3000,  # Higher for large specs
+        # )
+          # Using Gemini instead of Ollama
     def __init__(self):
         self.settings = get_settings()
-        self.llm = OllamaLLM(
-            base_url=self.settings.ollama.base_url,
-            model=self.settings.ollama.model,
-            temperature=0.2,  # Lower for more consistent output
-            num_predict=3000,  # Higher for large specs
+        print(self.settings)  # pour debug
+        
+        # Create the base endpoint
+        llm = HuggingFaceEndpoint(
+            repo_id=self.settings.huggingface.gherkin_generator.model_name,
+            huggingfacehub_api_token=self.settings.huggingface.api_token,
+            temperature=self.settings.huggingface.gherkin_generator.temperature,
+            max_new_tokens=1200,
         )
-        self.parser = StrOutputParser()
-
-        logger.info(f"✅ Enterprise Gherkin Generator initialized with model: {self.settings.ollama.model}")
+        
+        # Wrap it with ChatHuggingFace for proper chat formatting
+        self.llm = ChatHuggingFace(llm=llm)
+        
+        self.parser = None
+        
+        logger.info(f"✅ Enterprise Gherkin Generator initialized with model: {self.settings.huggingface.gherkin_generator.model_name}")
 
     def _create_prompt(self) -> ChatPromptTemplate:
         """Create the prompt template for Gherkin generation"""
@@ -90,9 +102,6 @@ FORBIDDEN:
 - Generic steps (e.g. "fills in valid data")
 - UI-only wording without system effect
 - Missing Given/When/Then
-
-
-
 
 
 """
@@ -207,10 +216,39 @@ Generate the Gherkin feature:"""
         return "\n".join(normalized)
 
 
-    def generate_single(self, story: str, swagger_context: str = "") -> str:
-        """Generate Gherkin for a single feature specification"""
+    # def generate_single(self, story: str, swagger_context: str = "") -> str:
+    #     """Generate Gherkin for a single feature specification"""
     
-        # Parse the story for business rules and acceptance criteria
+    #     # Parse the story for business rules and acceptance criteria
+    #     business_rules_text = self._extract_section(story, "Business Rules:")
+    #     acceptance_criteria_text = self._extract_section(story, "Acceptance Criteria:")
+
+    #     combined_context = ""
+    #     if business_rules_text:
+    #         combined_context += "BUSINESS RULES:\n" + business_rules_text.strip() + "\n\n"
+    #     if acceptance_criteria_text:
+    #         combined_context += "ACCEPTANCE CRITERIA:\n" + acceptance_criteria_text.strip() + "\n\n"
+
+    #     prompt = self._create_prompt()
+    #     chain = prompt | self.llm | self.parser
+
+    #     logger.info("🤖 Generating Gherkin with LLM...")
+
+    #     result = chain.invoke({
+    #         "story": combined_context + story,
+    #         "swagger_context": swagger_context
+    #     })
+
+    #     result = self._normalize_scenario_steps(result)
+    #     return self._clean_output(result)
+    
+
+   
+
+    def generate_single(self, story: str, swagger_context: str = "") -> str:
+        """Generate Gherkin for a single feature specification using conversational LLM"""
+
+        # Extract business rules and acceptance criteria
         business_rules_text = self._extract_section(story, "Business Rules:")
         acceptance_criteria_text = self._extract_section(story, "Acceptance Criteria:")
 
@@ -220,23 +258,37 @@ Generate the Gherkin feature:"""
         if acceptance_criteria_text:
             combined_context += "ACCEPTANCE CRITERIA:\n" + acceptance_criteria_text.strip() + "\n\n"
 
-        prompt = self._create_prompt()
-        chain = prompt | self.llm | self.parser
+        # Build prompt template
+        template = (
+            "You are a Gherkin scenario generator. Convert the following user story into Gherkin syntax.\n\n"
+            "Context:\n{story}\n\n"
+            "Swagger context (if any):\n{swagger_context}\n\n"
+            "Return valid Gherkin feature scenarios."
+        )
 
+        prompt = ChatPromptTemplate.from_template(template)
+
+        # Use LCEL syntax (modern LangChain)
+        chain = prompt | self.llm
+        
         logger.info("🤖 Generating Gherkin with LLM...")
 
-        result = chain.invoke({
+        # Invoke and extract text from response
+        response = chain.invoke({
             "story": combined_context + story,
             "swagger_context": swagger_context
         })
+        
+        # Extract text from ChatHuggingFace response
+        if hasattr(response, 'content'):
+            result = response.content
+        elif isinstance(response, str):
+            result = response
+        else:
+            result = str(response)
 
         result = self._normalize_scenario_steps(result)
         return self._clean_output(result)
-    
-
-
-    
-
 
     def _extract_section(self, text: str, header: str) -> str:
         """Extract a section from a markdown or text story"""
@@ -305,8 +357,13 @@ Generate the Gherkin feature:"""
         match = re.search(r"Feature:\s*(.+)", content)
         feature_name = match.group(1) if match else (service_name or "feature")
 
-        # Create safe filename
+        # Create safe filename with length limit
         safe_name = re.sub(r"[^a-z0-9]+", "-", feature_name.lower()).strip("-")
+        
+        # Limit filename length to avoid Windows path issues (max 50 chars for the name part)
+        if len(safe_name) > 50:
+            safe_name = safe_name[:50]
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{safe_name}_{timestamp}.feature"
 
@@ -325,7 +382,7 @@ Generate the Gherkin feature:"""
 
         logger.success(f"✔ Saved: {filepath.name}")
         return filepath
-        
+            
     def generate(self, state: TestAutomationState) -> TestAutomationState:
         """
         Main entry point for LangGraph node.
@@ -402,7 +459,8 @@ Generate the Gherkin feature:"""
             logger.success(f"✅ Gherkin generated successfully for {len(features)} feature(s) in {duration:.0f}ms")
 
         except Exception as e:
-            logger.error(f"❌ Gherkin generation failed: {str(e)}")
+            logger.error("❌ Gherkin generation failed:")
+            logger.error(traceback.format_exc())
 
             duration = (time.time() - start_time) * 1000
             agent_output = AgentOutput(

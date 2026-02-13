@@ -19,15 +19,15 @@ from typing import Dict, List, Tuple, Set
 from datetime import datetime
 
 from loguru import logger
-from langchain_ollama import OllamaLLM
+# from langchain_community.llms import HuggingFaceHub
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from pydantic import BaseModel, Field
-
+from langchain_huggingface import HuggingFaceEndpoint
 from graph.state import TestAutomationState, AgentOutput, AgentStatus
 from config.settings import get_settings
 from tools.swagger_parser import get_api_context_multi
-
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 
 class GeneratedTestFile(BaseModel):
     """Represents a generated test file"""
@@ -54,16 +54,20 @@ class TestWriterAgent:
     
     def __init__(self):
         self.settings = get_settings()
-        self.llm = OllamaLLM(
-            base_url=self.settings.ollama.base_url,
-            model=self.settings.ollama.model,
-            temperature=0.1,  # Lower for more deterministic contract tests
-            num_predict=4000,
-        )
+        
+        # Initialize Hugging Face LLM
+        llm = HuggingFaceEndpoint(
+    repo_id=self.settings.huggingface.test_writer_agent.model_name,
+    huggingfacehub_api_token=self.settings.huggingface.api_token,
+    temperature=self.settings.huggingface.test_writer_agent.temperature,
+    max_new_tokens=4000,
+)
+            
         self.parser = StrOutputParser()
-        logger.info(f"✅ Contract-Level Test Writer initialized with model: {self.settings.ollama.model}")
+        self.llm = ChatHuggingFace(llm=llm)
+        logger.info(f"✅ Contract-Level Test Writer initialized with Hugging Face model: {self.settings.huggingface.test_writer_agent.model_name}")
         logger.info(f"📋 Test Type: CONTRACT-LEVEL E2E (API Structure & Interoperability)")
-    
+        
     def _extract_swagger_endpoints(self, swagger_specs: Dict[str, Dict]) -> Set[str]:
         """Extract all valid endpoints from Swagger specs for validation"""
         valid_endpoints = set()

@@ -10,6 +10,8 @@ import subprocess
 from pathlib import Path
 from typing import List
 from loguru import logger
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
+
 
 from graph.state import (
     TestAutomationState,
@@ -20,7 +22,6 @@ from graph.state import (
     LLMValidationOutput,
 )
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import OllamaLLM
 from langchain_core.output_parsers import PydanticOutputParser
 from config.settings import get_settings
 
@@ -33,17 +34,20 @@ class GherkinValidatorAgent:
 
     def __init__(self):
         self.settings = get_settings()
-        self.llm = OllamaLLM(
-            base_url=self.settings.ollama.base_url,
-            model=self.settings.ollama.model,
-            temperature=0.0,
-            format="json",
-        )
+
+        # Use HuggingFace model for validation
+        llm = HuggingFaceEndpoint(
+    repo_id=self.settings.huggingface.gherkin_validator.model_name,
+    huggingfacehub_api_token=self.settings.huggingface.api_token,
+    temperature=self.settings.huggingface.gherkin_validator.temperature,
+)      
+        self.llm = ChatHuggingFace(llm=llm)
+
         self.output_parser = PydanticOutputParser(pydantic_object=LLMValidationOutput)
         self.gherkin_lint_cmd = self._find_gherkin_lint()
-        
+
         lint_status = "enabled" if self.gherkin_lint_cmd else "disabled (not installed)"
-        logger.info(f"✅ Gherkin Validator initialized (gherkin-lint: {lint_status})")
+        logger.info(f"✅ Gherkin Validator initialized (gherkin-lint: {lint_status}, model: {self.settings.huggingface.gherkin_validator.model_name})")
 
     def _find_gherkin_lint(self) -> str | None:
         """Find gherkin-lint command (global or local)"""

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "angular-shore-487120-t4",
+  "private_key_id": "fb9915046c2a7006fa1622ba1b9e8f96de2fd7ea",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCpczSZeefz9yFQ\nIzTldQV0FaqEp8CbqlKDLjgnxO0BkJQRkcNDK323sthvSZw5SPXrRj05Nj+Fmqhx\nd8Oz/6qLYK/bFeoKdXCLRgIms+yLQ0R7IB+jxxxUSZd1tYfB+P+hjBQj/yXks+LP\nHMWyAVpVrwvtCNPpihppsdSZHpq+ge9cami1KfjbfJLIwnvVK3mSoq4Ijzm5HmEb\nJAxsHCks9yEYpBQMf20nXw4hPXMdhtxJV6ZJJ8j92ucyGpWQITGYzWLUyr/+kd5w\nK/2ubIepKK1ZxtdwdRMjjodMZmFXZcEUJbj/i8dux6PbyhFClE3zLbe3YNLjqPOD\nySHw7ccnAgMBAAECggEABW+nO9c/3EFM5cvDWisnaiJ5znitQrEzpXa5oXj9W4P+\nZBPnjkOabGbF78gORX40OYCO3UOCxTABgGZltmQY3hDTg3VQBVbgLe+oiQJTr+IQ\nE90jdrcgDwovXDzfJpds6Atc6Ay68/vbZmaXZw8JDV+ow8l5NvBRyZtFZUYok7z9\nChqjtbhp0Oj1yNswwGTz1+pcQtbu6FWCdnGaR3aaHNtimi+T9/Hh5bmLI7SC+RRe\ntBtafbhVhA9jGR1PpuocmzP54sjW56lTKqxrSlWuZ/wF/vDZ/vVRI/OVhZ9X0Pkk\nsG40RatGFbWnz2xp+VflaE0Amx1sjE45+kaFAEx6hQKBgQDSM7ztvDFFnMkm4DMP\nN8dd4bMKhWM3AB2rtazTtOx4G/+DFT/7nIR/i2btEFcGJ5T41lUJleWCtk7O3nHa\nURxqmR4bM7llKegR9QtG60X6w9pHtfb/n98sv3LMdCFXpVwENDdG4VWL6Wt4/sTS\nfuz1YFqj3Nk7eFg/56lCUdwKmwKBgQDOXnlEn7TgIops9zw/zAANtHE7BKPKzWhZ\n1rHCyH2b0v3kkH0ZKkp03xDsfxMHZuVvO3sU3kLqXRxM3a9Vu107umSw62+DUNSO\nsCTMGaoVH/ExOgVsz6JeSrGuKBmEJbb7c0YWkfBfUgJOaFjoGdCH+ZnNCTiMrSdj\n+oyxb4ZIZQKBgQCpZDIy7r5SF8fuASyEbfHGkRRkPRu3/errLeuJa7pIDF/69Yvr\nKrWHxwH5tno6pnkhki9TGy2qCVo20QG06jpZGO0vBJ65jGzM08jzrLNnIp9rvJLA\nashBWkKbylX4OHSPmriU8Q+sQT1vcvePneM81hoVBOs2RoPvc7Ntk2QcUwKBgFFQ\nWloWz69NDNwYos3EdPTxd3g4wM0lGIvlk49bblrazR2lbRVgW4wnZMS64WWWPqsQ\nddPoK9eqrn7/DpoqRHdHX2tyqTLFw6shbq5ZInJGbsPlx8NzINgkeFRWCo/OSIZV\ninVUNbFpX+1DIlz55vfc+qQWkQilJZM4Yv17Ix8dAoGAGjLbyQ+xyAb+LSz36gDh\ngnqiwSW1jYZ/jtHaGRGs4i2OECbCa/ZWrfKvUc/gkayre8O5YOgXXD6LN8eoV6d7\npXcdpnGe7aCqUccBXdxn3S0zl7n3Tqo7bmqACSPiu9lawkZEzlCd+ERmWLLcd8JK\nd6WL8hpKnj9nTznVTy/bSc8=\n-----END PRIVATE KEY-----\n",
+  "client_email": "angular-shore-487120-t4@angular-shore-487120-t4.iam.gserviceaccount.com",
+  "client_id": "106560828536079137273",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/angular-shore-487120-t4%40angular-shore-487120-t4.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

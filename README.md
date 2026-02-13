@@ -12,23 +12,23 @@ test-automation-langgraph/
 │ ├── coverage_analyst.py # Agent 6: Measures test coverage
 │ └── self_healing.py # Agent 7: Auto-fixes failing tests
 ├── graph/
-│ ├── init.py
-│ ├── state.py # Defines core state structure
-│ └── workflow.py # LangGraph workflow orchestrating agents
+│   ├── init.py   ← This tells Python that 'graph' is a package
+│   ├── state.py # Defines core state structure
+│   └── workflow.py # LangGraph workflow orchestrating agents
 ├── tools/
 │   ├── __init__.py
 │   ├── swagger_parser.py
 │   ├── gherkin_lint.py
 │   └── coverage_tools.py
 ├── config/
-│ ├── init.py
-│ └── settings.py # Configuration and environment settings
+│   ├── init.py
+│   └── settings.py # Configuration and environment settings
 ├── examples/
 │   ├── sample_user_story.md
 │   └── sample_swagger.JSON
 |   |__ test_swagger_reader.py
 ├── tests/
-│ └── init.py
+│   └── init.py
 ├── main.py # Entry point for the system
 ├── requirements.txt # Python dependencies
 └── README.md
