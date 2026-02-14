@@ -2,7 +2,6 @@
 
 ## Project Structure
 
-
 test-automation-langgraph/
 ├── agents/
 │ ├── init.py
@@ -33,6 +32,7 @@ test-automation-langgraph/
 ├── main.py # Entry point for the system
 ├── requirements.txt # Python dependencies
 └── README.md
+
 
 Build Order
 We'll build agents in this order:
