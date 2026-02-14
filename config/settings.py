@@ -21,7 +21,7 @@ def get_settings():
                 temperature=float(os.getenv("HF_TEMP_GHERKIN_VALIDATOR", 0.0))
             ),
             test_writer_agent=SimpleNamespace(
-                model_name=os.getenv("HF_MODEL_TESTWRITER_AGENT", "google/gemma-2b-it"),
+                model_name=os.getenv("HF_MODEL_TESTWRITER_AGENT", "Qwen/Qwen2.5-Coder-7B-Instruct"),
                 temperature=float(os.getenv("HF_TEMP_TESTWRITER_AGENT", 0.2))
             )
         ),
