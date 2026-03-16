@@ -7,7 +7,7 @@ Supports both single and multi-service architectures
 import json
 import yaml
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from loguru import logger
 
@@ -116,133 +116,156 @@ def get_api_context(swagger_spec: Optional[Dict]) -> str:
     return "\n".join(context)
 
 
-def get_api_context_multi(swagger_specs: Dict[str, Dict]) -> str:
+def get_api_context_for_service(swagger_spec: Dict, service_name: str) -> str:
     """
-    Convert multiple Swagger specifications into structured context for test generation.
-    
-    This function is critical for microservice architectures where tests need to
-    interact with multiple APIs (e.g., Auth Service + Leave Service).
-    
+    Retourne le contexte API textuel pour UN seul service.
+
+    Utilisé par le TestWriter pour générer les step definitions
+    d'un service spécifique sans mélanger les 2 Swaggers.
+
     Args:
-        swagger_specs: Dictionary mapping service names to their Swagger specs
-                      Example: {"auth": {...}, "leave": {...}}
-    
+        swagger_spec : dict  — le dict Swagger de CE service uniquement
+        service_name : str   — "conge" ou "DemandeConge"
+
     Returns:
-        Formatted string containing all API endpoints organized by service
-        
-    Example Output:
-        ===== SERVICE: AUTH =====
-        Base URL: http://localhost:9000
-        
-        POST /api/auth/login
-        OperationId: login
-        Request Body: application/json
-        
-        ===== SERVICE: LEAVE =====
-        Base URL: http://localhost:9001
-        
-        POST /api/employer/leave/request
-        OperationId: createLeaveRequest
-        ...
+        Formatted string with all endpoints of that single service
     """
-    if not swagger_specs:
-        return "No API specifications provided"
-    
-    logger.info(f"🔗 Building multi-service API context for {len(swagger_specs)} service(s)")
-    
+    if not swagger_spec or "paths" not in swagger_spec:
+        logger.warning(f"⚠️ Swagger spec vide ou invalide pour : {service_name}")
+        return f"No Swagger spec available for {service_name}"
+
     context_parts = []
-    
-    for service_name, swagger_spec in swagger_specs.items():
-        if not swagger_spec or "paths" not in swagger_spec:
-            logger.warning(f"⚠️ Skipping invalid spec for service: {service_name}")
-            continue
-        
-        # Service header
-        context_parts.append(f"\n{'='*60}")
-        context_parts.append(f"SERVICE: {service_name.upper()}")
-        context_parts.append(f"{'='*60}")
-        
-        # Server/Base URL
-        servers = swagger_spec.get("servers", [])
-        if servers:
-            base_url = servers[0].get("url", "")
-            context_parts.append(f"Base URL: {base_url}")
+
+    # ── En-tête service ──────────────────────────────────────────────
+    context_parts.append(f"{'=' * 60}")
+    context_parts.append(f"SERVICE: {service_name.upper()}")
+    context_parts.append(f"{'=' * 60}")
+
+    # ── Info générale ────────────────────────────────────────────────
+    info = swagger_spec.get("info", {})
+    if info.get("title"):
+        context_parts.append(f"Title   : {info['title']}")
+    if info.get("version"):
+        context_parts.append(f"Version : {info['version']}")
+
+    # ── Base URL ─────────────────────────────────────────────────────
+    servers = swagger_spec.get("servers", [])
+    if servers:
+        base_url = servers[0].get("url", "")
+        context_parts.append(f"Base URL: {base_url}")
+
+    context_parts.append("")
+    context_parts.append("ENDPOINTS:")
+
+    # ── Endpoints ────────────────────────────────────────────────────
+    paths = swagger_spec.get("paths", {})
+    if not paths:
+        context_parts.append("  (no endpoints found)")
+        return "\n".join(context_parts)
+
+    for path, methods in paths.items():
+        for method, details in methods.items():
+            if method.lower() not in ("get", "post", "put", "delete", "patch", "options"):
+                continue
+
+            summary    = details.get("summary", "")
+            op_id      = details.get("operationId", "")
+            parameters = details.get("parameters", [])
+            request_body = details.get("requestBody", {})
+            responses    = details.get("responses", {})
+            tags         = details.get("tags", [])
+
             context_parts.append("")
-        
-        # API Info
-        info = swagger_spec.get("info", {})
-        if info.get("title"):
-            context_parts.append(f"Title: {info['title']}")
-        if info.get("version"):
-            context_parts.append(f"Version: {info['version']}")
-        context_parts.append("")
-        
-        # Endpoints
-        context_parts.append("ENDPOINTS:")
-        
-        for path, methods in swagger_spec.get("paths", {}).items():
-            for method, details in methods.items():
-                context_parts.append("")
-                context_parts.append(f"{method.upper()} {path}")
-                
-                # Operation ID
-                operation_id = details.get("operationId", "N/A")
-                context_parts.append(f"  OperationId: {operation_id}")
-                
-                # Summary
-                summary = details.get("summary", "")
-                if summary:
-                    context_parts.append(f"  Summary: {summary}")
-                
-                # Parameters
-                if "parameters" in details:
-                    context_parts.append("  Parameters:")
-                    for param in details["parameters"]:
-                        param_name = param.get("name", "unknown")
-                        param_in = param.get("in", "query")
-                        param_required = param.get("required", False)
-                        param_type = param.get("schema", {}).get("type", "string")
-                        
-                        required_text = "REQUIRED" if param_required else "optional"
+            context_parts.append(f"  {method.upper()} {path}")
+
+            if summary:
+                context_parts.append(f"    Summary     : {summary}")
+            if op_id:
+                context_parts.append(f"    OperationId : {op_id}")
+            if tags:
+                context_parts.append(f"    Tags        : {', '.join(tags)}")
+
+            # Paramètres (path, query, header)
+            if parameters:
+                context_parts.append("    Parameters  :")
+                for param in parameters:
+                    p_name     = param.get("name", "?")
+                    p_in       = param.get("in", "?")
+                    p_required = param.get("required", False)
+                    p_type     = param.get("schema", {}).get("type", "string")
+                    req_label  = "REQUIRED" if p_required else "optional"
+                    context_parts.append(
+                        f"      - {p_name} (in={p_in}, type={p_type}, {req_label})"
+                    )
+
+            # Corps de la requête
+            if request_body:
+                content = request_body.get("content", {})
+                for media_type, media_details in content.items():
+                    schema = media_details.get("schema", {})
+                    props  = schema.get("properties", {})
+                    ref    = schema.get("$ref", "")
+                    if props:
                         context_parts.append(
-                            f"    - {param_name} ({param_in}, {param_type}, {required_text})"
+                            f"    Body fields : {', '.join(props.keys())}"
                         )
-                
-                # Request Body
-                if "requestBody" in details:
-                    content = details["requestBody"].get("content", {})
-                    if content:
-                        content_types = list(content.keys())
-                        context_parts.append(f"  Request Body: {', '.join(content_types)}")
-                        
-                        # Try to get schema reference
-                        for content_type, content_details in content.items():
-                            schema = content_details.get("schema", {})
-                            if "$ref" in schema:
-                                ref = schema["$ref"].split("/")[-1]
-                                context_parts.append(f"    Schema: {ref}")
-                
-                # Response Codes
-                if "responses" in details:
-                    responses = details["responses"]
-                    success_codes = [code for code in responses.keys() if code.startswith("2")]
-                    if success_codes:
-                        context_parts.append(f"  Success Codes: {', '.join(success_codes)}")
-                
-                # Tags
-                tags = details.get("tags", [])
-                if tags:
-                    context_parts.append(f"  Tags: {', '.join(tags)}")
-        
-        context_parts.append("")
-    
+                    elif ref:
+                        context_parts.append(
+                            f"    Body ref    : {ref.split('/')[-1]}"
+                        )
+                    else:
+                        context_parts.append(f"    Body type   : {media_type}")
+
+            # Codes de réponse
+            if responses:
+                success = [c for c in responses.keys() if str(c).startswith("2")]
+                errors  = [c for c in responses.keys() if not str(c).startswith("2")]
+                if success:
+                    context_parts.append(f"    Success     : {', '.join(str(c) for c in success)}")
+                if errors:
+                    context_parts.append(f"    Errors      : {', '.join(str(c) for c in errors)}")
+
+    context_parts.append("")
     result = "\n".join(context_parts)
-    
-    logger.success(f"✅ Generated API context: {len(result)} characters")
+    logger.info(
+        f"   [{service_name}] contexte API généré — "
+        f"{len(paths)} paths, {len(result)} chars"
+    )
     return result
 
 
-def extract_endpoints_for_service(swagger_spec: Dict, service_name: str) -> list:
+def get_api_context_multi(swagger_specs: Dict[str, Dict]) -> str:
+    """
+    Concatène les contextes API de TOUS les services.
+    Utilisé quand on veut un contexte global (ex: validation).
+
+    Args:
+        swagger_specs: { "conge": {...}, "DemandeConge": {...} }
+
+    Returns:
+        Formatted string with all services combined
+    """
+    if not swagger_specs:
+        return "No API specifications provided"
+
+    logger.info(
+        f"🔗 Building multi-service API context "
+        f"for {len(swagger_specs)} service(s)"
+    )
+
+    parts = []
+    for service_name, spec in swagger_specs.items():
+        if not spec or "paths" not in spec:
+            logger.warning(f"⚠️ Spec invalide pour : {service_name} — ignorée")
+            continue
+        parts.append(get_api_context_for_service(spec, service_name))
+
+    result = "\n".join(parts)
+    logger.success(f"✅ Contexte multi-service généré : {len(result)} chars")
+    return result
+
+
+def extract_endpoints_for_service(swagger_spec: Dict, service_name: str) -> List[Dict]:
     """
     Extract all endpoints from a Swagger spec as a structured list.
     
@@ -299,7 +322,7 @@ def extract_endpoints_for_service(swagger_spec: Dict, service_name: str) -> list
     return endpoints
 
 
-def validate_swagger_spec(swagger_spec: Dict) -> tuple[bool, list]:
+def validate_swagger_spec(swagger_spec: Dict) -> tuple:
     """
     Validate a Swagger specification for completeness.
     

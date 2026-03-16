@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.leave.LeaveTestRunner" time="2.842" tests="5" errors="1" skipped="0" failures="1">
+  <properties>
+    <property name="java.specification.version" value="17"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\Bureau\Bureau\project_test\output\tests\target\test-classes;C:\Bureau\Bureau\project_test\output\tests\target\classes;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-java\7.14.0\cucumber-java-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-core\7.14.0\cucumber-core-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-gherkin\7.14.0\cucumber-gherkin-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.14.0\cucumber-gherkin-messages-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\tag-expressions\5.0.6\tag-expressions-5.0.6.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-expressions\16.1.2\cucumber-expressions-16.1.2.jar;C:\Users\MSI\.m2\repository\io\cucumber\datatable\7.14.0\datatable-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-plugin\7.14.0\cucumber-plugin-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\docstring\7.14.0\docstring-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\ci-environment\9.2.0\ci-environment-9.2.0.jar;C:\Users\MSI\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-junit\7.14.0\cucumber-junit-7.14.0.jar;C:\Users\MSI\.m2\repository\junit\junit\4.13.2\junit-4.13.2.jar;C:\Users\MSI\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.15.2\jackson-databind-2.15.2.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.15.2\jackson-annotations-2.15.2.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.15.2\jackson-core-2.15.2.jar;C:\Users\MSI\.m2\repository\io\rest-assured\rest-assured\5.3.2\rest-assured-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy\4.0.11\groovy-4.0.11.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy-xml\4.0.11\groovy-xml-4.0.11.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpclient\4.5.13\httpclient-4.5.13.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpcore\4.4.13\httpcore-4.4.13.jar;C:\Users\MSI\.m2\repository\commons-logging\commons-logging\1.2\commons-logging-1.2.jar;C:\Users\MSI\.m2\repository\commons-codec\commons-codec\1.11\commons-codec-1.11.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpmime\4.5.13\httpmime-4.5.13.jar;C:\Users\MSI\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\MSI\.m2\repository\org\ccil\cowan\tagsoup\tagsoup\1.2.1\tagsoup-1.2.1.jar;C:\Users\MSI\.m2\repository\io\rest-assured\json-path\5.3.2\json-path-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy-json\4.0.11\groovy-json-4.0.11.jar;C:\Users\MSI\.m2\repository\io\rest-assured\rest-assured-common\5.3.2\rest-assured-common-5.3.2.jar;C:\Users\MSI\.m2\repository\io\rest-assured\xml-path\5.3.2\xml-path-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\commons\commons-lang3\3.11\commons-lang3-3.11.jar;C:\Users\MSI\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\MSI\.m2\repository\net\bytebuddy\byte-buddy\1.12.21\byte-buddy-1.12.21.jar;C:\Users\MSI\.m2\repository\org\slf4j\slf4j-simple\2.0.9\slf4j-simple-2.0.9.jar;C:\Users\MSI\.m2\repository\org\slf4j\slf4j-api\2.0.9\slf4j-api-2.0.9.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Africa/Tunis"/>
+    <property name="user.country.format" value="TN"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="17"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="FR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
+    <property name="sun.java.command" value="C:\Users\MSI\AppData\Local\Temp\surefire18272415904112779776\surefirebooter-20260316113218929_3.jar C:\Users\MSI\AppData\Local\Temp\surefire18272415904112779776 2026-03-16T11-32-18_743-jvmRun1 surefire-20260316113218929_1tmp surefire_0-20260316113218929_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Bureau\Bureau\project_test\output\tests\target\test-classes;C:\Bureau\Bureau\project_test\output\tests\target\classes;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-java\7.14.0\cucumber-java-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-core\7.14.0\cucumber-core-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-gherkin\7.14.0\cucumber-gherkin-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.14.0\cucumber-gherkin-messages-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\tag-expressions\5.0.6\tag-expressions-5.0.6.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-expressions\16.1.2\cucumber-expressions-16.1.2.jar;C:\Users\MSI\.m2\repository\io\cucumber\datatable\7.14.0\datatable-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-plugin\7.14.0\cucumber-plugin-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\docstring\7.14.0\docstring-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\ci-environment\9.2.0\ci-environment-9.2.0.jar;C:\Users\MSI\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-junit\7.14.0\cucumber-junit-7.14.0.jar;C:\Users\MSI\.m2\repository\junit\junit\4.13.2\junit-4.13.2.jar;C:\Users\MSI\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.15.2\jackson-databind-2.15.2.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.15.2\jackson-annotations-2.15.2.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.15.2\jackson-core-2.15.2.jar;C:\Users\MSI\.m2\repository\io\rest-assured\rest-assured\5.3.2\rest-assured-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy\4.0.11\groovy-4.0.11.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy-xml\4.0.11\groovy-xml-4.0.11.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpclient\4.5.13\httpclient-4.5.13.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpcore\4.4.13\httpcore-4.4.13.jar;C:\Users\MSI\.m2\repository\commons-logging\commons-logging\1.2\commons-logging-1.2.jar;C:\Users\MSI\.m2\repository\commons-codec\commons-codec\1.11\commons-codec-1.11.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpmime\4.5.13\httpmime-4.5.13.jar;C:\Users\MSI\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\MSI\.m2\repository\org\ccil\cowan\tagsoup\tagsoup\1.2.1\tagsoup-1.2.1.jar;C:\Users\MSI\.m2\repository\io\rest-assured\json-path\5.3.2\json-path-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy-json\4.0.11\groovy-json-4.0.11.jar;C:\Users\MSI\.m2\repository\io\rest-assured\rest-assured-common\5.3.2\rest-assured-common-5.3.2.jar;C:\Users\MSI\.m2\repository\io\rest-assured\xml-path\5.3.2\xml-path-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\commons\commons-lang3\3.11\commons-lang3-3.11.jar;C:\Users\MSI\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\MSI\.m2\repository\net\bytebuddy\byte-buddy\1.12.21\byte-buddy-1.12.21.jar;C:\Users\MSI\.m2\repository\org\slf4j\slf4j-simple\2.0.9\slf4j-simple-2.0.9.jar;C:\Users\MSI\.m2\repository\org\slf4j\slf4j-api\2.0.9\slf4j-api-2.0.9.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\MSI"/>
+    <property name="user.language" value="fr"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2024-07-16"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-17"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Bureau\Bureau\project_test\output\tests"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\MSI\AppData\Local\Temp\surefire18272415904112779776\surefirebooter-20260316113218929_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="17.0.12+8-LTS-286"/>
+    <property name="user.name" value="MSI"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="Cp1252"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\MSI\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\MSI\AppData\Local\Temp\"/>
+    <property name="TEST_JWT_TOKEN" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB0ZXN0LmNvbSIsImlhdCI6MTc3MzY1Mjc1OCwiZXhwIjoxNzczNzM5MTU4fQ.S2v69Ooy92zXdJ_cwJebplOX5IHCPSlO97kdk-StAmU"/>
+    <property name="service.name" value="leave-request-service"/>
+    <property name="java.version" value="17.0.12"/>
+    <property name="user.dir" value="C:\Bureau\Bureau\project_test\output\tests"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="LEAVE_BASE_URL" value="http://localhost:9001"/>
+    <property name="AUTH_BASE_URL" value="http://localhost:9000"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-17\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Bureau\Bureau\project_test\.venv312\Scripts;c:\Users\MSI\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\MSI\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\kafka\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files\Eclipse Adoptium\jdk-8.0.452.9-hotspot\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\bin;D:\src\flutter\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Users\MSI\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python312\;C:\Users\MSI\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python313\;C:\Users\MSI\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python39\;C:\Users\MSI\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python310\;C:\Users\MSI\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python311\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\MSI\AppData\Local\Microsoft\WindowsApps;C:\Users\MSI\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\MSI\AppData\Roaming\npm;C:\Program Files\OpenSSL-Win64\bin;C:\Users\MSI\Downloads\apache-maven-3.9.10-bin\apache-maven-3.9.10\bin;C:\Program Files\Java\jdk-17\bin;C:\Program Files\MongoDB\Server\8.0\bin;C:\Program Files\MongoDB\mongosh-2.5.3-win32-x64\bin;C:\Program Files\JetBrains\WebStorm 2025.1.3\bin;;D:\src\flutter\bin;C:\php;C:\Program Files\JetBrains\CLion 2025.2.4\bin;C:\Users\MSI\AppData\Local\Programs\IntelliJ IDEA 2025.2.5\bin;C:\Users\MSI\AppData\Local\Programs\Ollama;c:\Users\MSI\.vscode\extensions\vscjava.vscode-java-debug-0.58.5\bundled\scripts\noConfigScripts;c:\Users\MSI\.vscode\extensions\ms-python.debugpy-2025.19.2026030601-win32-x64\bundled\scripts\noConfigScripts;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="17.0.12+8-LTS-286"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="61.0"/>
+  </properties>
+  <testcase name="Administrator approves a leave request" classname="Approve Leave Request" time="1.945">
+    <failure message="&#10;Expecting actual:&#10;  400&#10;to be between:&#10;  [200, 299]&#10;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: 
+
+Expecting actual:
+  400
+to be between:
+  [200, 299]
+
+	at com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(LeaveSteps.java:109)
+	at ✽.the request status changes to "Granted"(classpath:features/leave-request-service_approve-leave-request_20260316_113158.feature:13)
+]]></failure>
+    <system-out><![CDATA[
+Scenario: Administrator approves a leave request                       # features/leave-request-service_approve-leave-request_20260316_113158.feature:7
+  Given the user is authenticated                                      # com.example.leave.steps.LeaveSteps.theUserIsAuthenticated()
+  Given the leave request status is "In Progress"                      # com.example.leave.steps.LeaveSteps.theLeaveRequestStatusIsX(java.lang.String)
+  And the user is the final approver in the approval chain             # com.example.leave.steps.LeaveSteps.theUserIsTheFinalApproverInTheApprovalChain()
+  And the user has not previously approved the request                 # com.example.leave.steps.LeaveSteps.theUserHasNotPreviouslyApprovedTheRequest()
+  When the user approves the leave request                             # com.example.leave.steps.LeaveSteps.theUserApprovesTheLeaveRequest()
+  And the system adjusts the leave balance according to the leave type # com.example.leave.steps.LeaveSteps.theSystemAdjustsTheLeaveBalanceAccordingToTheLeaveType()
+  Then the request status changes to "Granted"                         # com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(java.lang.String)
+      java.lang.AssertionError: 
+Expecting actual:
+  400
+to be between:
+  [200, 299]
+
+	at com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(LeaveSteps.java:109)
+	at âœ½.the request status changes to "Granted"(classpath:features/leave-request-service_approve-leave-request_20260316_113158.feature:13)
+
+  And the system displays "Request granted successfully"               # com.example.leave.steps.LeaveSteps.theSystemDisplaysX(java.lang.String)
+]]></system-out>
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Authenticated with JWT token
+[main] INFO com.example.leave.steps.LeaveSteps - Status In Progress → test request ID 3
+[main] INFO com.example.leave.steps.LeaveSteps - Role set: Administration
+[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the user has not previously approved the request
+[main] INFO com.example.leave.steps.LeaveSteps - PUT /api/leave-requests/3/approve (approve, role=Administration) -> HTTP 400
+[main] INFO com.example.leave.steps.LeaveSteps - Then validated, HTTP 400
+]]></system-err>
+  </testcase>
+  <testcase name="Team Lead approves a leave request" classname="Approve Leave Request" time="0.757">
+    <error message="Failed to parse the JSON document" type="io.restassured.path.json.exception.JsonPathException"><![CDATA[io.restassured.path.json.exception.JsonPathException: Failed to parse the JSON document
+	at io.restassured.path.json.JsonPath$ExceptionCatcher.invoke(JsonPath.java:1002)
+	at io.restassured.path.json.JsonPath$4.doParseWith(JsonPath.java:967)
+	at io.restassured.path.json.JsonPath$JsonParser.parseWith(JsonPath.java:1047)
+	at io.restassured.path.json.JsonPath.get(JsonPath.java:202)
+	at io.restassured.path.json.JsonPath.getString(JsonPath.java:352)
+	at com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(LeaveSteps.java:110)
+	at ✽.the request status changes to "In Progress"(classpath:features/leave-request-service_approve-leave-request_20260316_113158.feature:21)
+Caused by: groovy.json.JsonException: Lexing failed on line: 1, column: 1, while reading 'L', no possible valid JSON value or punctuation could be recognized.
+	at groovy.json.JsonLexer.nextToken(JsonLexer.java:86)
+	at groovy.json.JsonLexer$nextToken.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:45)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:125)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:130)
+	at io.restassured.internal.path.json.ConfigurableJsonSlurper.parse(ConfigurableJsonSlurper.groovy:97)
+	at io.restassured.internal.path.json.ConfigurableJsonSlurper$parse.callCurrent(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCallCurrent(CallSiteArray.java:49)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:171)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:185)
+	at io.restassured.internal.path.json.ConfigurableJsonSlurper.parseText(ConfigurableJsonSlurper.groovy:83)
+	at io.restassured.path.json.JsonPath$4$1.method(JsonPath.java:965)
+	at io.restassured.path.json.JsonPath$ExceptionCatcher.invoke(JsonPath.java:1000)
+	at io.restassured.path.json.JsonPath$4.doParseWith(JsonPath.java:967)
+	at io.restassured.path.json.JsonPath$JsonParser.parseWith(JsonPath.java:1047)
+	at io.restassured.path.json.JsonPath.get(JsonPath.java:202)
+	at io.restassured.path.json.JsonPath.getString(JsonPath.java:352)
+	at com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(LeaveSteps.java:110)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at io.cucumber.java.Invoker.doInvoke(Invoker.java:66)
+	at io.cucumber.java.Invoker.invoke(Invoker.java:24)
+	at io.cucumber.java.AbstractGlueDefinition.invokeMethod(AbstractGlueDefinition.java:47)
+	at io.cucumber.java.JavaStepDefinition.execute(JavaStepDefinition.java:29)
+	at io.cucumber.core.runner.CoreStepDefinition.execute(CoreStepDefinition.java:66)
+	at io.cucumber.core.runner.PickleStepDefinitionMatch.runStep(PickleStepDefinitionMatch.java:63)
+	at io.cucumber.core.runner.ExecutionMode$1.execute(ExecutionMode.java:10)
+	at io.cucumber.core.runner.TestStep.executeStep(TestStep.java:84)
+	at io.cucumber.core.runner.TestStep.run(TestStep.java:56)
+	at io.cucumber.core.runner.PickleStepTestStep.run(PickleStepTestStep.java:51)
+	at io.cucumber.core.runner.TestCase.run(TestCase.java:84)
+	at io.cucumber.core.runner.Runner.runPickle(Runner.java:75)
+	at io.cucumber.junit.PickleRunners$NoStepDescriptions.lambda$run$0(PickleRunners.java:151)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.PickleRunners$NoStepDescriptions.run(PickleRunners.java:148)
+	at io.cucumber.junit.FeatureRunner.runChild(FeatureRunner.java:144)
+	at io.cucumber.junit.FeatureRunner.runChild(FeatureRunner.java:28)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at io.cucumber.junit.FeatureRunner.run(FeatureRunner.java:137)
+	at io.cucumber.junit.Cucumber.runChild(Cucumber.java:196)
+	at io.cucumber.junit.Cucumber.runChild(Cucumber.java:89)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runFeatures$6(CucumberExecutionContext.java:148)
+	at io.cucumber.core.runtime.CucumberExecutionContext.execute(CucumberExecutionContext.java:163)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runFeatures(CucumberExecutionContext.java:146)
+	at io.cucumber.junit.Cucumber$StartAndFinishTestRun.evaluate(Cucumber.java:226)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:316)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:240)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:214)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:155)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+]]></error>
+    <system-out><![CDATA[
+Scenario: Team Lead approves a leave request                     # features/leave-request-service_approve-leave-request_20260316_113158.feature:16
+  Given the user is authenticated                                # com.example.leave.steps.LeaveSteps.theUserIsAuthenticated()
+  Given the leave request status is "Pending"                    # com.example.leave.steps.LeaveSteps.theLeaveRequestStatusIsX(java.lang.String)
+  And the user is an intermediate approver in the approval chain # com.example.leave.steps.LeaveSteps.theUserIsAnIntermediateApproverInTheApprovalChain()
+  And the user has not previously approved the request           # com.example.leave.steps.LeaveSteps.theUserHasNotPreviouslyApprovedTheRequest()
+  When the user approves the leave request                       # com.example.leave.steps.LeaveSteps.theUserApprovesTheLeaveRequest()
+  Then the request status changes to "In Progress"               # com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(java.lang.String)
+      io.restassured.path.json.exception.JsonPathException: Failed to parse the JSON document
+	at io.restassured.path.json.JsonPath$ExceptionCatcher.invoke(JsonPath.java:1002)
+	at io.restassured.path.json.JsonPath$4.doParseWith(JsonPath.java:967)
+	at io.restassured.path.json.JsonPath$JsonParser.parseWith(JsonPath.java:1047)
+	at io.restassured.path.json.JsonPath.get(JsonPath.java:202)
+	at io.restassured.path.json.JsonPath.getString(JsonPath.java:352)
+	at com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(LeaveSteps.java:110)
+	at âœ½.the request status changes to "In Progress"(classpath:features/leave-request-service_approve-leave-request_20260316_113158.feature:21)
+Caused by: groovy.json.JsonException: Lexing failed on line: 1, column: 1, while reading 'L', no possible valid JSON value or punctuation could be recognized.
+	at groovy.json.JsonLexer.nextToken(JsonLexer.java:86)
+	at groovy.json.JsonLexer$nextToken.call(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:45)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:125)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:130)
+	at io.restassured.internal.path.json.ConfigurableJsonSlurper.parse(ConfigurableJsonSlurper.groovy:97)
+	at io.restassured.internal.path.json.ConfigurableJsonSlurper$parse.callCurrent(Unknown Source)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCallCurrent(CallSiteArray.java:49)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:171)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:185)
+	at io.restassured.internal.path.json.ConfigurableJsonSlurper.parseText(ConfigurableJsonSlurper.groovy:83)
+	at io.restassured.path.json.JsonPath$4$1.method(JsonPath.java:965)
+	at io.restassured.path.json.JsonPath$ExceptionCatcher.invoke(JsonPath.java:1000)
+	at io.restassured.path.json.JsonPath$4.doParseWith(JsonPath.java:967)
+	at io.restassured.path.json.JsonPath$JsonParser.parseWith(JsonPath.java:1047)
+	at io.restassured.path.json.JsonPath.get(JsonPath.java:202)
+	at io.restassured.path.json.JsonPath.getString(JsonPath.java:352)
+	at com.example.leave.steps.LeaveSteps.theRequestStatusChangesToX(LeaveSteps.java:110)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at io.cucumber.java.Invoker.doInvoke(Invoker.java:66)
+	at io.cucumber.java.Invoker.invoke(Invoker.java:24)
+	at io.cucumber.java.AbstractGlueDefinition.invokeMethod(AbstractGlueDefinition.java:47)
+	at io.cucumber.java.JavaStepDefinition.execute(JavaStepDefinition.java:29)
+	at io.cucumber.core.runner.CoreStepDefinition.execute(CoreStepDefinition.java:66)
+	at io.cucumber.core.runner.PickleStepDefinitionMatch.runStep(PickleStepDefinitionMatch.java:63)
+	at io.cucumber.core.runner.ExecutionMode$1.execute(ExecutionMode.java:10)
+	at io.cucumber.core.runner.TestStep.executeStep(TestStep.java:84)
+	at io.cucumber.core.runner.TestStep.run(TestStep.java:56)
+	at io.cucumber.core.runner.PickleStepTestStep.run(PickleStepTestStep.java:51)
+	at io.cucumber.core.runner.TestCase.run(TestCase.java:84)
+	at io.cucumber.core.runner.Runner.runPickle(Runner.java:75)
+	at io.cucumber.junit.PickleRunners$NoStepDescriptions.lambda$run$0(PickleRunners.java:151)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.PickleRunners$NoStepDescriptions.run(PickleRunners.java:148)
+	at io.cucumber.junit.FeatureRunner.runChild(FeatureRunner.java:144)
+	at io.cucumber.junit.FeatureRunner.runChild(FeatureRunner.java:28)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at io.cucumber.junit.FeatureRunner.run(FeatureRunner.java:137)
+	at io.cucumber.junit.Cucumber.runChild(Cucumber.java:196)
+	at io.cucumber.junit.Cucumber.runChild(Cucumber.java:89)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runFeatures$6(CucumberExecutionContext.java:148)
+	at io.cucumber.core.runtime.CucumberExecutionContext.execute(CucumberExecutionContext.java:163)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runFeatures(CucumberExecutionContext.java:146)
+	at io.cucumber.junit.Cucumber$StartAndFinishTestRun.evaluate(Cucumber.java:226)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:316)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:240)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:214)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:155)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+
+  And the system marks the manager's validation as TRUE          # com.example.leave.steps.LeaveSteps.theSystemMarksTheManagerSValidationAsTrue()
+]]></system-out>
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Authenticated with JWT token
+[main] INFO com.example.leave.steps.LeaveSteps - Status Pending → test request ID 2
+[main] INFO com.example.leave.steps.LeaveSteps - Role set: TeamLeader
+[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the user has not previously approved the request
+[main] INFO com.example.leave.steps.LeaveSteps - PUT /api/leave-requests/2/approve (approve, role=TeamLeader) -> HTTP 200
+]]></system-err>
+  </testcase>
+  <testcase name="User is not authorized to approve the leave request" classname="Approve Leave Request" time="0.05">
+    <system-out><![CDATA[
+Scenario: User is not authorized to approve the leave request                                     # features/leave-request-service_approve-leave-request_20260316_113158.feature:24
+  Given the user is authenticated                                                                 # com.example.leave.steps.LeaveSteps.theUserIsAuthenticated()
+  Given the leave request status is "Pending"                                                     # com.example.leave.steps.LeaveSteps.theLeaveRequestStatusIsX(java.lang.String)
+  And the user is not in the approval chain                                                       # com.example.leave.steps.LeaveSteps.theUserIsNotInTheApprovalChain()
+  When the user attempts to approve the leave request                                             # com.example.leave.steps.LeaveSteps.theUserAttemptsToApproveTheLeaveRequest()
+  Then the system displays the error You are not authorized to modify the status of this request. # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorYouAreNotAuthorizedToModifyTheStatusOfThisRequest()
+]]></system-out>
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Authenticated with JWT token
+[main] INFO com.example.leave.steps.LeaveSteps - Status Pending → test request ID 2
+[main] INFO com.example.leave.steps.LeaveSteps - Role set: Administration
+[main] INFO com.example.leave.steps.LeaveSteps - PUT /api/leave-requests/2/approve (approve, role=Administration) -> HTTP 400
+[main] INFO com.example.leave.steps.LeaveSteps - Error confirmed, HTTP 400
+]]></system-err>
+  </testcase>
+  <testcase name="User tries to approve a request that is not in a valid state" classname="Approve Leave Request" time="0.038">
+    <system-out><![CDATA[
+Scenario: User tries to approve a request that is not in a valid state                                                           # features/leave-request-service_approve-leave-request_20260316_113158.feature:30
+  Given the user is authenticated                                                                                                # com.example.leave.steps.LeaveSteps.theUserIsAuthenticated()
+  Given the leave request status is "Granted"                                                                                    # com.example.leave.steps.LeaveSteps.theLeaveRequestStatusIsX(java.lang.String)
+  And the user is in the approval chain                                                                                          # com.example.leave.steps.LeaveSteps.theUserIsInTheApprovalChain()
+  When the user attempts to approve the leave request                                                                            # com.example.leave.steps.LeaveSteps.theUserAttemptsToApproveTheLeaveRequest()
+  Then the system displays the error If the request is not in a valid state ("Pending" or "In Progress"), validation is blocked. # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorIfTheRequestIsNotInAValidStateXOrXValidationIsBlocked(java.lang.String,java.lang.String)
+]]></system-out>
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Authenticated with JWT token
+[main] INFO com.example.leave.steps.LeaveSteps - Status Granted → test request ID 1
+[main] INFO com.example.leave.steps.LeaveSteps - Role set: Administration
+[main] INFO com.example.leave.steps.LeaveSteps - PUT /api/leave-requests/1/approve (approve, role=Administration) -> HTTP 400
+[main] INFO com.example.leave.steps.LeaveSteps - Error HTTP 400: This exceeds your validation authority
+]]></system-err>
+  </testcase>
+  <testcase name="User tries to approve a request they have already previously approved" classname="Approve Leave Request" time="0.026">
+    <system-out><![CDATA[
+Scenario: User tries to approve a request they have already previously approved                               # features/leave-request-service_approve-leave-request_20260316_113158.feature:36
+  Given the user is authenticated                                                                             # com.example.leave.steps.LeaveSteps.theUserIsAuthenticated()
+  Given the leave request status is "Pending"                                                                 # com.example.leave.steps.LeaveSteps.theLeaveRequestStatusIsX(java.lang.String)
+  And the user is in the approval chain                                                                       # com.example.leave.steps.LeaveSteps.theUserIsInTheApprovalChain()
+  And the user has previously approved the request                                                            # com.example.leave.steps.LeaveSteps.theUserHasPreviouslyApprovedTheRequest()
+  When the user attempts to approve the leave request                                                         # com.example.leave.steps.LeaveSteps.theUserAttemptsToApproveTheLeaveRequest()
+  Then the system displays the error If the user has already validated previously, the validation is refused. # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorIfTheUserHasAlreadyValidatedPreviouslyTheValidationIsRefused()
+]]></system-out>
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Authenticated with JWT token
+[main] INFO com.example.leave.steps.LeaveSteps - Status Pending → test request ID 2
+[main] INFO com.example.leave.steps.LeaveSteps - Role set: Administration
+[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the user has previously approved the request
+[main] INFO com.example.leave.steps.LeaveSteps - PUT /api/leave-requests/2/approve (approve, role=Administration) -> HTTP 400
+[main] INFO com.example.leave.steps.LeaveSteps - Error confirmed, HTTP 400
+]]></system-err>
+  </testcase>
+</testsuite>

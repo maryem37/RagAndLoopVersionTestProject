@@ -11,49 +11,10 @@
     }
   ],
   "paths": {
-    "/api/employer/leave/{id}/cancel": {
+    "/api/leave-requests/{id}/reject": {
       "put": {
         "tags": [
           "leave-request-controller"
-        ],
-        "operationId": "cancelLeaveRequest",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "observation",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/admin/leave/{id}/reject": {
-      "put": {
-        "tags": [
-          "admin-controller"
         ],
         "operationId": "rejectLeave",
         "parameters": [
@@ -110,10 +71,49 @@
         }
       }
     },
-    "/api/admin/leave/{id}/approve": {
+    "/api/leave-requests/{id}/cancel": {
       "put": {
         "tags": [
-          "admin-controller"
+          "leave-request-controller"
+        ],
+        "operationId": "cancelLeaveRequest",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "observation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leave-requests/{id}/approve": {
+      "put": {
+        "tags": [
+          "leave-request-controller"
         ],
         "operationId": "approveLeave",
         "parameters": [
@@ -162,7 +162,213 @@
         }
       }
     },
-    "/api/employer/leave/request": {
+    "/api/balances/{userId}": {
+      "get": {
+        "tags": [
+          "balance-controller"
+        ],
+        "operationId": "getBalance",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balance"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "balance-controller"
+        ],
+        "operationId": "updateBalance",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "annual",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "recovery",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balance"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "balance-controller"
+        ],
+        "operationId": "deleteBalance",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/holidays/{id}": {
+      "get": {
+        "tags": [
+          "public-holiday-controller"
+        ],
+        "operationId": "getHolidayById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHoliday"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "public-holiday-controller"
+        ],
+        "operationId": "updateHoliday",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicHoliday"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHoliday"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "public-holiday-controller"
+        ],
+        "operationId": "deleteHoliday",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leave-requests/create": {
       "post": {
         "tags": [
           "leave-request-controller"
@@ -184,7 +390,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/LeaveRequest"
                 }
               }
             }
@@ -192,19 +398,30 @@
         }
       }
     },
-    "/api/admin/leave/pending": {
-      "get": {
+    "/api/balances/init/{userId}": {
+      "post": {
         "tags": [
-          "admin-controller"
+          "balance-controller"
         ],
-        "operationId": "getAllPendingLeaveRequests",
+        "operationId": "initializeBalance",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "*/*": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Balance"
                 }
               }
             }
@@ -212,19 +429,179 @@
         }
       }
     },
-    "/api/admin/leave/all": {
+    "/api/admin/holidays": {
       "get": {
         "tags": [
-          "admin-controller"
+          "public-holiday-controller"
         ],
-        "operationId": "getAllLeaveRequests",
+        "operationId": "getAllHolidays",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "*/*": {
                 "schema": {
-                  "type": "object"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicHoliday"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "public-holiday-controller"
+        ],
+        "operationId": "addHoliday",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicHoliday"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHoliday"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leave-requests/search": {
+      "get": {
+        "tags": [
+          "leave-request-controller"
+        ],
+        "operationId": "searchLeaveRequests",
+        "parameters": [
+          {
+            "name": "currentUserId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "firstName",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lastName",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "deptName",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ANNUAL_LEAVE",
+                "UNPAID_LEAVE",
+                "RECOVERY_LEAVE",
+                "AUTHORIZED_ABSENCE"
+              ]
+            }
+          },
+          {
+            "name": "states",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Pending",
+                  "Approved",
+                  "Rejected",
+                  "InProgress",
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "name": "validationLevel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Employer",
+                "Administration",
+                "TeamLeader"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeaveRequestDetailsDto"
+                  }
                 }
               }
             }
@@ -235,7 +612,100 @@
   },
   "components": {
     "schemas": {
+      "Balance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "annualBalance": {
+            "type": "number",
+            "format": "double"
+          },
+          "recoveryBalance": {
+            "type": "number",
+            "format": "double"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PublicHoliday": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
       "LeaveRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fromDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "toDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "fromTime": {
+            "type": "string",
+            "description": "Heure de début (HH:mm:ss)",
+            "format": "time"
+          },
+          "toTime": {
+            "type": "string",
+            "description": "Heure de début (HH:mm:ss)",
+            "format": "time"
+          },
+          "periodType": {
+            "type": "string",
+            "enum": [
+              "JOURNEE_COMPLETE",
+              "MATIN",
+              "APRES_MIDI",
+              "PAR_HEURE"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ANNUAL_LEAVE",
+              "UNPAID_LEAVE",
+              "RECOVERY_LEAVE",
+              "AUTHORIZED_ABSENCE"
+            ]
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "LeaveRequest": {
         "type": "object",
         "properties": {
           "id": {
@@ -256,9 +726,22 @@
           "toTime": {
             "$ref": "#/components/schemas/LocalTime"
           },
+          "periodType": {
+            "type": "string",
+            "enum": [
+              "JOURNEE_COMPLETE",
+              "MATIN",
+              "APRES_MIDI",
+              "PAR_HEURE"
+            ]
+          },
           "days": {
             "type": "integer",
             "format": "int64"
+          },
+          "hours": {
+            "type": "number",
+            "format": "double"
           },
           "state": {
             "type": "string",
@@ -274,11 +757,51 @@
             "type": "string"
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "ANNUAL_LEAVE",
+              "UNPAID_LEAVE",
+              "RECOVERY_LEAVE",
+              "AUTHORIZED_ABSENCE"
+            ]
           },
           "userId": {
             "type": "integer",
             "format": "int64"
+          },
+          "cancellationDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "cancellationObservation": {
+            "type": "string"
+          },
+          "approvalChain": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "managerNote": {
+            "type": "string"
+          },
+          "rejectedBy": {
+            "type": "string",
+            "enum": [
+              "Employer",
+              "Administration",
+              "TeamLeader"
+            ]
+          },
+          "rejectionDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "rejectionObservation": {
+            "type": "string"
           }
         }
       },
@@ -300,6 +823,81 @@
           "nano": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "LeaveRequestDetailsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fromDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "toDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "fromTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "toTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ANNUAL_LEAVE",
+              "UNPAID_LEAVE",
+              "RECOVERY_LEAVE",
+              "AUTHORIZED_ABSENCE"
+            ]
+          },
+          "periodType": {
+            "type": "string",
+            "enum": [
+              "JOURNEE_COMPLETE",
+              "MATIN",
+              "APRES_MIDI",
+              "PAR_HEURE"
+            ]
+          },
+          "days": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "hours": {
+            "type": "number",
+            "format": "double"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "Pending",
+              "Approved",
+              "Rejected",
+              "InProgress",
+              "Cancelled"
+            ]
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "departement": {
+            "type": "string"
           }
         }
       }

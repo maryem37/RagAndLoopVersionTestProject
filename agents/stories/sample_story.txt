@@ -1,9 +1,0 @@
-User Story - User Login
-
-As a registered user
-I want to log in to the system
-So that I can access my dashboard
-
-Acceptance Criteria:
-- Login with valid credentials
-- Error message "Invalid credentials" when password is wrong

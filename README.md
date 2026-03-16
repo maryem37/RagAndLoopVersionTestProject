@@ -2,6 +2,7 @@
 
 ## Project Structure
 
+
     test-automation-langgraph/
     ├── agents/
     │ ├── init.py
@@ -33,6 +34,82 @@
     ├── requirements.txt # Python dependencies
     └── README.md
 
+test-automation-langgraph/
+├── agents/
+│ ├── init.py
+│ ├── gherkin_generator.py # Agent 2: Converts user stories to Gherkin
+│ ├── gherkin_validator.py # Agent 3: Validates .feature files
+│ ├── test_writer.py # Agent 4: Generates executable tests
+│ ├── test_executor.py # Agent 5: Runs tests
+│ ├── coverage_analyst.py # Agent 6: Measures test coverage
+│ └── self_healing.py # Agent 7: Auto-fixes failing tests
+├── graph/
+│   ├── init.py   ← This tells Python that 'graph' is a package
+│   ├── state.py # Defines core state structure
+│   └── workflow.py # LangGraph workflow orchestrating agents
+├── tools/
+│   ├── __init__.py
+│   ├── swagger_parser.py
+│   ├── gherkin_lint.py
+│   └── coverage_tools.py
+├── config/
+│   ├── init.py
+│   └── settings.py # Configuration and environment settings
+├── examples/
+│   ├── sample_user_story.md
+│   └── sample_swagger1.JSON
+        sample_swagger2.JSON
+|   |__ test_swagger_reader.py
+├── tests/
+│   └── init.py
+├── main.py # Entry point for the system
+├── requirements.txt # Python dependencies
+└── README.md
+
+
+
+
+        test-automation-langgraph/
+├── agents/
+│   ├── __init__.py
+│   ├── gherkin_generator.py
+│   ├── gherkin_validator.py
+│   ├── test_writer.py
+│   ├── test_executor.py                                  # ✨ MODIFIÉ
+│   ├── coverage_analyst.py
+│   └── self_healing.py
+├── graph/
+│   ├── __init__.py
+│   ├── state.py
+│   └── workflow.py
+├── tools/
+│   ├── __init__.py
+│   ├── swagger_parser.py
+│   ├── gherkin_lint.py
+│   ├── coverage_tools.py
+│   └── docker_manager.py                                 # ✨ NOUVEAU
+├── config/
+│   ├── __init__.py
+│   └── settings.py                                       # ✨ MODIFIÉ
+├── examples/
+│   ├── sample_user_story.md
+│   ├── sample_swagger.json
+│   └── test_swagger_reader.py
+├── output/                                               # ✨ NOUVEAU
+│   ├── features/
+│   ├── tests/
+│   └── reports/
+├── tests/
+│   └── __init__.py
+├── docker/                                               # ✨ NOUVEAU
+│   ├── test-runner.Dockerfile
+│   └── wait-for-it.sh
+├── .env.example                                          # ✨ NOUVEAU
+├── .env                                                  # ✨ NOUVEAU (git ignored)
+├── .dockerignore                                         # ✨ NOUVEAU
+├── main.py
+├── requirements.txt
+└── README.md
 
 Build Order
 We'll build agents in this order:
@@ -90,3 +167,6 @@ source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 Keep tests/ updated with new unit tests as you build agents.
 
+
+
+npx playwright test -- ui
