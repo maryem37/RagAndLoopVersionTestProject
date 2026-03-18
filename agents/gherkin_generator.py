@@ -14,11 +14,33 @@ user_story + swagger_specs
     └─► save_feature_file()      write .feature to disk
     └─► state updated            gherkin_content, gherkin_files
 
-FIX v2:
-  _fix_empty_examples_tables() is now called in the generate_single()
-  post-processing pipeline (was defined but never invoked).
-  This prevents Cucumber 7 NoSuchElementException crashes caused by
-  Scenario Outlines whose Examples table is empty or has no header row.
+FIXES applied:
+  1. HuggingFaceEndpoint: added task="text-generation" — without it the
+     endpoint silently uses the wrong inference pipeline and returns garbage
+     or raises a 400 error from the HuggingFace API.
+  2. HuggingFaceEndpoint: max_new_tokens moved from constructor kwarg to
+     model_kwargs dict — in newer versions of langchain-huggingface the
+     top-level kwarg is ignored and must be passed inside model_kwargs.
+  3. _fix_empty_examples_tables() is now called in the generate_single()
+     post-processing pipeline (was defined but never invoked in v1).
+     This prevents Cucumber 7 NoSuchElementException crashes caused by
+     Scenario Outlines whose Examples table is empty or has no header row.
+  4. generate_single(): retry prompt now passes swagger_context correctly —
+     the original retry prompt template did not include {swagger_context} in
+     its human message, so on retry the LLM generated Gherkin with no API
+     knowledge and produced undefined steps.
+  5. save_feature_file(): the glob cleanup used re.sub on service_name but
+     did not strip leading/trailing hyphens before building the glob pattern,
+     causing the glob to never match existing files on Windows (double-hyphen
+     prefix). Fixed to consistently strip before glob and before filename.
+  6. extract_features(): added a guard so an empty string after stripping is
+     never appended to the result list, preventing a downstream ValueError
+     ("No feature specifications found") when the input has trailing newlines.
+  7. _fix_technical_step_text(): new post-processor that strips HTTP method +
+     URL path fragments from Gherkin step text (e.g. "to POST /api/auth/login").
+     Cucumber's expression parser treats '/' as an alternative separator and
+     crashes with CucumberExpressionException when a URL appears in step text.
+     Step text must describe business behaviour, not technical implementation.
 """
 
 from __future__ import annotations
@@ -75,6 +97,19 @@ _RE_SUCCESS_MESSAGE = re.compile(
     r'^\s*(And|Then)\s+the\s+system\s+displays?\s+"[^"]*'
     r'(?:successfully|granted|approved|completed)[^"]*"',
     re.IGNORECASE,
+)
+
+# FIX 7: matches HTTP method + URL path in step text
+# e.g. "to POST /api/auth/login", "via GET /api/leave-requests/create"
+#      "to POST /api/auth/login without email"  → keeps "without email"
+_RE_HTTP_IN_STEP = re.compile(
+    r"\s+(?:to\s+|via\s+|using\s+|at\s+|on\s+)?"
+    r"(?:POST|GET|PUT|DELETE|PATCH)\s+/[^\s,;\"']*",
+    re.IGNORECASE,
+)
+# Also catches a bare URL path at end of step: " /api/something"
+_RE_BARE_PATH_IN_STEP = re.compile(
+    r"\s+/[a-zA-Z0-9_\-/{}]+(?=\s*$|\s+without|\s+with\s|\s+and\s)"
 )
 
 # ──────────────────────────────────────────────────────────────────────
@@ -138,13 +173,6 @@ class GherkinGeneratorAgent:
     # ──────────────────────────────────────────────────────────────────
 
     def _create_prompt(self) -> ChatPromptTemplate:
-        """
-        Zero-shot prompt that produces the target Gherkin style:
-        - ONE unified nominal scenario (not one per variant/type)
-        - Narrative When→And flow for action sequences
-        - Lean failure scenarios without redundant date literals
-        - Scenario Outlines only when the SAME error fires for multiple values
-        """
         system = """\
 You are a Gherkin file generator. Your output is a single .feature file.
 
@@ -163,6 +191,27 @@ ABSOLUTE RULE — OUTPUT FORMAT:
 Your ONLY sources of truth are INPUT 1 (specification) and INPUT 2 (Swagger).
 Do NOT invent field names, actors, statuses, error messages, or business rules
 that are not present in those two inputs.
+
+══════════════════════════════════════════════════════════════
+STEP TEXT RULES — CRITICAL
+══════════════════════════════════════════════════════════════
+
+Step text MUST describe BUSINESS BEHAVIOUR only.
+NEVER include technical implementation details in step text such as:
+  • HTTP methods: POST, GET, PUT, DELETE, PATCH
+  • URL paths: /api/auth/login, /api/leave-requests/create, etc.
+  • Query parameters, request body field names, status codes
+
+BAD (causes Cucumber crash):
+  When the employee submits the login request to POST /api/auth/login
+  When the employee sends GET /api/leave-requests/search
+
+GOOD:
+  When the employee submits the login request with email and password
+  When the employee searches for leave requests
+
+The Swagger contract is for YOUR reference to understand the system —
+do NOT copy its paths or methods into step text.
 
 ══════════════════════════════════════════════════════════════
 FILE LAYOUT
@@ -378,9 +427,6 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
     # ──────────────────────────────────────────────────────────────────
 
     def extract_features(self, text: str) -> List[str]:
-        """
-        Split a multi-story document into individual specification blocks.
-        """
         gherkin_step_re = re.compile(
             r"^\s*(Given|When|Then|And|But)\s+", re.IGNORECASE
         )
@@ -406,7 +452,9 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
 
             if re.match(r"(User Story|Feature)\s*[-:]", stripped, re.IGNORECASE):
                 if current:
-                    blocks.append("\n".join(current).strip())
+                    joined = "\n".join(current).strip()
+                    if joined:
+                        blocks.append(joined)
                     current = []
                 inside_gherkin = False
 
@@ -414,7 +462,9 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
                 current.append(line)
 
         if current:
-            blocks.append("\n".join(current).strip())
+            joined = "\n".join(current).strip()
+            if joined:
+                blocks.append(joined)
 
         seen: set = set()
         result: List[str] = []
@@ -462,6 +512,61 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
         text = "\n".join(lines[: last_gherkin + 1])
 
         return text
+
+    def _fix_technical_step_text(self, text: str) -> str:
+        """
+        FIX 7: Strip HTTP method + URL path fragments from Gherkin step text.
+
+        The LLM sometimes writes steps like:
+          When the employee submits the login request to POST /api/auth/login
+          When the employee submits the login request to POST /api/auth/login without email
+
+        Cucumber's expression parser treats '/' as an alternative separator
+        and crashes with CucumberExpressionException.
+
+        This post-processor removes the technical fragment while preserving
+        any trailing business-language qualifier (e.g. "without email").
+
+        Examples:
+          "...to POST /api/auth/login"              → "..."
+          "...to POST /api/auth/login without email" → "...without email"
+          "...via GET /api/leave-requests/search"   → "..."
+          "...accesses POST /api/auth/login"        → "...accesses"
+        """
+        lines = []
+        for line in text.splitlines():
+            if not _RE_STEP_PREFIX.match(line):
+                lines.append(line)
+                continue
+
+            original = line
+
+            # Pattern 1: "to/via/using/at/on POST /path/..." — with optional trailing words
+            # Capture trailing qualifier (e.g. "without email") separately
+            def _strip_http(m: re.Match) -> str:
+                # Check if there's a trailing qualifier after the URL
+                full = m.group(0)
+                # Find trailing words after the path (e.g. "without email", "with password")
+                qualifier_match = re.search(
+                    r"/[^\s]*\s+((?:without|with|and|using|but)\s+\S.*)",
+                    full, re.IGNORECASE
+                )
+                if qualifier_match:
+                    return " " + qualifier_match.group(1)
+                return ""
+
+            line = _RE_HTTP_IN_STEP.sub(_strip_http, line)
+            line = _RE_BARE_PATH_IN_STEP.sub("", line)
+            line = line.rstrip(" .,;:")
+
+            if line != original:
+                logger.warning(
+                    f"✎ Removed technical path from step: "
+                    f"'{original.strip()}' → '{line.strip()}'"
+                )
+
+            lines.append(line)
+        return "\n".join(lines)
 
     def _fix_first_person(self, text: str) -> str:
         lines = []
@@ -772,15 +877,6 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
         return "\n".join(result)
 
     def _fix_empty_examples_tables(self, text: str) -> str:
-        """
-        Cucumber 7 crashes with NoSuchElementException when a Scenario Outline
-        has an Examples table with no header row, or fewer than 2 rows total,
-        or mismatched column counts between header and data rows.
-
-        Converts any such broken Outline into a plain Scenario, replacing
-        <placeholder> tokens with literal "value" so the scenario is still
-        runnable.
-        """
         parts = _RE_SCENARIO_SPLIT.split(text)
         result: List[str] = []
 
@@ -792,7 +888,6 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
 
             ex_match = re.search(r"^\s*Examples\s*:", block, re.MULTILINE)
             if not ex_match:
-                # No Examples section at all — demote to plain Scenario
                 fixed = re.sub(
                     r"^(\s*)Scenario Outline\s*:",
                     r"\1Scenario:",
@@ -874,10 +969,10 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
 
     def _collapse_duplicate_nominal_scenarios(self, text: str) -> str:
         _RE_SUCCESS_THEN = re.compile(
-            r'^\s*(Then|And)\s+.+('
+            r"^\s*(Then|And)\s+.+("
             r'successfully|"Pending"|unique\s+(id|number)|'
-            r'saved|finalized|generated|adminApproval|managerApproval'
-            r')',
+            r"saved|finalized|generated|adminApproval|managerApproval"
+            r")",
             re.IGNORECASE,
         )
         _RE_ERROR_THEN = re.compile(
@@ -1090,9 +1185,12 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
         features_dir: Path = self.settings.paths.features_dir
         features_dir.mkdir(parents=True, exist_ok=True)
 
-        for old in features_dir.glob(f"{re.sub(r'[^a-z0-9]+', '-', service_name.lower()).strip('-')}_*.feature"):
-            old.unlink()
-            logger.info(f"   🗑 Removed old feature: {old.name}")
+        safe_svc = re.sub(r"[^a-z0-9]+", "-", service_name.lower()).strip("-")
+
+        if index == 1:
+            for old in features_dir.glob(f"{safe_svc}_*.feature"):
+                old.unlink()
+                logger.info(f"   🗑 Removed old feature: {old.name}")
 
         match = re.search(r"^Feature:\s*(.+)", content, re.MULTILINE)
         if match:
@@ -1103,8 +1201,7 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
             slug = f"story-{index}"
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        safe_svc = re.sub(r"[^a-z0-9]+", "-", service_name.lower()).strip("-")
-        filename = f"{safe_svc}_{slug}_{timestamp}.feature"
+        filename = f"{safe_svc}_{index:02d}_{slug}_{timestamp}.feature"
         filepath = features_dir / filename
 
         if not content.endswith("\n"):
@@ -1126,7 +1223,8 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
             "You are a Gherkin file generator. "
             "CRITICAL: Your ENTIRE response must be a valid Gherkin .feature file. "
             "Start with 'Feature:' on the very first line. "
-            "No reviews, no markdown, no bullet points, no explanations whatsoever."
+            "No reviews, no markdown, no bullet points, no explanations whatsoever. "
+            "NEVER include HTTP methods (POST/GET/PUT/DELETE) or URL paths in step text."
         )
         _RETRY_HUMAN = (
             "Generate the Gherkin .feature file for this specification. "
@@ -1172,6 +1270,7 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
 
         # ── Post-processing pipeline (order matters) ──────────────────
         raw = self._clean_markdown(raw)
+        raw = self._fix_technical_step_text(raw)       # FIX 7: strip HTTP paths
         raw = self._fix_first_person(raw)
         raw = self._fix_selected_reason(raw)
         raw = self._fix_duplicate_given(raw)
@@ -1183,7 +1282,7 @@ Output a single valid Gherkin .feature file. First line must be "Feature:":
         raw = self._collapse_duplicate_nominal_scenarios(raw)
         raw = self._merge_same_error_scenarios(raw)
         raw = self._fix_intermediate_approver_success_message(raw)
-        raw = self._fix_empty_examples_tables(raw)      # FIX: was defined but never called
+        raw = self._fix_empty_examples_tables(raw)
         raw = self._quote_status_values_in_examples(raw)
         raw = self._strip_quotes_from_examples(raw)
         raw = self._clean_output(raw)

@@ -1,6 +1,20 @@
 """
 Agent 5: Test Executor
 Runs generated Cucumber/JUnit contract-level E2E tests and captures results.
+
+FIXES applied v2:
+  1. _run_maven: when shell=True on Windows, subprocess.run must receive the
+     command as a SINGLE STRING (not a list). Passing a list with shell=True
+     causes Python to join only the first element and ignore the rest on
+     Windows (cmd.exe treats argv[0] as the command and discards the list).
+     Fixed by joining the list into a space-separated string before passing.
+  2. _parse_cucumber_json: now searches for per-service report files
+     (target/cucumber-reports/<pkg>/cucumber.json) to match the updated
+     runner output paths from test_writer.py, in addition to the legacy
+     flat path for backward compatibility.
+  3. _locate_html_report: same per-service path search as above.
+  4. Minor: added explicit encoding="utf-8" to all file reads for Windows
+     compatibility.
 """
 
 import os
@@ -208,47 +222,58 @@ class TestExecutorAgent:
     # Maven execution
     # ------------------------------------------------------------------
 
-    def _build_mvn_command(self, service_name: str) -> List[str]:
+    def _build_mvn_command(self, service_name: str) -> str:
         """
-        Build the Maven command list using the detected mvn executable.
-        CRITICAL: never hardcode "mvn" — use self._mvn_cmd so that the
-        full path is used on systems where mvn is not in PATH.
+        Build the Maven command as a SINGLE STRING.
+
+        FIX: subprocess.run with shell=True on Windows requires a string
+        command, not a list. When passed a list with shell=True, Python on
+        Windows passes only argv[0] to cmd.exe and discards all subsequent
+        arguments — so -Dservice.name, -DTEST_JWT_TOKEN, etc. are silently
+        lost and Maven runs with no properties set.
+
+        Returning a string here ensures the full command reaches cmd.exe.
         """
         jwt_token = self._get_jwt_token()
 
-        cmd = [
-            self._mvn_cmd,          # ← detected path, not hardcoded "mvn"
+        # Quote the mvn path in case it contains spaces (e.g. C:\Program Files\...)
+        mvn = f'"{self._mvn_cmd}"' if " " in str(self._mvn_cmd) else str(self._mvn_cmd)
+
+        parts = [
+            mvn,
             "clean",
             "test",
             f"-Dservice.name={service_name}",
         ]
 
         if jwt_token:
-            cmd.append(f"-DTEST_JWT_TOKEN={jwt_token}")
+            parts.append(f"-DTEST_JWT_TOKEN={jwt_token}")
 
-        cmd.append(
+        parts.append(
             f"-DAUTH_BASE_URL="
             f"{os.environ.get('AUTH_BASE_URL', 'http://localhost:9000')}"
         )
-        cmd.append(
+        parts.append(
             f"-DLEAVE_BASE_URL="
             f"{os.environ.get('LEAVE_BASE_URL', 'http://localhost:9001')}"
         )
 
-        return cmd
+        return " ".join(parts)
 
     def _run_maven(self, tests_dir: Path, service_name: str) -> TestExecutionResult:
         """Execute Maven and capture output."""
         result = TestExecutionResult()
+
+        # FIX: cmd is now a string, not a list (required for shell=True on Windows)
         cmd = self._build_mvn_command(service_name)
 
-        logger.info(f"   Running: {' '.join(str(c) for c in cmd)}")
+        logger.info(f"   Running: {cmd}")
         logger.info(f"   Working directory: {tests_dir}")
 
         start = time.time()
         try:
             proc = subprocess.run(
-                cmd,
+                cmd,                    # ← string, not list
                 cwd=str(tests_dir),
                 capture_output=True,
                 text=True,
@@ -343,59 +368,94 @@ class TestExecutorAgent:
     def _parse_cucumber_json(
         self, tests_dir: Path, result: TestExecutionResult
     ) -> None:
-        """Supplement stats from Cucumber's JSON report."""
-        try:
-            import json
+        """
+        Supplement stats from Cucumber JSON reports.
 
-            json_report = (
-                tests_dir / "target" / "cucumber-reports" / "cucumber.json"
-            )
-            if not json_report.exists():
-                return
+        FIX: test_writer.py now writes reports to
+          target/cucumber-reports/<package_name>/cucumber.json
+        so we search both the legacy flat path and all per-service
+        subdirectories, then aggregate across all found files.
+        """
+        import json
 
-            data = json.loads(json_report.read_text(encoding="utf-8"))
-            passed = failed = skipped = 0
+        reports_root = tests_dir / "target" / "cucumber-reports"
 
-            for feature in data:
-                for scenario in feature.get("elements", []):
-                    statuses = [
-                        step.get("result", {}).get("status", "undefined")
-                        for step in scenario.get("steps", [])
-                    ]
-                    if all(s == "passed" for s in statuses):
-                        passed += 1
-                    elif any(s in ("failed", "undefined") for s in statuses):
-                        failed += 1
-                        for step in scenario.get("steps", []):
-                            err = step.get("result", {}).get("error_message")
-                            if err:
-                                result.errors.append(
-                                    f"[{scenario.get('name', '?')}] {err[:200]}"
-                                )
-                    else:
-                        skipped += 1
+        # Collect all cucumber.json files: flat legacy + per-service subdirs
+        json_reports: List[Path] = []
+        flat = reports_root / "cucumber.json"
+        if flat.exists():
+            json_reports.append(flat)
+        for sub in reports_root.glob("*/cucumber.json"):
+            if sub not in json_reports:
+                json_reports.append(sub)
 
-            if passed + failed + skipped > 0:
-                result.total   = passed + failed + skipped
-                result.passed  = passed
-                result.failed  = failed
-                result.skipped = skipped
+        if not json_reports:
+            logger.debug("   No Cucumber JSON reports found yet.")
+            return
 
-            result.report_path = json_report
-            logger.info(f"   Cucumber JSON report parsed: {json_report}")
+        passed = failed = skipped = 0
 
-        except Exception as exc:
-            logger.warning(f"   Could not parse Cucumber JSON report: {exc}")
+        for json_report in json_reports:
+            try:
+                data = json.loads(json_report.read_text(encoding="utf-8"))
+                for feature in data:
+                    for scenario in feature.get("elements", []):
+                        statuses = [
+                            step.get("result", {}).get("status", "undefined")
+                            for step in scenario.get("steps", [])
+                        ]
+                        if all(s == "passed" for s in statuses):
+                            passed += 1
+                        elif any(s in ("failed", "undefined") for s in statuses):
+                            failed += 1
+                            for step in scenario.get("steps", []):
+                                err = step.get("result", {}).get("error_message")
+                                if err:
+                                    result.errors.append(
+                                        f"[{scenario.get('name', '?')}] {err[:200]}"
+                                    )
+                        else:
+                            skipped += 1
+
+                # Use the first report found as the primary report path
+                if result.report_path is None:
+                    result.report_path = json_report
+
+                logger.info(f"   Cucumber JSON report parsed: {json_report}")
+
+            except Exception as exc:
+                logger.warning(f"   Could not parse Cucumber JSON report {json_report}: {exc}")
+
+        if passed + failed + skipped > 0:
+            result.total   = passed + failed + skipped
+            result.passed  = passed
+            result.failed  = failed
+            result.skipped = skipped
 
     def _locate_html_report(
         self, tests_dir: Path, result: TestExecutionResult
     ) -> None:
-        html_report = (
-            tests_dir / "target" / "cucumber-reports" / "cucumber.html"
-        )
-        if html_report.exists():
-            result.report_path = html_report
-            logger.info(f"   HTML report: {html_report}")
+        """
+        Find HTML report.
+
+        FIX: check both flat legacy path and per-service subdirectory paths
+        (target/cucumber-reports/<pkg>/cucumber.html) to match the updated
+        runner output from test_writer.py.
+        """
+        reports_root = tests_dir / "target" / "cucumber-reports"
+
+        # Legacy flat path
+        flat_html = reports_root / "cucumber.html"
+        if flat_html.exists():
+            result.report_path = flat_html
+            logger.info(f"   HTML report: {flat_html}")
+            return
+
+        # Per-service subdirectory paths
+        for sub_html in reports_root.glob("*/cucumber.html"):
+            result.report_path = sub_html
+            logger.info(f"   HTML report: {sub_html}")
+            return  # Use the first one found
 
     # ------------------------------------------------------------------
     # Failure analysis

@@ -1,0 +1,192 @@
+[
+    {
+        "line": 1,
+        "elements": [
+            {
+                "start_timestamp": "2026-03-18T15:20:30.092Z",
+                "before": [
+                    {
+                        "result": {
+                            "duration": 13616300,
+                            "status": "passed"
+                        },
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.setUp()"
+                        }
+                    }
+                ],
+                "line": 4,
+                "name": "Employee logs in with valid email and password",
+                "description": "",
+                "id": "employee-authentication;employee-logs-in-with-valid-email-and-password",
+                "type": "scenario",
+                "keyword": "Scenario",
+                "steps": [
+                    {
+                        "result": {
+                            "duration": 985700,
+                            "status": "passed"
+                        },
+                        "line": 5,
+                        "name": "the employee has valid credentials",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theEmployeeHasValidCredentials()"
+                        },
+                        "keyword": "Given "
+                    },
+                    {
+                        "result": {
+                            "duration": 1889322100,
+                            "status": "passed"
+                        },
+                        "line": 6,
+                        "name": "the employee submits the login request with email and password",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theEmployeeSubmitsTheLoginRequestWithEmailAndPassword()"
+                        },
+                        "keyword": "When "
+                    },
+                    {
+                        "result": {
+                            "duration": 558869700,
+                            "status": "passed"
+                        },
+                        "line": 7,
+                        "name": "the system returns a valid JWT token",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theSystemReturnsAValidJwtToken()"
+                        },
+                        "keyword": "Then "
+                    }
+                ]
+            },
+            {
+                "start_timestamp": "2026-03-18T15:20:32.574Z",
+                "before": [
+                    {
+                        "result": {
+                            "duration": 509800,
+                            "status": "passed"
+                        },
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.setUp()"
+                        }
+                    }
+                ],
+                "line": 9,
+                "name": "Employee submits login request with invalid credentials",
+                "description": "",
+                "id": "employee-authentication;employee-submits-login-request-with-invalid-credentials",
+                "type": "scenario",
+                "keyword": "Scenario",
+                "steps": [
+                    {
+                        "result": {
+                            "status": "passed"
+                        },
+                        "line": 10,
+                        "name": "the employee has invalid credentials",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theEmployeeHasInvalidCredentials()"
+                        },
+                        "keyword": "Given "
+                    },
+                    {
+                        "result": {
+                            "duration": 167133400,
+                            "status": "passed"
+                        },
+                        "line": 11,
+                        "name": "the employee submits the login request with email and password",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theEmployeeSubmitsTheLoginRequestWithEmailAndPassword()"
+                        },
+                        "keyword": "When "
+                    },
+                    {
+                        "result": {
+                            "error_message": "org.junit.ComparisonFailure: [Expected blocked (4xx or 200+noJWT), got HTTP 200 body={\"jwt\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB0ZXN0LmNvbSIsImlhdCI6MTc3Mzg0NzIzMiwiZXhwIjoxNzczOTMzNjMyfQ.nfb01RIsmOiOjgqIZOrdPJ6p4XKxP3JglG2WrCUREJU\",\"userRole\":\"Administration\",\"userId\":8}] \r\nExpecting value to be true but was false expected:<[tru]e> but was:<[fals]e>\r\n\tat java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)\r\n\tat java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)\r\n\tat java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\r\n\tat java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)\r\n\tat com.example.auth.steps.AuthSteps.theSystemBlocksTheAction(AuthSteps.java:87)\r\n\tat ✽.the system blocks the action(classpath:features/leave-request-service_01_employee-authentication_20260318_162000.feature:12)\r\n",
+                            "duration": 38576800,
+                            "status": "failed"
+                        },
+                        "line": 12,
+                        "name": "the system blocks the action",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theSystemBlocksTheAction()"
+                        },
+                        "keyword": "Then "
+                    }
+                ]
+            },
+            {
+                "start_timestamp": "2026-03-18T15:20:32.803Z",
+                "before": [
+                    {
+                        "result": {
+                            "duration": 1287700,
+                            "status": "passed"
+                        },
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.setUp()"
+                        }
+                    }
+                ],
+                "line": 14,
+                "name": "Employee submits login request with missing required fields",
+                "description": "",
+                "id": "employee-authentication;employee-submits-login-request-with-missing-required-fields",
+                "type": "scenario",
+                "keyword": "Scenario",
+                "steps": [
+                    {
+                        "result": {
+                            "status": "passed"
+                        },
+                        "line": 15,
+                        "name": "the employee has incomplete credentials",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theEmployeeHasIncompleteCredentials()"
+                        },
+                        "keyword": "Given "
+                    },
+                    {
+                        "result": {
+                            "duration": 106099200,
+                            "status": "passed"
+                        },
+                        "line": 16,
+                        "name": "the employee submits the login request without email and password",
+                        "match": {
+                            "location": "com.example.auth.steps.AuthSteps.theEmployeeSubmitsTheLoginRequestWithoutEmailAndPassword()"
+                        },
+                        "keyword": "When "
+                    },
+                    {
+                        "result": {
+                            "duration": 999100,
+                            "status": "passed"
+                        },
+                        "line": 17,
+                        "name": "the system displays the error \"Bad Request\"",
+                        "match": {
+                            "arguments": [
+                                {
+                                    "val": "\"Bad Request\"",
+                                    "offset": 30
+                                }
+                            ],
+                            "location": "com.example.auth.steps.AuthSteps.theSystemDisplaysTheErrorString(java.lang.String)"
+                        },
+                        "keyword": "Then "
+                    }
+                ]
+            }
+        ],
+        "name": "Employee Authentication",
+        "description": "  As an employee I want to authenticate via the API so that I can access the system securely.",
+        "id": "employee-authentication",
+        "keyword": "Feature",
+        "uri": "classpath:features/leave-request-service_01_employee-authentication_20260318_162000.feature",
+        "tags": []
+    }
+]

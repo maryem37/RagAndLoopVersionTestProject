@@ -1,25 +1,38 @@
-User Story — Approve Leave Request
-As an Administrator or Team Lead, I want to approve an employee's leave request, So that I can officially validate their absence according to the defined approval chain.
-Business Rules — Approve Leave Request
-The user must belong to the request's approval chain.
-A request can only be approved if its status is "Pending" or "In Progress".
-An approver cannot validate a request they have already previously approved.
-Validation follows a hierarchical chain:
-As long as the administrator has not approved, the request remains "In Progress".
-When the final approver grants approval, the request status becomes "Granted".
-Upon final validation:
-The leave balance is deducted according to the type (annual, authorization, recovery).
+User Story: Employee Authentication
+As an employee I want to authenticate via the API so that I can access the system securely.
 
-Acceptance Criteria — Approve Leave Request
-The user can view the complete details of the request before validation.
-The user can add an observation (optional).
-If the user is not authorized to validate this step, an error message is displayed: "You are not authorized to modify the status of this request."
-If the request is not in a valid state ("Pending" or "In Progress"), validation is blocked.
-If the user has already validated previously, the validation is refused.
-If the user is the final approver:
-The request status changes to "Granted".
-The leave balance is adjusted according to the rules of the leave type.
-Otherwise:
-The status changes to "In Progress".
-The system marks the manager's validation as TRUE.
-After validation, the system displays "Request granted successfully".
+Acceptance Criteria:
+- AC1: Employee can log in with valid email and password and receive a JWT token
+- AC2: System returns 401 Unauthorized when credentials are invalid
+- AC3: System returns 400 Bad Request when required fields are missing
+
+Business Rules:
+- BR1: The login endpoint is POST /api/auth/login
+- BR2: Credentials must include email and password fields
+- BR3: On success the response must contain a valid JWT token
+
+---
+
+User Story: Employee Leave Request Management
+As an employee I want to create, consult, and cancel leave requests via the API so that I can manage my absences.
+
+Acceptance Criteria:
+- AC1: Employee can submit a leave request with fromDate, toDate, type, and userId
+- AC2: Employee can cancel a pending leave request
+- AC3: Employee cannot cancel a request that is already granted, refused, or canceled
+- AC4: System returns the updated request status after each operation
+- AC5: Unauthorized users cannot access leave request endpoints
+
+Business Rules:
+- BR1: Create endpoint is POST /api/leave-requests/create
+- BR2: Cancel endpoint is PUT /api/leave-requests/{id}/cancel
+- BR3: Required fields for creation: fromDate, toDate, type, userId
+- BR4: Status transitions: Pending → Canceled (employee), Pending → Granted (approver)
+- BR5: A request in status Granted, Refused, or Canceled cannot be canceled again
+
+Error Messages:
+- "Action impossible: the period concerned by this request has already passed."
+- "This request has been canceled and can no longer be processed."
+- "This request has already been refused."
+- "This request has already been validated."
+
