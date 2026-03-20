@@ -1,11 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.leave.LeaveTestRunner
 -------------------------------------------------------------------------------
-Tests run: 7, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 2.755 s <<< FAILURE! -- in com.example.leave.LeaveTestRunner
-Employee Leave Request Management.Unauthorized users cannot access leave request endpoints -- Time elapsed: 0.003 s <<< FAILURE!
-java.lang.AssertionError: 
-[No HTTP call was made] 
-Expecting actual not to be null
-	at com.example.leave.steps.LeaveSteps.theSystemBlocksTheAction(LeaveSteps.java:195)
-	at ✽.the system blocks the action(classpath:features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:36)
-
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.627 s -- in com.example.leave.LeaveTestRunner

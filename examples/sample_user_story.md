@@ -1,38 +1,19 @@
-User Story: Employee Authentication
-As an employee I want to authenticate via the API so that I can access the system securely.
+User Story — Cancel Leave Request
+As an employee, I want to cancel a pending leave request,
+so that I can withdraw a request that has not yet been granted.
 
-Acceptance Criteria:
-- AC1: Employee can log in with valid email and password and receive a JWT token
-- AC2: System returns 401 Unauthorized when credentials are invalid
-- AC3: System returns 400 Bad Request when required fields are missing
+Business Rules — Cancel Leave Request
+Only pending requests can be canceled by the employee who owns them.
+A request that is already canceled cannot be canceled again.
+An employee without a valid token cannot cancel any request.
 
-Business Rules:
-- BR1: The login endpoint is POST /api/auth/login
-- BR2: Credentials must include email and password fields
-- BR3: On success the response must contain a valid JWT token
-
----
-
-User Story: Employee Leave Request Management
-As an employee I want to create, consult, and cancel leave requests via the API so that I can manage my absences.
-
-Acceptance Criteria:
-- AC1: Employee can submit a leave request with fromDate, toDate, type, and userId
-- AC2: Employee can cancel a pending leave request
-- AC3: Employee cannot cancel a request that is already granted, refused, or canceled
-- AC4: System returns the updated request status after each operation
-- AC5: Unauthorized users cannot access leave request endpoints
-
-Business Rules:
-- BR1: Create endpoint is POST /api/leave-requests/create
-- BR2: Cancel endpoint is PUT /api/leave-requests/{id}/cancel
-- BR3: Required fields for creation: fromDate, toDate, type, userId
-- BR4: Status transitions: Pending → Canceled (employee), Pending → Granted (approver)
-- BR5: A request in status Granted, Refused, or Canceled cannot be canceled again
-
-Error Messages:
-- "Action impossible: the period concerned by this request has already passed."
-- "This request has been canceled and can no longer be processed."
-- "This request has already been refused."
-- "This request has already been validated."
-
+Acceptance Criteria — Cancel Leave Request
+The employee logs in with email "jane.smith@example.com" and password "Secure@567".
+The employee creates a pending leave request with future dates, type ANNUAL_LEAVE,
+periodType JOURNEE_COMPLETE.
+When the employee cancels the pending request, the system responds with
+"Leave request cancelled successfully."
+If the employee tries to cancel the same request again, the system returns an error:
+"This leave request has already been cancelled and cannot be processed."
+If a user with an invalid token tries to cancel a request,
+the system blocks the action with HTTP 401 or 403.

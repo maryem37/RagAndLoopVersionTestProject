@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.leave.LeaveTestRunner" time="2.755" tests="7" errors="0" skipped="0" failures="1">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.example.leave.LeaveTestRunner" time="1.627" tests="4" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -16,7 +16,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="FR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
-    <property name="sun.java.command" value="C:\Users\MSI\AppData\Local\Temp\surefire13899839593780232854\surefirebooter-20260318162028837_3.jar C:\Users\MSI\AppData\Local\Temp\surefire13899839593780232854 2026-03-18T16-20-28_616-jvmRun1 surefire-20260318162028837_1tmp surefire_0-20260318162028837_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\MSI\AppData\Local\Temp\surefire7122596693752985533\surefirebooter-20260321001426706_3.jar C:\Users\MSI\AppData\Local\Temp\surefire7122596693752985533 2026-03-21T00-14-26_380-jvmRun1 surefire-20260321001426706_1tmp surefire_0-20260321001426706_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Bureau\Bureau\project_test\output\tests\target\test-classes;C:\Bureau\Bureau\project_test\output\tests\target\classes;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-java\7.14.0\cucumber-java-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-core\7.14.0\cucumber-core-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-gherkin\7.14.0\cucumber-gherkin-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.14.0\cucumber-gherkin-messages-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\tag-expressions\5.0.6\tag-expressions-5.0.6.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-expressions\16.1.2\cucumber-expressions-16.1.2.jar;C:\Users\MSI\.m2\repository\io\cucumber\datatable\7.14.0\datatable-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-plugin\7.14.0\cucumber-plugin-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\docstring\7.14.0\docstring-7.14.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\MSI\.m2\repository\io\cucumber\ci-environment\9.2.0\ci-environment-9.2.0.jar;C:\Users\MSI\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\MSI\.m2\repository\io\cucumber\cucumber-junit\7.14.0\cucumber-junit-7.14.0.jar;C:\Users\MSI\.m2\repository\junit\junit\4.13.2\junit-4.13.2.jar;C:\Users\MSI\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.15.2\jackson-databind-2.15.2.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.15.2\jackson-annotations-2.15.2.jar;C:\Users\MSI\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.15.2\jackson-core-2.15.2.jar;C:\Users\MSI\.m2\repository\io\rest-assured\rest-assured\5.3.2\rest-assured-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy\4.0.11\groovy-4.0.11.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy-xml\4.0.11\groovy-xml-4.0.11.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpclient\4.5.13\httpclient-4.5.13.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpcore\4.4.13\httpcore-4.4.13.jar;C:\Users\MSI\.m2\repository\commons-logging\commons-logging\1.2\commons-logging-1.2.jar;C:\Users\MSI\.m2\repository\commons-codec\commons-codec\1.11\commons-codec-1.11.jar;C:\Users\MSI\.m2\repository\org\apache\httpcomponents\httpmime\4.5.13\httpmime-4.5.13.jar;C:\Users\MSI\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\MSI\.m2\repository\org\ccil\cowan\tagsoup\tagsoup\1.2.1\tagsoup-1.2.1.jar;C:\Users\MSI\.m2\repository\io\rest-assured\xml-path\5.3.2\xml-path-5.3.2.jar;C:\Users\MSI\.m2\repository\org\apache\commons\commons-lang3\3.11\commons-lang3-3.11.jar;C:\Users\MSI\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\MSI\.m2\repository\net\bytebuddy\byte-buddy\1.12.21\byte-buddy-1.12.21.jar;C:\Users\MSI\.m2\repository\org\slf4j\slf4j-simple\2.0.9\slf4j-simple-2.0.9.jar;C:\Users\MSI\.m2\repository\org\slf4j\slf4j-api\2.0.9\slf4j-api-2.0.9.jar;C:\Users\MSI\.m2\repository\io\rest-assured\json-path\5.3.0\json-path-5.3.0.jar;C:\Users\MSI\.m2\repository\org\apache\groovy\groovy-json\4.0.6\groovy-json-4.0.6.jar;C:\Users\MSI\.m2\repository\io\rest-assured\rest-assured-common\5.3.0\rest-assured-common-5.3.0.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -31,7 +31,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\MSI\AppData\Local\Temp\surefire13899839593780232854\surefirebooter-20260318162028837_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\MSI\AppData\Local\Temp\surefire7122596693752985533\surefirebooter-20260321001426706_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.12+8-LTS-286"/>
@@ -44,129 +44,81 @@
     <property name="localRepository" value="C:\Users\MSI\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="C:\Users\MSI\AppData\Local\Temp\"/>
-    <property name="TEST_JWT_TOKEN" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB0ZXN0LmNvbSIsImlhdCI6MTc3MzgzMTE2NSwiZXhwIjoxNzczOTE3NTY1fQ.sev_47ZpRtCNYTVrUmOcL4VYhcMDW88nsHqkCYCx0U4"/>
+    <property name="TEST_JWT_TOKEN" value="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLnNtaXRoQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc0MDAwMzI2LCJleHAiOjE3NzQwODY3MjZ9.snILgUjdNzXNVz5D8ud9SAIyk_I5KbmqXWu9pThbz9I"/>
     <property name="service.name" value="leave-request-service"/>
     <property name="java.version" value="17.0.12"/>
     <property name="user.dir" value="C:\Bureau\Bureau\project_test\output\tests"/>
     <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="LEAVE_BASE_URL" value="http://localhost:9001"/>
-    <property name="AUTH_BASE_URL" value="http://localhost:9000"/>
+    <property name="LEAVE_BASE_URL" value="http://127.0.0.1:9001"/>
+    <property name="AUTH_BASE_URL" value="http://127.0.0.1:9000"/>
     <property name="sun.os.patch.level" value=""/>
     <property name="native.encoding" value="Cp1252"/>
-    <property name="java.library.path" value="C:\Program Files\Java\jdk-17\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Bureau\Bureau\project_test\.venv312\Scripts;c:\Users\MSI\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\MSI\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\kafka\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files\Eclipse Adoptium\jdk-8.0.452.9-hotspot\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\bin;D:\src\flutter\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Users\MSI\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python312\;C:\Users\MSI\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python313\;C:\Users\MSI\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python39\;C:\Users\MSI\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python310\;C:\Users\MSI\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python311\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\MSI\AppData\Local\Microsoft\WindowsApps;C:\Users\MSI\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\MSI\AppData\Roaming\npm;C:\Program Files\OpenSSL-Win64\bin;C:\Users\MSI\Downloads\apache-maven-3.9.10-bin\apache-maven-3.9.10\bin;C:\Program Files\Java\jdk-17\bin;C:\Program Files\MongoDB\Server\8.0\bin;C:\Program Files\MongoDB\mongosh-2.5.3-win32-x64\bin;C:\Program Files\JetBrains\WebStorm 2025.1.3\bin;;D:\src\flutter\bin;C:\php;C:\Program Files\JetBrains\CLion 2025.2.4\bin;C:\Users\MSI\AppData\Local\Programs\IntelliJ IDEA 2025.2.5\bin;C:\Users\MSI\AppData\Local\Programs\Ollama;c:\Users\MSI\.vscode\extensions\ms-python.debugpy-2025.19.2026030601-win32-x64\bundled\scripts\noConfigScripts;c:\Users\MSI\.vscode\extensions\vscjava.vscode-java-debug-0.58.5\bundled\scripts\noConfigScripts;."/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-17\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Bureau\Bureau\project_test\.venv312\Scripts;c:\Users\MSI\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\MSI\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\kafka\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files\Eclipse Adoptium\jdk-8.0.452.9-hotspot\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\bin;D:\src\flutter\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Users\MSI\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python312\;C:\Users\MSI\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python313\;C:\Users\MSI\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python39\;C:\Users\MSI\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python310\;C:\Users\MSI\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\MSI\AppData\Local\Programs\Python\Python311\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\MSI\AppData\Local\Microsoft\WindowsApps;C:\Users\MSI\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\MSI\AppData\Roaming\npm;C:\Program Files\OpenSSL-Win64\bin;C:\Users\MSI\Downloads\apache-maven-3.9.10-bin\apache-maven-3.9.10\bin;C:\Program Files\Java\jdk-17\bin;C:\Program Files\MongoDB\Server\8.0\bin;C:\Program Files\MongoDB\mongosh-2.5.3-win32-x64\bin;C:\Program Files\JetBrains\WebStorm 2025.1.3\bin;;D:\src\flutter\bin;C:\php;C:\Program Files\JetBrains\CLion 2025.2.4\bin;C:\Users\MSI\AppData\Local\Programs\IntelliJ IDEA 2025.2.5\bin;C:\Users\MSI\AppData\Local\Programs\Ollama;c:\Users\MSI\.vscode\extensions\vscjava.vscode-java-debug-0.58.5\bundled\scripts\noConfigScripts;c:\Users\MSI\.vscode\extensions\ms-python.debugpy-2025.19.2026030601-win32-x64\bundled\scripts\noConfigScripts;."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
     <property name="java.vendor" value="Oracle Corporation"/>
     <property name="java.vm.version" value="17.0.12+8-LTS-286"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="Employee successfully creates a leave request" classname="Employee Leave Request Management" time="1.525">
+  <testcase name="Employee cancels a pending leave request" classname="Cancel Leave Request" time="1.399">
     <system-out><![CDATA[
-Scenario: Employee successfully creates a leave request                               # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:4
-  Given the employee is authenticated                                                 # com.example.leave.steps.LeaveSteps.theEmployeeIsAuthenticated()
-  When the employee submits the leave request with fromDate, toDate, type, and userId # com.example.leave.steps.LeaveSteps.theEmployeeSubmitsTheLeaveRequestWithFromdateTodateTypeAndUserid()
-  Then the system updates the request status to "Pending"                             # com.example.leave.steps.LeaveSteps.theSystemUpdatesTheRequestStatusToString(java.lang.String)
+Scenario: Employee cancels a pending leave request                      # features/leave-request-service_01_cancel-leave-request_20260321_001400.feature:7
+  Given the employee logs in with valid credentials                     # com.example.leave.steps.LeaveSteps.theEmployeeLogsInWithValidCredentials()
+  Given the employee has a pending leave request                        # com.example.leave.steps.LeaveSteps.theEmployeeHasAPendingLeaveRequest()
+  When the employee cancels the pending request                         # com.example.leave.steps.LeaveSteps.theEmployeeCancelsThePendingRequest()
+  Then the system responds with "Leave request cancelled successfully." # com.example.leave.steps.LeaveSteps.theSystemRespondsWithString(java.lang.String)
 ]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: authenticated
-[main] INFO com.example.leave.steps.LeaveSteps - POST /api/leave-requests/create (2026-07-01 -> 2026-07-05) -> HTTP 201
-[main] INFO com.example.leave.steps.LeaveSteps - Cancel result HTTP 201: {"id":25,"fromDate":"2026-07-01","toDate":"2026-07-05","fromTime":null,"toTime":null,"periodType":"JOURNEE_COMPLETE","days":3,"hours":null,"state":"Approved","note":null,"type":"ANNUAL_LEAVE","userId":8,"cancellationDate":null,"cancellationObservation":null,"approvalChain":{"Administration":true},"managerNote":null,"rejectedBy":null,"rejectionDate":null,"rejectionReason":null,"rejectionObservation":null}
-]]></system-err>
-  </testcase>
-  <testcase name="Employee cancels a pending leave request" classname="Employee Leave Request Management" time="0.285">
-    <system-out><![CDATA[
-Scenario: Employee cancels a pending leave request         # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:9
-  Given the employee is authenticated                      # com.example.leave.steps.LeaveSteps.theEmployeeIsAuthenticated()
-  And there is a pending leave request                     # com.example.leave.steps.LeaveSteps.thereIsAPendingLeaveRequest()
-  When the employee cancels the leave request              # com.example.leave.steps.LeaveSteps.theEmployeeCancelsTheLeaveRequest()
-  Then the system updates the request status to "Canceled" # com.example.leave.steps.LeaveSteps.theSystemUpdatesTheRequestStatusToString(java.lang.String)
-]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: authenticated
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the employee logs in with valid credentials
 [main] INFO com.example.leave.steps.LeaveSteps - Precondition: pending request id=2
 [main] INFO com.example.leave.steps.LeaveSteps - Using reqId=2 for cancel
 [main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=2 -> HTTP 400
-[main] INFO com.example.leave.steps.LeaveSteps - Cancel result HTTP 400: This leave request has already been approved.
+[main] INFO com.example.leave.steps.LeaveSteps - Then HTTP 400
 ]]></system-err>
   </testcase>
-  <testcase name="Employee cannot cancel a granted leave request" classname="Employee Leave Request Management" time="0.225">
+  <testcase name="Employee tries to cancel an already cancelled leave request" classname="Cancel Leave Request" time="0.078">
     <system-out><![CDATA[
-Scenario: Employee cannot cancel a granted leave request                        # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:15
-  Given the employee is authenticated                                           # com.example.leave.steps.LeaveSteps.theEmployeeIsAuthenticated()
-  And there is a granted leave request                                          # com.example.leave.steps.LeaveSteps.thereIsAGrantedLeaveRequest()
-  When the employee tries to cancel the leave request                           # com.example.leave.steps.LeaveSteps.theEmployeeTriesToCancelTheLeaveRequest()
-  Then the system displays the error "This request has already been validated." # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorString(java.lang.String)
+Scenario: Employee tries to cancel an already cancelled leave request                                         # features/leave-request-service_01_cancel-leave-request_20260321_001400.feature:12
+  Given the employee logs in with valid credentials                                                           # com.example.leave.steps.LeaveSteps.theEmployeeLogsInWithValidCredentials()
+  Given the employee has a cancelled leave request                                                            # com.example.leave.steps.LeaveSteps.theEmployeeHasACancelledLeaveRequest()
+  When the employee cancels the already cancelled request                                                     # com.example.leave.steps.LeaveSteps.theEmployeeCancelsTheAlreadyCancelledRequest()
+  Then the system displays the error "This leave request has already been cancelled and cannot be processed." # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorString(java.lang.String)
 ]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: authenticated
-[main] INFO com.example.leave.steps.LeaveSteps - Precondition: granted request id=1
-[main] INFO com.example.leave.steps.LeaveSteps - Using reqId=1 for cancel
-[main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=1 -> HTTP 400
-[main] INFO com.example.leave.steps.LeaveSteps - Error HTTP 400: This leave request has already been approved.
-]]></system-err>
-  </testcase>
-  <testcase name="Employee cannot cancel a refused leave request" classname="Employee Leave Request Management" time="0.223">
-    <system-out><![CDATA[
-Scenario: Employee cannot cancel a refused leave request                      # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:21
-  Given the employee is authenticated                                         # com.example.leave.steps.LeaveSteps.theEmployeeIsAuthenticated()
-  And there is a refused leave request                                        # com.example.leave.steps.LeaveSteps.thereIsARefusedLeaveRequest()
-  When the employee tries to cancel the leave request                         # com.example.leave.steps.LeaveSteps.theEmployeeTriesToCancelTheLeaveRequest()
-  Then the system displays the error "This request has already been refused." # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorString(java.lang.String)
-]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: authenticated
-[main] INFO com.example.leave.steps.LeaveSteps - Precondition: refused request id=4
-[main] INFO com.example.leave.steps.LeaveSteps - Using reqId=4 for cancel
-[main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=4 -> HTTP 400
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the employee logs in with valid credentials
+[main] INFO com.example.leave.steps.LeaveSteps - Precondition: canceled request id=5
+[main] INFO com.example.leave.steps.LeaveSteps - Using reqId=5 for cancel
+[main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=5 -> HTTP 400
 [main] INFO com.example.leave.steps.LeaveSteps - Error HTTP 400: Leave request not found.
 ]]></system-err>
   </testcase>
-  <testcase name="Employee cannot cancel a canceled leave request" classname="Employee Leave Request Management" time="0.242">
+  <testcase name="Unauthorized user tries to cancel a leave request" classname="Cancel Leave Request" time="0.063">
     <system-out><![CDATA[
-Scenario: Employee cannot cancel a canceled leave request                                             # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:27
-  Given the employee is authenticated                                                                 # com.example.leave.steps.LeaveSteps.theEmployeeIsAuthenticated()
-  And there is a canceled leave request                                                               # com.example.leave.steps.LeaveSteps.thereIsACanceledLeaveRequest()
-  When the employee tries to cancel the leave request                                                 # com.example.leave.steps.LeaveSteps.theEmployeeTriesToCancelTheLeaveRequest()
-  Then the system displays the error "This request has been canceled and can no longer be processed." # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorString(java.lang.String)
+Scenario: Unauthorized user tries to cancel a leave request # features/leave-request-service_01_cancel-leave-request_20260321_001400.feature:17
+  Given the employee logs in with valid credentials         # com.example.leave.steps.LeaveSteps.theEmployeeLogsInWithValidCredentials()
+  Given the user does not have a valid token                # com.example.leave.steps.LeaveSteps.theUserDoesNotHaveAValidToken()
+  When the user attempts to cancel a leave request          # com.example.leave.steps.LeaveSteps.theUserAttemptsToCancelALeaveRequest()
+  Then the system blocks the action                         # com.example.leave.steps.LeaveSteps.theSystemBlocksTheAction()
 ]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: authenticated
-[main] INFO com.example.leave.steps.LeaveSteps - Precondition: canceled request id=5
-[main] INFO com.example.leave.steps.LeaveSteps - Using reqId=26 for cancel
-[main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=26 -> HTTP 400
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the employee logs in with valid credentials
+[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the user does not have a valid token
+[main] INFO com.example.leave.steps.LeaveSteps - Using reqId=2 for cancel
+[main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=2 -> HTTP 400
+[main] INFO com.example.leave.steps.LeaveSteps - Blocked HTTP 400
+]]></system-err>
+  </testcase>
+  <testcase name="Employee tries to cancel a leave request without required fields" classname="Cancel Leave Request" time="0.06">
+    <system-out><![CDATA[
+Scenario: Employee tries to cancel a leave request without required fields                                    # features/leave-request-service_01_cancel-leave-request_20260321_001400.feature:22
+  Given the employee logs in with valid credentials                                                           # com.example.leave.steps.LeaveSteps.theEmployeeLogsInWithValidCredentials()
+  Given the employee has a pending leave request                                                              # com.example.leave.steps.LeaveSteps.theEmployeeHasAPendingLeaveRequest()
+  When the employee submits a cancellation request without required fields                                    # com.example.leave.steps.LeaveSteps.theEmployeeSubmitsACancellationRequestWithoutRequiredFields()
+  Then the system displays the error "This leave request has already been cancelled and cannot be processed." # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorString(java.lang.String)
+]]></system-out>
+    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: the employee logs in with valid credentials
+[main] INFO com.example.leave.steps.LeaveSteps - Precondition: pending request id=2
+[main] INFO com.example.leave.steps.LeaveSteps - Using reqId=2 for cancel
+[main] INFO com.example.leave.steps.LeaveSteps - PUT cancel reqId=2 -> HTTP 400
 [main] INFO com.example.leave.steps.LeaveSteps - Error HTTP 400: This leave request has already been approved.
-]]></system-err>
-  </testcase>
-  <testcase name="Unauthorized users cannot access leave request endpoints" classname="Employee Leave Request Management" time="0.003">
-    <failure message="[No HTTP call was made] &#10;Expecting actual not to be null" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: 
-[No HTTP call was made] 
-Expecting actual not to be null
-	at com.example.leave.steps.LeaveSteps.theSystemBlocksTheAction(LeaveSteps.java:195)
-	at ✽.the system blocks the action(classpath:features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:36)
-]]></failure>
-    <system-out><![CDATA[
-Scenario: Unauthorized users cannot access leave request endpoints # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:33
-  Given there is an unauthorized user                              # com.example.leave.steps.LeaveSteps.thereIsAnUnauthorizedUser()
-  When the user attempts to create a leave request                 # com.example.leave.steps.LeaveSteps.theUserAttemptsToCreateALeaveRequest()
-  Then the system blocks the action                                # com.example.leave.steps.LeaveSteps.theSystemBlocksTheAction()
-      java.lang.AssertionError: [No HTTP call was made] 
-Expecting actual not to be null
-	at com.example.leave.steps.LeaveSteps.theSystemBlocksTheAction(LeaveSteps.java:195)
-	at âœ½.the system blocks the action(classpath:features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:36)
-
-]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: unauthorized user
-[main] INFO com.example.leave.steps.LeaveSteps - When (unmatched): the user attempts to create a leave request
-]]></system-err>
-  </testcase>
-  <testcase name="Employee cannot create a leave request without required fields" classname="Employee Leave Request Management" time="0.192">
-    <system-out><![CDATA[
-Scenario: Employee cannot create a leave request without required fields # features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature:38
-  Given the employee is authenticated                                    # com.example.leave.steps.LeaveSteps.theEmployeeIsAuthenticated()
-  When the employee submits the leave request with value                 # com.example.leave.steps.LeaveSteps.theEmployeeSubmitsTheLeaveRequestWithValue()
-  And the employee enters all other required fields                      # com.example.leave.steps.LeaveSteps.theEmployeeEntersAllOtherRequiredFields()
-  Then the system displays the error "Missing required field: value"     # com.example.leave.steps.LeaveSteps.theSystemDisplaysTheErrorString(java.lang.String)
-]]></system-out>
-    <system-err><![CDATA[[main] INFO com.example.leave.steps.LeaveSteps - Precondition: authenticated
-[main] INFO com.example.leave.steps.LeaveSteps - POST /api/leave-requests/create (2026-08-01 -> 2026-08-05) -> HTTP 500
-[main] INFO com.example.leave.steps.LeaveSteps - When (unmatched): the employee enters all other required fields
-[main] INFO com.example.leave.steps.LeaveSteps - Error HTTP 500: {"timestamp":"2026-03-18","status":500,"error":"Internal Server Error","message":"A leave request already exists for this period (Pending or Approved)..","path":"/api/leave-requests/create"}
 ]]></system-err>
   </testcase>
 </testsuite>

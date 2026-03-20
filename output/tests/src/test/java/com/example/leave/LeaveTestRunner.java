@@ -6,7 +6,7 @@ import io.cucumber.junit.CucumberOptions;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-    features = {"classpath:features/leave-request-service_02_employee-leave-request-management_20260318_162016.feature"},
+    features = "classpath:features",
     glue = "com.example.leave.steps",
     plugin = {
         "pretty",
