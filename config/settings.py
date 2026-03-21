@@ -103,12 +103,13 @@ def get_settings():
 
         # ================= PATHS =================
         paths=SimpleNamespace(
-    base_dir=base_dir,
-    features_dir=base_dir / "output" / "features",
-    tests_dir=base_dir / "output" / "tests",
-    output_dir=base_dir / "output",
-    pom_source=base_dir / "output" / "tests" / "pom.xml"   # ← ADD THIS
-),
+            base_dir=base_dir,
+            features_dir=base_dir / "output" / "features",
+            tests_dir=base_dir / "output" / "tests",
+            output_dir=base_dir / "output",
+            reports_dir=base_dir / "output" / "reports",
+            pom_source=base_dir / "output" / "tests" / "pom.xml"
+        ),
 
         # ================= BACKEND =================
         backend=SimpleNamespace(

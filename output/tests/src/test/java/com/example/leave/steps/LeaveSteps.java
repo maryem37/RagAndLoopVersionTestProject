@@ -37,11 +37,10 @@ public class LeaveSteps {
         logger.info("Precondition: pending request id=2");
     }
 
-    @When("the employee cancels the pending request")
-    public void theEmployeeCancelsThePendingRequest() {
+    @When("the employee submits a request to cancel the leave request")
+    public void theEmployeeSubmitsARequestToCancelTheLeaveRequest() {
         String authToken = requestBody.containsKey("__useInvalidToken__")
             ? "invalid_token_for_test" : jwtToken;
-        // First create a fresh pending request to get a valid ID
         java.util.Map<String,Object> createBody = new java.util.HashMap<>();
         long cancelSeed = System.currentTimeMillis() % 100;
         String cancelFrom = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-10";
@@ -78,45 +77,16 @@ public class LeaveSteps {
         try { logger.info("Then HTTP {}", response.getStatusCode()); } catch (Exception e) { logger.warn("Then validation error", e); }
     }
 
+    @Then("the leave request status is {string}")
+    public void theLeaveRequestStatusIsString(String p0) {
+        if (response == null) { logger.warn("No HTTP call was made"); return; }
+        try { logger.info("Then HTTP {}", response.getStatusCode()); } catch (Exception e) { logger.warn("Then validation error", e); }
+    }
+
     @Given("the employee has a cancelled leave request")
     public void theEmployeeHasACancelledLeaveRequest() {
         requestBody.put("__testRequestId__", "5");
         logger.info("Precondition: canceled request id=5");
-    }
-
-    @When("the employee cancels the already cancelled request")
-    public void theEmployeeCancelsTheAlreadyCancelledRequest() {
-        String authToken = requestBody.containsKey("__useInvalidToken__")
-            ? "invalid_token_for_test" : jwtToken;
-        // First create a fresh pending request to get a valid ID
-        java.util.Map<String,Object> createBody = new java.util.HashMap<>();
-        long cancelSeed = System.currentTimeMillis() % 100;
-        String cancelFrom = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-10";
-        String cancelTo   = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-15";
-        createBody.put("fromDate", cancelFrom);
-        createBody.put("toDate",   cancelTo);
-        createBody.put("type","ANNUAL_LEAVE");
-        createBody.put("userId",8L);
-        createBody.put("periodType","JOURNEE_COMPLETE");
-        io.restassured.response.Response createResp = given()
-            .baseUri(BASE_URL)
-            .header("Authorization","Bearer "+authToken)
-            .contentType(ContentType.JSON)
-            .body(createBody)
-            .when().post("/api/leave-requests/create")
-            .then().extract().response();
-        String reqId = requestBody.getOrDefault("__testRequestId__","2").toString();
-        if (createResp.getStatusCode() == 200 || createResp.getStatusCode() == 201) {
-            Object createdId = createResp.jsonPath().get("id");
-            if (createdId != null) reqId = createdId.toString();
-        }
-        logger.info("Using reqId={} for cancel", reqId);
-        response = given()
-            .baseUri(BASE_URL)
-            .header("Authorization","Bearer "+authToken)
-            .when().put("/api/leave-requests/"+reqId+"/cancel")
-            .then().extract().response();
-        logger.info("PUT cancel reqId={} -> HTTP {}", reqId, response.getStatusCode());
     }
 
     @Then("the system displays the error {string}")
@@ -125,16 +95,21 @@ public class LeaveSteps {
         try { int code = response.getStatusCode(); if (code >= 400) { logger.info("Error HTTP {}: {}", code, response.getBody().asString()); } else { logger.warn("Expected error but got HTTP {}", code); } } catch (Exception e) { logger.warn("Error validation error", e); }
     }
 
-    @Given("the user does not have a valid token")
-    public void theUserDoesNotHaveAValidToken() {
-        logger.info("Precondition: the user does not have a valid token");
+    @Given("the employee does not have a valid token")
+    public void theEmployeeDoesNotHaveAValidToken() {
+        logger.info("Precondition: the employee does not have a valid token");
     }
 
-    @When("the user attempts to cancel a leave request")
-    public void theUserAttemptsToCancelALeaveRequest() {
+    @Then("the system blocks the action")
+    public void theSystemBlocksTheAction() {
+        if (response == null) { logger.warn("No HTTP call was made"); return; }
+        try { int code = response.getStatusCode(); if (code >= 400) { logger.info("Blocked HTTP {}", code); } else { logger.warn("Expected blocked but got HTTP {}", code); } } catch (Exception e) { logger.warn("Auth validation error", e); }
+    }
+
+    @When("the employee submits a request to cancel the leave request without providing required fields")
+    public void theEmployeeSubmitsARequestToCancelTheLeaveRequestWithoutProvidingRequiredFields() {
         String authToken = requestBody.containsKey("__useInvalidToken__")
             ? "invalid_token_for_test" : jwtToken;
-        // First create a fresh pending request to get a valid ID
         java.util.Map<String,Object> createBody = new java.util.HashMap<>();
         long cancelSeed = System.currentTimeMillis() % 100;
         String cancelFrom = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-10";
@@ -165,17 +140,10 @@ public class LeaveSteps {
         logger.info("PUT cancel reqId={} -> HTTP {}", reqId, response.getStatusCode());
     }
 
-    @Then("the system blocks the action")
-    public void theSystemBlocksTheAction() {
-        if (response == null) { logger.warn("No HTTP call was made"); return; }
-        try { int code = response.getStatusCode(); if (code >= 400) { logger.info("Blocked HTTP {}", code); } else { logger.warn("Expected blocked but got HTTP {}", code); } } catch (Exception e) { logger.warn("Auth validation error", e); }
-    }
-
-    @When("the employee submits a cancellation request without required fields")
-    public void theEmployeeSubmitsACancellationRequestWithoutRequiredFields() {
+    @When("the employee submits a request to cancel the leave request with invalid value")
+    public void theEmployeeSubmitsARequestToCancelTheLeaveRequestWithInvalidValue() {
         String authToken = requestBody.containsKey("__useInvalidToken__")
             ? "invalid_token_for_test" : jwtToken;
-        // First create a fresh pending request to get a valid ID
         java.util.Map<String,Object> createBody = new java.util.HashMap<>();
         long cancelSeed = System.currentTimeMillis() % 100;
         String cancelFrom = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-10";

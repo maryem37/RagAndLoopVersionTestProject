@@ -166,7 +166,7 @@ class TestExecutorAgent:
         parts = [
             mvn,
             "clean",
-            "test",
+            "verify",
             f"-Dservice.name={service_name}",
         ]
 
@@ -201,7 +201,8 @@ class TestExecutorAgent:
             result.raw_output = proc.stdout + proc.stderr
             result.success    = proc.returncode == 0
             if result.raw_output:
-                logger.debug(f"   Maven output (first 2000 chars):\n{result.raw_output[:2000]}")
+                # Log full output for debugging
+                logger.debug(f"   Maven output:\n{result.raw_output}")
         except subprocess.TimeoutExpired:
             result.raw_output = "❌ Maven execution timed out after 300s."
             result.errors.append("Execution timeout exceeded.")
@@ -220,6 +221,40 @@ class TestExecutorAgent:
             result.success = False
         result.duration_ms = (time.time() - start) * 1000
         return result
+
+    def _backup_jacoco_reports(self, tests_dir: Path) -> None:
+        """
+        Copy JaCoCo XML/CSV reports from target/site/jacoco/ to output/jacoco/report/
+        so they survive Maven's next clean phase. Allows coverage_analyst to find them.
+        Stores in 'report' subdirectory so it's found BEFORE Maven's test project XML.
+        """
+        source_xml = tests_dir / "target" / "site" / "jacoco" / "jacoco.xml"
+        source_csv = tests_dir / "target" / "site" / "jacoco" / "jacoco.csv"
+        
+        backup_dir = tests_dir.parent / "jacoco" / "report"  # output/jacoco/report/
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            if source_xml.exists():
+                dest_xml = backup_dir / "jacoco.xml"
+                src_size  = source_xml.stat().st_size
+                dest_size = dest_xml.stat().st_size if dest_xml.exists() else 0
+                if src_size > dest_size:
+                    shutil.copy2(source_xml, dest_xml)
+                    logger.info(f"   ✓ Backed up JaCoCo XML: {dest_xml}")
+                else:
+                    logger.info(f"   ✓ Kept existing JaCoCo XML (microservice, {dest_size//1024}KB > {src_size//1024}KB)")
+            if source_csv.exists():
+                dest_csv = backup_dir / "jacoco.csv"
+                src_size  = source_csv.stat().st_size
+                dest_size = dest_csv.stat().st_size if dest_csv.exists() else 0
+                if src_size > dest_size:
+                    shutil.copy2(source_csv, dest_csv)
+                    logger.info(f"   ✓ Backed up JaCoCo CSV: {dest_csv}")
+                else:
+                    logger.info(f"   ✓ Kept existing JaCoCo CSV (microservice)")
+        except Exception as exc:
+            logger.warning(f"   ⚠ Could not backup JaCoCo reports: {exc}")
 
     def _parse_surefire_summary(self, tests_dir: Path, result: TestExecutionResult) -> None:
         pattern = re.search(
@@ -369,6 +404,9 @@ class TestExecutorAgent:
 
         logger.info("2️⃣  Executing Maven contract tests...")
         exec_result = self._run_maven(tests_dir, state.service_name)
+
+        # Backup JaCoCo XML to safe location (outside target/ so mvn clean won't delete it)
+        self._backup_jacoco_reports(tests_dir)
 
         logger.info("3️⃣  Parsing test reports...")
         self._parse_surefire_summary(tests_dir, exec_result)

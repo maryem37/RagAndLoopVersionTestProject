@@ -8,6 +8,20 @@ matching Java @Given/@When/@Then method — guaranteeing 100% step coverage
 with zero undefined steps. No LLM involved in step generation.
 
 The LLM is only used for pom.xml generation when no hand-crafted pom exists.
+
+CHANGE — JaCoCo support:
+  Every pom.xml that passes through this agent gets the jacoco-maven-plugin
+  injected automatically, via THREE complementary paths:
+    1. _inject_jacoco_into_pom()  — post-processes any pom.xml already on disk
+                                    (copied from source OR written by LLM)
+    2. _generate_pom_xml()        — LLM system prompt now explicitly requests
+                                    the JaCoCo plugin so it lands in the first
+                                    attempt
+    3. save_pom_and_setup()       — calls _inject_jacoco_into_pom() on the
+                                    final file regardless of how it was produced
+  This guarantees that `mvn clean verify` always writes
+  target/site/jacoco/jacoco.xml, enabling Agent 6 (coverage_analyst) to
+  parse real coverage data.
 """
 from __future__ import annotations
 
@@ -49,6 +63,113 @@ _M2_JARS = [
     "org/assertj/assertj-core", "org/slf4j/slf4j-api", "junit/junit",
     "org/apiguardian/apiguardian-api", "org/hamcrest/hamcrest",
 ]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# JaCoCo plugin XML block
+# Injected into every pom.xml this agent produces or copies.
+# ──────────────────────────────────────────────────────────────────────────────
+
+_JACOCO_PLUGIN_XML = """\
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>"""
+
+# Sentinel used to detect whether JaCoCo is already present
+_JACOCO_MARKER = "jacoco-maven-plugin"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# JaCoCo injection helper
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _inject_jacoco_into_pom(pom_path: Path) -> bool:
+    """
+    Ensure the JaCoCo plugin is present in the pom.xml at pom_path.
+
+    Strategy (in order of preference):
+      1. Already present  → do nothing, return False (no change needed).
+      2. <plugins> tag exists inside <build>  → insert _JACOCO_PLUGIN_XML
+         just before the closing </plugins>.
+      3. <build> exists but no <plugins>  → insert a <plugins>…</plugins>
+         block containing JaCoCo just before </build>.
+      4. No <build> at all  → append a minimal <build><plugins>…</plugins>
+         </build> block just before </project>.
+
+    Returns True if the file was modified, False if it was left untouched.
+    All reads/writes use explicit encoding="utf-8".
+    """
+    if not pom_path.exists():
+        logger.warning(f"   _inject_jacoco: {pom_path} not found — skipping")
+        return False
+
+    content = pom_path.read_text(encoding="utf-8")
+
+    # ── Already present? ──────────────────────────────────────────────
+    if _JACOCO_MARKER in content:
+        logger.info("   JaCoCo plugin already present in pom.xml — skipping injection")
+        return False
+
+    original = content
+
+    # ── Path 1: </plugins> exists ─────────────────────────────────────
+    if "</plugins>" in content:
+        content = content.replace(
+            "</plugins>",
+            f"{_JACOCO_PLUGIN_XML}\n            </plugins>",
+            1,                          # replace only the FIRST occurrence
+        )
+        logger.info("   JaCoCo plugin injected before </plugins>")
+
+    # ── Path 2: <build> exists but no <plugins> ───────────────────────
+    elif "<build>" in content:
+        plugins_block = (
+            "\n        <plugins>\n"
+            f"{_JACOCO_PLUGIN_XML}\n"
+            "        </plugins>"
+        )
+        content = content.replace(
+            "</build>",
+            f"{plugins_block}\n    </build>",
+            1,
+        )
+        logger.info("   JaCoCo plugin injected (new <plugins> block inside <build>)")
+
+    # ── Path 3: no <build> at all ─────────────────────────────────────
+    else:
+        build_block = (
+            "\n    <build>\n"
+            "        <plugins>\n"
+            f"{_JACOCO_PLUGIN_XML}\n"
+            "        </plugins>\n"
+            "    </build>"
+        )
+        content = content.replace(
+            "</project>",
+            f"{build_block}\n</project>",
+            1,
+        )
+        logger.info("   JaCoCo plugin injected (new <build> block before </project>)")
+
+    if content == original:
+        logger.warning("   _inject_jacoco: could not find an insertion point in pom.xml")
+        return False
+
+    pom_path.write_text(content, encoding="utf-8")
+    logger.success(f"   pom.xml updated with JaCoCo plugin → {pom_path}")
+    return True
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -193,7 +314,6 @@ def _step_to_annotation(text: str) -> str:
     """Convert step text to a safe Cucumber annotation string."""
     ann = re.sub(r'"[^"]*"', "{string}", text)
     ann = re.sub(r'\b\d+\b', "{int}", ann)
-    # Escape forward slashes — Cucumber treats '/' as alternative separator
     ann = ann.replace("/", "\\/")
     return ann
 
@@ -222,7 +342,7 @@ def _java_params(annotation: str) -> str:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Method body generators
+# Method body generators (unchanged)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _j(lines: List[str], indent: str = "        ") -> str:
@@ -304,7 +424,6 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
         return I + f'logger.info("When: {text}");'
 
     if kw == "Then":
-        # NO hard assertions - all wrapped in try-catch with logging fallback
         nul_check = I + 'if (response == null) { logger.warn("No HTTP call was made"); return; }\n'
         if "jwt token" in tl or "returns a jwt" in tl:
             return nul_check + _j([
@@ -434,7 +553,6 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
                 '        .header("Authorization","Bearer "+authToken)',
                 '        .when().post("/api/balances/init/8");',
                 '} catch (Exception ignored) {}',
-                '// Use unique dates per run to avoid duplicate-period rejection',
                 'long seed = System.currentTimeMillis() % 100;',
                 'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
                 'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
@@ -457,7 +575,6 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
             ])
         if "cancel" in tl:
             return auth + _j([
-                '// First create a fresh pending request to get a valid ID',
                 'java.util.Map<String,Object> createBody = new java.util.HashMap<>();',
                 'long cancelSeed = System.currentTimeMillis() % 100;',
                 'String cancelFrom = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-10";',
@@ -508,7 +625,6 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
                 '    .then().extract().response();',
                 'logger.info("PUT reject reqId={} -> HTTP {}", reqId, response.getStatusCode());',
             ])
-        # Unauthorized user trying to access leave endpoints
         if "access" in tl or "performs" in tl or "tries" in tl:
             return auth + _j([
                 'response = given()',
@@ -522,7 +638,6 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
         return auth + I + f'logger.info("When (unmatched): {text}");'
 
     if kw == "Then":
-        # NO hard assertions - all wrapped in try-catch with logging fallback
         nul_check = I + 'if (response == null) { logger.warn("No HTTP call was made"); return; }\n'
         if "creates the leave request" in tl or "creates the request" in tl:
             return nul_check + _j([
@@ -556,7 +671,7 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Deterministic Java builders
+# Deterministic Java builders (unchanged)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _build_steps_java(pkg: str, cls: str, base_url: str,
@@ -629,7 +744,6 @@ def _build_steps_java(pkg: str, cls: str, base_url: str,
 
 
 def _build_runner_java(pkg: str, cls: str, feature_files: List[str]) -> str:
-    # Always use wildcard path to avoid hardcoding timestamps from generated feature files
     runner = f"{cls}TestRunner"
     return (
         f"package com.example.{pkg};\n\n"
@@ -694,7 +808,10 @@ class TestWriterAgent:
     def _pkg(svc: str) -> str:
         return svc.replace("-", "").replace("_", "").lower()
 
-    # ── LLM (pom.xml only) ───────────────────────────────────────────
+    # ── LLM: pom.xml generation ───────────────────────────────────────
+    # The system prompt now explicitly requests JaCoCo so the LLM includes
+    # it in its first attempt (Path A).  _inject_jacoco_into_pom() then
+    # acts as a safety net in save_pom_and_setup() (Path B).
 
     def _call_llm_with_retry(self, primary, retry, kwargs: dict, label: str) -> str:
         active = primary
@@ -713,11 +830,15 @@ class TestWriterAgent:
         return raw
 
     def _generate_pom_xml(self, service_name: str) -> str:
+        # ── CHANGE: JaCoCo is now an explicit requirement in the prompt ──
         system = (
             "You are a Maven POM generator. Output ONLY valid pom.xml. "
             "Include Java 17, JUnit 4, Cucumber 7.x, RestAssured 5.x, "
             "AssertJ 3.x, SLF4J simple. surefire 3.x with "
             "<includes><include>**/*TestRunner.java</include></includes>. "
+            "REQUIRED: include jacoco-maven-plugin 0.8.11 with two executions: "
+            "(1) id=prepare-agent goal=prepare-agent, "
+            "(2) id=report phase=verify goal=report. "
             "groupId=com.example artifactId=contract-tests version=1.0.0."
         )
         p = ChatPromptTemplate.from_messages([
@@ -725,7 +846,7 @@ class TestWriterAgent:
             ("human", "Service: {service_name}\nOutput XML only."),
         ])
         r = ChatPromptTemplate.from_messages([
-            ("system", "Output ONLY valid Maven pom.xml. No markdown."),
+            ("system", "Output ONLY valid Maven pom.xml with jacoco-maven-plugin 0.8.11. No markdown."),
             ("human", "Service: {service_name}\nStart with <project"),
         ])
         raw = self._call_llm_with_retry(
@@ -734,7 +855,7 @@ class TestWriterAgent:
         )
         return _extract_xml_block(raw)
 
-    # ── Feature routing ───────────────────────────────────────────────
+    # ── Feature routing (unchanged) ───────────────────────────────────
 
     _SERVICE_FEATURE_KEYWORDS: Dict[str, List[str]] = {
         "auth":         ["auth", "login", "authentication", "employee-auth"],
@@ -778,7 +899,7 @@ class TestWriterAgent:
         logger.warning(f"   [{svc}] fallback to full gherkin_content")
         return state.gherkin_content, []
 
-    # ── Per-service generation ────────────────────────────────────────
+    # ── Per-service generation (unchanged) ────────────────────────────
 
     def generate_for_service(
         self,
@@ -806,7 +927,7 @@ class TestWriterAgent:
         logger.success(f"   [{svc}] Java generated and validated")
         return steps, runner_code
 
-    # ── File persistence ─────────────────────────────────────────────
+    # ── File persistence ──────────────────────────────────────────────
 
     def save_files_for_service(
         self, svc: str, steps: str, runner: str
@@ -831,6 +952,11 @@ class TestWriterAgent:
         return saved
 
     def save_pom_and_setup(self, service_name: str) -> List[Path]:
+        """
+        Write pom.xml (from source, LLM, or existing file) and then
+        unconditionally call _inject_jacoco_into_pom() so JaCoCo is
+        guaranteed to be present regardless of how the file was obtained.
+        """
         base = self.settings.paths.tests_dir
         base.mkdir(parents=True, exist_ok=True)
         saved: List[Path] = []
@@ -840,9 +966,11 @@ class TestWriterAgent:
             getattr(self.settings.paths, "pom_source", None)
             or self.settings.paths.base_dir / "tests" / "pom.xml"
         )
+
+        # ── Step 1: obtain pom.xml by any available means ─────────────
         if source.exists() and source.resolve() != dest.resolve():
             shutil.copy2(source, dest)
-            logger.info("   pom.xml copied")
+            logger.info("   pom.xml copied from source")
         elif dest.exists():
             logger.info("   pom.xml already in place")
         else:
@@ -852,25 +980,35 @@ class TestWriterAgent:
                 dest.write_text(pom_xml, encoding="utf-8")
                 logger.success("   pom.xml written (LLM)")
             else:
-                logger.warning("   pom.xml generation failed")
+                logger.warning("   pom.xml generation failed — JaCoCo cannot be injected")
 
+        # ── Step 2: ensure JaCoCo is present (safety net for all paths) ─
         if dest.exists():
+            injected = _inject_jacoco_into_pom(dest)
+            if injected:
+                logger.info("   JaCoCo plugin added to pom.xml by injection")
             saved.append(dest)
 
+        # ── Step 3: resource directories + setup doc ──────────────────
         (base / "src" / "test" / "resources" / "features").mkdir(
             parents=True, exist_ok=True
         )
         md = base / "CONTRACT_TEST_SETUP.md"
         md.write_text(
             f"# Contract Test Setup\n\n"
-            f"```bash\nexport TEST_JWT_TOKEN=<token>\n"
-            f"mvn clean test -Dservice.name={service_name}\n```\n",
+            f"```bash\n"
+            f"export TEST_JWT_TOKEN=<token>\n\n"
+            f"# Run tests AND generate JaCoCo coverage report:\n"
+            f"mvn clean verify -Dservice.name={service_name}\n\n"
+            f"# Coverage report will be written to:\n"
+            f"# tests/target/site/jacoco/jacoco.xml\n"
+            f"```\n",
             encoding="utf-8",
         )
         saved.append(md)
         return saved
 
-    # ── LangGraph entry point ─────────────────────────────────────────
+    # ── LangGraph entry point (unchanged) ─────────────────────────────
 
     def write_tests(self, state: TestAutomationState) -> TestAutomationState:
         t0 = time.time()

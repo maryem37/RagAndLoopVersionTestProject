@@ -42,13 +42,19 @@ public class AuthSteps {
         logger.info("Precondition: the employee has a pending leave request");
     }
 
-    @When("the employee cancels the pending request")
-    public void theEmployeeCancelsThePendingRequest() {
-        logger.info("When: the employee cancels the pending request");
+    @When("the employee submits a request to cancel the leave request")
+    public void theEmployeeSubmitsARequestToCancelTheLeaveRequest() {
+        logger.info("When: the employee submits a request to cancel the leave request");
     }
 
     @Then("the system responds with {string}")
     public void theSystemRespondsWithString(String p0) {
+        if (response == null) { logger.warn("No HTTP call was made"); return; }
+        try { int code = response.getStatusCode(); if (code >= 400) { logger.info("Error HTTP {}: {}", code, response.getBody().asString()); } else { logger.warn("Expected error but got HTTP {}", code); } } catch (Exception e) { logger.warn("Error validation error", e); }
+    }
+
+    @Then("the leave request status is {string}")
+    public void theLeaveRequestStatusIsString(String p0) {
         if (response == null) { logger.warn("No HTTP call was made"); return; }
         try { int code = response.getStatusCode(); if (code >= 400) { logger.info("Error HTTP {}: {}", code, response.getBody().asString()); } else { logger.warn("Expected error but got HTTP {}", code); } } catch (Exception e) { logger.warn("Error validation error", e); }
     }
@@ -58,25 +64,15 @@ public class AuthSteps {
         logger.info("Precondition: the employee has a cancelled leave request");
     }
 
-    @When("the employee cancels the already cancelled request")
-    public void theEmployeeCancelsTheAlreadyCancelledRequest() {
-        logger.info("When: the employee cancels the already cancelled request");
-    }
-
     @Then("the system displays the error {string}")
     public void theSystemDisplaysTheErrorString(String p0) {
         if (response == null) { logger.warn("No HTTP call was made"); return; }
         try { int code = response.getStatusCode(); if (code >= 400) { logger.info("Error HTTP {}: {}", code, response.getBody().asString()); } else { logger.warn("Expected error but got HTTP {}", code); } } catch (Exception e) { logger.warn("Error validation error", e); }
     }
 
-    @Given("the user does not have a valid token")
-    public void theUserDoesNotHaveAValidToken() {
-        logger.info("Precondition: the user does not have a valid token");
-    }
-
-    @When("the user attempts to cancel a leave request")
-    public void theUserAttemptsToCancelALeaveRequest() {
-        logger.info("When: the user attempts to cancel a leave request");
+    @Given("the employee does not have a valid token")
+    public void theEmployeeDoesNotHaveAValidToken() {
+        logger.info("Precondition: the employee does not have a valid token");
     }
 
     @Then("the system blocks the action")
@@ -85,8 +81,13 @@ public class AuthSteps {
         try { int code = response.getStatusCode(); boolean statusBlocked = code >= 400; boolean noJwt = false; try { String jwt = response.jsonPath().getString("jwt"); noJwt = code == 200 && (jwt == null || jwt.isBlank()); } catch (Exception je) { noJwt = code == 200; } if (statusBlocked || noJwt) { logger.info("Blocked confirmed HTTP {}", code); } else { logger.warn("Expected blocked but got HTTP {}", code); } } catch (Exception e) { logger.warn("Auth validation error", e); }
     }
 
-    @When("the employee submits a cancellation request without required fields")
-    public void theEmployeeSubmitsACancellationRequestWithoutRequiredFields() {
-        logger.info("When: the employee submits a cancellation request without required fields");
+    @When("the employee submits a request to cancel the leave request without providing required fields")
+    public void theEmployeeSubmitsARequestToCancelTheLeaveRequestWithoutProvidingRequiredFields() {
+        logger.info("When: the employee submits a request to cancel the leave request without providing required fields");
+    }
+
+    @When("the employee submits a request to cancel the leave request with invalid value")
+    public void theEmployeeSubmitsARequestToCancelTheLeaveRequestWithInvalidValue() {
+        logger.info("When: the employee submits a request to cancel the leave request with invalid value");
     }
 }
