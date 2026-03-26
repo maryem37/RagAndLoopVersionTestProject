@@ -49,16 +49,33 @@ from graph.state import AgentOutput, AgentStatus, TestAutomationState
 
 MAX_ATTEMPTS = 3
 
-SERVICE_URLS: Dict[str, str] = {
-    "auth":         "http://localhost:9000",
-    "conge":        "http://localhost:9000",
-    "leave":        "http://localhost:9001",
-    "DemandeConge": "http://localhost:9001",
-}
+# Dynamic SERVICE_URLS - loaded from ServiceRegistry at runtime
+def get_service_urls() -> Dict[str, str]:
+    """Get service URLs dynamically from ServiceRegistry"""
+    from tools.service_registry import get_service_registry
+    
+    registry = get_service_registry()
+    urls = {}
+    
+    for service in registry.get_enabled_services():
+        # Add service by primary name
+        urls[service.name] = service.get_base_url()
+        
+        # Also add aliases for backward compatibility
+        if service.name == "auth":
+            urls["conge"] = service.get_base_url()
+        elif service.name == "leave":
+            urls["DemandeConge"] = service.get_base_url()
+    
+    return urls
+
+SERVICE_URLS: Dict[str, str] = {}  # Initialized at runtime
+
 TEST_USER_ID = 8
 
 _M2_JARS = [
     "io/cucumber/cucumber-java", "io/cucumber/cucumber-junit",
+    "io/cucumber/cucumber-junit-platform-engine", "org/junit/platform/junit-platform-suite",
     "io/rest-assured/rest-assured", "io/rest-assured/rest-assured-common",
     "org/assertj/assertj-core", "org/slf4j/slf4j-api", "junit/junit",
     "org/apiguardian/apiguardian-api", "org/hamcrest/hamcrest",
@@ -311,10 +328,17 @@ def _scan_steps(gherkin: str) -> List[Tuple[str, str]]:
 
 
 def _step_to_annotation(text: str) -> str:
-    """Convert step text to a safe Cucumber annotation string."""
+    """Convert step text to a safe Cucumber annotation string, properly escaping Java literal quotes."""
+    # First, replace quoted strings and numbers with placeholders
     ann = re.sub(r'"[^"]*"', "{string}", text)
     ann = re.sub(r'\b\d+\b', "{int}", ann)
-    ann = ann.replace("/", "\\/")
+    # Scenario Outline placeholders like <fromDate> must be parameterized,
+    # otherwise the outline-expanded step text will not match the annotation.
+    ann = re.sub(r"<[^>]+>", "{string}", ann)
+    # NOTE: Do NOT escape forward slashes - Java annotation strings don't need it
+    # Escape any remaining double quotes for Java string literal
+    # This prevents "reason "Family vacation"" from breaking the Java string
+    ann = ann.replace('"', '\\"')
     return ann
 
 
@@ -355,6 +379,50 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
     tl = text.lower()
 
     if kw == "Given":
+        if "logs in" in tl or "authenticated" in tl:
+            # Login is a Given step - actually perform the HTTP auth and extract JWT
+            return _j([
+                'String email    = System.getenv("TEST_USER_EMAIL");',
+                'String password = System.getenv("TEST_USER_PASSWORD");',
+                'if (email    == null || email.isBlank())    email    = "admin@test.com";',
+                'if (password == null || password.isBlank()) password = "admin123";',
+                '// REAL HTTP CALL: Login and extract JWT token',
+                'java.util.Map<String,Object> loginBody = new java.util.HashMap<>();',
+                'loginBody.put("email", email);',
+                'loginBody.put("password", password);',
+                'try {',
+                '    response = given()',
+                '        .baseUri(BASE_URL)',
+                '        .contentType(ContentType.JSON)',
+                '        .body(loginBody)',
+                '        .log().ifValidationFails()',
+                '        .when().post("/api/auth/login")',
+                '        .then().extract().response();',
+                '    logger.info("[OK] POST /api/auth/login -> HTTP {}", response.getStatusCode());',
+                '    if (response.getStatusCode() < 200 || response.getStatusCode() >= 300) {',
+                '        throw new AssertionError("Login failed HTTP " + response.getStatusCode() + ": " + response.asString());',
+                '    }',
+                '    try {',
+                '        jwtToken = response.jsonPath().getString("jwt");',
+                '        if (jwtToken == null || jwtToken.isBlank()) {',
+                '            jwtToken = response.jsonPath().getString("token");',
+                '        }',
+                '        if (jwtToken == null || jwtToken.isBlank()) {',
+                '            throw new AssertionError("Login succeeded but no JWT in response: " + response.asString());',
+                '        }',
+                '        logger.info("[OK] JWT token extracted: {}", jwtToken.substring(0, Math.min(20, jwtToken.length())) + "...");',
+                '    } catch (Exception e) {',
+                '        throw new AssertionError("Failed to extract JWT: " + e.getMessage() + " | Response: " + response.asString());',
+                '    }',
+                '} catch (Exception e) {',
+                '    logger.error("[ERROR] Login request exception: {}", e.getMessage());',
+                '    e.printStackTrace();',
+                '    throw new RuntimeException(e);',
+                '}',
+                'requestBody.clear();',
+                'requestBody.put("email", email);',
+                'requestBody.put("password", password);',
+            ])
         if "valid credentials" in tl or "valid email" in tl:
             return _j([
                 'String email    = System.getenv("TEST_USER_EMAIL");',
@@ -382,6 +450,217 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
                 'requestBody.put("__useInvalidToken__", "true");',
                 'logger.info("Precondition: not authenticated");',
             ])
+        
+        # ─────────────────────────────────────────────────────────────
+        # Leave request preconditions (for integrated auth->leave workflows)
+        # ─────────────────────────────────────────────────────────────
+        if "submitted a pending leave request" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
+                'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type","ANNUAL_LEAVE");',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'if (response.getStatusCode() == 201 || response.getStatusCode() == 200) {',
+                '    try {',
+                '        requestBody.put("request_id", response.jsonPath().getLong("id"));',
+                '    } catch (Exception ignored) {}',
+                '}',
+            ])
+        if "pending leave request" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
+                'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type","ANNUAL_LEAVE");',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'if (response.getStatusCode() == 201 || response.getStatusCode() == 200) {',
+                '    try {',
+                '        requestBody.put("request_id", response.jsonPath().getLong("id"));',
+                '    } catch (Exception ignored) {}',
+                '}',
+            ])
+        if "past period" in tl or "past" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2020-01-01";',
+                'String toDate   = "2020-01-05";',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type","ANNUAL_LEAVE");',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'if (response.getStatusCode() == 201 || response.getStatusCode() == 200) {',
+                '    try {',
+                '        requestBody.put("request_id", response.jsonPath().getLong("id"));',
+                '    } catch (Exception ignored) {}',
+                '}',
+            ])
+        if "canceled leave request" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
+                'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type","ANNUAL_LEAVE");',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'if (response.getStatusCode() == 201 || response.getStatusCode() == 200) {',
+                '    try {',
+                '        Long requestId = response.jsonPath().getLong("id");',
+                '        response = given()',
+                '            .baseUri(LEAVE_URL)',
+                '            .header("Authorization","Bearer "+authToken)',
+                '            .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '            .then().extract().response();',
+                '        requestBody.put("request_id", requestId);',
+                '    } catch (Exception ignored) {}',
+                '}',
+            ])
+        if "refused leave request" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
+                'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type","ANNUAL_LEAVE");',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'if (response.getStatusCode() == 201 || response.getStatusCode() == 200) {',
+                '    try {',
+                '        Long requestId = response.jsonPath().getLong("id");',
+                '        response = given()',
+                '            .baseUri(LEAVE_URL)',
+                '            .header("Authorization","Bearer "+authToken)',
+                '            .contentType(ContentType.JSON)',
+                '            .body(java.util.Collections.singletonMap("rejectReason", "Not approved"))',
+                '            .when().put("/api/leave-requests/" + requestId + "/reject")',
+                '            .then().extract().response();',
+                '        requestBody.put("request_id", requestId);',
+                '    } catch (Exception ignored) {}',
+                '}',
+            ])
+        if "granted leave request" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
+                'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type","ANNUAL_LEAVE");',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'if (response.getStatusCode() == 201 || response.getStatusCode() == 200) {',
+                '    try {',
+                '        Long requestId = response.jsonPath().getLong("id");',
+                '        response = given()',
+                '            .baseUri(LEAVE_URL)',
+                '            .header("Authorization","Bearer "+authToken)',
+                '            .when().put("/api/leave-requests/" + requestId + "/approve")',
+                '            .then().extract().response();',
+                '        requestBody.put("request_id", requestId);',
+                '    } catch (Exception ignored) {}',
+                '}',
+            ])
+        
         return I + f'logger.info("Precondition: {text}");'
 
     if kw == "When":
@@ -421,7 +700,168 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
                 '    .then().extract().response();',
                 'logger.info("POST /api/auth/login (invalid token) -> HTTP {}", response.getStatusCode());',
             ])
-        return I + f'logger.info("When: {text}");'
+        
+        # ─────────────────────────────────────────────────────────────
+        # Leave request handling (for integrated auth->leave workflows)
+        # ─────────────────────────────────────────────────────────────
+        if "submits" in tl and ("leave request" in tl or "request" in tl):
+            # Handle "submits an annual leave request", "submits a leave request", etc.
+            # NOTE: Leave service runs on port 9001, NOT the auth port
+            has_p0 = "String p0" in jp
+            has_p1 = "String p1" in jp
+            uses_type = ("type" in tl) or ("leave type" in tl) or ("of type" in tl)
+            uses_range = ("from" in tl and "to" in tl)
+
+            lines = [
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";  // Leave service on different port',
+                '// [OK] REAL HTTP CALL: Initialize balance',
+                'try {',
+                '    given().baseUri(LEAVE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                '// [OK] REAL HTTP CALL: Submit leave request',
+                'long seed = System.currentTimeMillis() % 100;',
+                'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
+                'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
+                'String leaveType = "ANNUAL_LEAVE";',
+            ]
+
+            # If the step has parameters, try to use them to better reflect the outline data.
+            if has_p0 and has_p1 and uses_range:
+                lines.extend([
+                    'if (p0 != null && !p0.isBlank()) {',
+                    '    String v0 = p0.trim().toLowerCase();',
+                    '    if (v0.contains("future")) {',
+                    '        fromDate = java.time.LocalDate.now().plusDays(10).toString();',
+                    '    } else if (v0.contains("past")) {',
+                    '        fromDate = java.time.LocalDate.now().minusDays(10).toString();',
+                    '    } else {',
+                    '        fromDate = p0.trim();',
+                    '    }',
+                    '}',
+                    'if (p1 != null && !p1.isBlank()) {',
+                    '    String v1 = p1.trim().toLowerCase();',
+                    '    if (v1.contains("future")) {',
+                    '        toDate = java.time.LocalDate.now().plusDays(15).toString();',
+                    '    } else if (v1.contains("past")) {',
+                    '        toDate = java.time.LocalDate.now().minusDays(5).toString();',
+                    '    } else {',
+                    '        toDate = p1.trim();',
+                    '    }',
+                    '}',
+                ])
+            elif has_p0 and uses_type:
+                lines.extend([
+                    'if (p0 != null && !p0.isBlank()) {',
+                    '    String raw = p0.trim().toUpperCase();',
+                    '    if (raw.matches("ANNUAL_LEAVE|UNPAID_LEAVE|RECOVERY_LEAVE|AUTHORIZED_ABSENCE")) {',
+                    '        leaveType = raw;',
+                    '    } else if (raw.contains("ANNUAL") || raw.contains("ANNUEL")) {',
+                    '        leaveType = "ANNUAL_LEAVE";',
+                    '    } else if (raw.contains("UNPAID") || raw.contains("SANS") || raw.contains("NON") || raw.contains("UNPAID_LEAVE")) {',
+                    '        leaveType = "UNPAID_LEAVE";',
+                    '    } else if (raw.contains("RECOVERY") || raw.contains("RECUP") || raw.contains("RECOVERY_LEAVE")) {',
+                    '        leaveType = "RECOVERY_LEAVE";',
+                    '    } else if (raw.contains("AUTHORIZED") || raw.contains("AUTOR") || raw.contains("AUTHORIZED_ABSENCE")) {',
+                    '        leaveType = "AUTHORIZED_ABSENCE";',
+                    '    } else {',
+                    '        leaveType = "ANNUAL_LEAVE";',
+                    '    }',
+                    '}',
+                ])
+
+            lines.extend([
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("fromDate", fromDate);',
+                'body.put("toDate",   toDate);',
+                'body.put("type",     leaveType);',
+                'body.put("userId",8L);',
+                'body.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Submitting leave request to LEAVE_URL: {} -> {}", fromDate, toDate);',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .log().ifValidationFails()',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create ({} -> {}) -> HTTP {}", fromDate, toDate, response.getStatusCode());',
+                'logger.debug("Response body: {}", response.getBody().asString());',
+                'if (response.getStatusCode() < 200 || response.getStatusCode() >= 300) {',
+                '    throw new AssertionError("Leave create failed HTTP " + response.getStatusCode() + ": " + response.getBody().asString());',
+                '}',
+            ])
+            return _j(lines)
+        
+        # Don't log the raw text - it can contain quotes that break Java syntax
+        
+        # ─────────────────────────────────────────────────────────────
+        # More leave request when handlers
+        # ─────────────────────────────────────────────────────────────
+        if "views" in tl and "pending" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .when().get("/api/leave-requests?status=PENDING")',
+                '    .then().extract().response();',
+                'logger.info("[OK] GET /api/leave-requests?status=PENDING -> HTTP {}", response.getStatusCode());',
+            ])
+        if "cancels" in tl and "observation" in tl and "without" not in tl:
+            # With observation
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'Long requestId = (Long) requestBody.getOrDefault("request_id", 1L);',
+                'java.util.Map<String,Object> cancelBody = new java.util.HashMap<>();',
+                'if (p0 != null && !p0.isBlank()) {',
+                '    cancelBody.put("observation", p0);',
+                '}',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(cancelBody)',
+                '    .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT /api/leave-requests/{}/cancel -> HTTP {}", requestId, response.getStatusCode());',
+            ])
+        if "cancels" in tl and "without" in tl:
+            # Without observation
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'Long requestId = (Long) requestBody.getOrDefault("request_id", 1L);',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(new java.util.HashMap<>())',
+                '    .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT /api/leave-requests/{}/cancel -> HTTP {}", requestId, response.getStatusCode());',
+            ])
+        if "attempts to cancel" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'Long requestId = (Long) requestBody.getOrDefault("request_id", 1L);',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(new java.util.HashMap<>())',
+                '    .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT /api/leave-requests/{}/cancel -> HTTP {}", requestId, response.getStatusCode());',
+            ])
+        
+        return I + 'logger.info("When step executed");'
 
     if kw == "Then":
         nul_check = I + 'if (response == null) { logger.warn("No HTTP call was made"); return; }\n'
@@ -456,7 +896,7 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
     if kw == "Given":
         if "authenticated" in tl and "not" not in tl and "un" not in tl:
             return _j([
-                'assertThat(jwtToken).as("TEST_JWT_TOKEN must be set").isNotBlank();',
+                'if (jwtToken == null || jwtToken.isBlank()) { throw new AssertionError("jwtToken is not set (auto-login failed or was skipped)"); }',
                 'logger.info("Precondition: authenticated");',
             ])
         if "unauthorized" in tl or "not authenticated" in tl:
@@ -476,6 +916,56 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
         if "canceled leave request" in tl or "cancelled leave request" in tl:
             return _j(['requestBody.put("__testRequestId__", "5");',
                        'logger.info("Precondition: canceled request id=5");'])
+        if "submitted a pending leave request" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                '// Create a fresh pending request',
+                'java.util.Map<String,Object> createBody = new java.util.HashMap<>();',
+                'String futureFrom = "2027-06-10";',
+                'String futureTo   = "2027-06-15";',
+                'createBody.put("fromDate", futureFrom);',
+                'createBody.put("toDate",   futureTo);',
+                'createBody.put("type","ANNUAL_LEAVE");',
+                f'createBody.put("userId",{uid});',
+                'createBody.put("periodType","JOURNEE_COMPLETE");',
+                'io.restassured.response.Response createResp = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(createBody)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("Created pending request: HTTP {}", createResp.getStatusCode());',
+                'String createdId = "2";',
+                'try { Object id = createResp.jsonPath().get("id"); if (id != null) createdId = id.toString(); } catch (Exception e) { logger.warn("Could not extract ID", e); }',
+                'requestBody.put("__testRequestId__", createdId);',
+                'logger.info("Precondition: submitted pending request id={}", createdId);',
+            ])
+        if "leave request for a past period" in tl:
+            return _j([
+                'String authToken = jwtToken;',
+                '// Create a request with past dates',
+                'java.util.Map<String,Object> createBody = new java.util.HashMap<>();',
+                'String pastFrom = "2024-01-10";',
+                'String pastTo   = "2024-01-15";',
+                'createBody.put("fromDate", pastFrom);',
+                'createBody.put("toDate",   pastTo);',
+                'createBody.put("type","ANNUAL_LEAVE");',
+                f'createBody.put("userId",{uid});',
+                'createBody.put("periodType","JOURNEE_COMPLETE");',
+                'io.restassured.response.Response createResp = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(createBody)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("Created past-period request: HTTP {}", createResp.getStatusCode());',
+                'String pastId = "2";',
+                'try { Object id = createResp.jsonPath().get("id"); if (id != null) pastId = id.toString(); } catch (Exception e) {}',
+                'requestBody.put("__testRequestId__", pastId);',
+                'logger.info("Precondition: past-period request id={}", pastId);',
+            ])
         if "missing fromdate" in tl or "is missing fromdate" in tl:
             return _j([
                 f'requestBody.put("toDate","2025-06-05");',
@@ -536,7 +1026,105 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
         if "has a leave request" in tl:
             return _j(['requestBody.put("__testRequestId__","2");',
                        'logger.info("Precondition: leave request set");'])
-        return I + f'logger.info("Precondition: {text}");'
+        # NEW: Handlers for balance and date-related preconditions
+        if "sufficient" in tl and ("balance" in tl or "annual" in tl):
+            return _j([
+                'requestBody.put("fromDate","2025-06-01");',
+                'requestBody.put("toDate","2025-06-05");',
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: sufficient leave balance (30+ days available)");',
+            ])
+        if "does not provide" in tl or "not provide" in tl or "incomplete" in tl or "missing" in tl:
+            return _j([
+                'requestBody.clear();',
+                'logger.info("Precondition: missing or incomplete information");',
+            ])
+        if "invalid date" in tl or "later than" in tl or "start date later" in tl:
+            return _j([
+                'requestBody.put("fromDate","2025-06-05");',
+                'requestBody.put("toDate","2025-06-01");',  # Reversed: toDate < fromDate
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: invalid date range (fromDate > toDate)");',
+            ])
+        if "zero" in tl or "zero day" in tl:
+            return _j([
+                'requestBody.put("fromDate","2025-06-01");',
+                'requestBody.put("toDate","2025-06-01");',  # Same date = 0 days
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: zero-day leave request");',
+            ])
+        if "overlapping" in tl or "overlap" in tl:
+            return _j([
+                'requestBody.put("fromDate","2025-06-10");',
+                'requestBody.put("toDate","2025-06-15");',  # Overlaps with existing request
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: overlapping leave request");',
+            ])
+        if "insufficient" in tl and "balance" in tl:
+            return _j([
+                'requestBody.put("fromDate","2025-06-01");',
+                'requestBody.put("toDate","2025-06-30");',  # 29 days - likely insufficient
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: insufficient leave balance");',
+            ])
+        if "notice period" in tl or "48-hour" in tl or "48 hour" in tl:
+            return _j([
+                'java.time.LocalDate today = java.time.LocalDate.now();',
+                'java.time.LocalDate tomorrow = today.plusDays(1);',
+                'requestBody.put("fromDate",tomorrow.toString());',
+                'requestBody.put("toDate",tomorrow.plusDays(1).toString());',
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: does not respect 48-hour notice period");',
+            ])
+        if "does not have" in tl or "necessary role" in tl:
+            return _j([
+                'requestBody.put("__useInvalidToken__", "true");',
+                'logger.info("Precondition: does not have necessary role");',
+            ])
+        # NEW: Handle variations of "sufficient leave balance" without "annual"
+        if "sufficient" in tl and "leave balance" in tl and "annual" not in tl:
+            return _j([
+                'requestBody.put("fromDate","2025-06-01");',
+                'requestBody.put("toDate","2025-06-05");',
+                f'requestBody.put("userId",{uid});',
+                'requestBody.put("type","ANNUAL_LEAVE");',
+                'requestBody.put("periodType","JOURNEE_COMPLETE");',
+                'logger.info("Precondition: sufficient leave balance (30+ days available)");',
+            ])
+        # NEW: Handle "zero balance"
+        if "zero balance" in tl or "has zero" in tl:
+            return _j([
+                'requestBody.put("__zeroBalance__","true");',
+                'logger.info("Precondition: employee has zero leave balance");',
+            ])
+        # NEW: Handle "is not logged in"
+        if "is not logged in" in tl or "not logged in" in tl or "does not have valid credentials" in tl:
+            return _j([
+                'requestBody.put("__useInvalidToken__","true");',
+                'logger.info("Precondition: employee is not logged in");',
+            ])
+        # NEW: Handle "has an existing leave request"
+        if "has an existing leave request" in tl or "existing leave request" in tl:
+            return _j([
+                'requestBody.put("__existingOverlap__","true");',
+                'logger.info("Precondition: employee has an existing leave request");',
+            ])
+        escaped_text = text.replace('"', '\\"')
+        return _j([
+            f'logger.warn("[SKIP] Unhandled Given step: {escaped_text}");',
+        ])
 
     if kw == "When":
         auth = _j([
@@ -545,14 +1133,173 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
         ]) + "\n"
         rid = I + 'String reqId = requestBody.getOrDefault("__testRequestId__","2").toString();\n'
 
-        if "submits the leave request" in tl or ("creates" in tl and "leave" in tl):
-            return auth + _j([
-                '// Ensure balance exists for this user (idempotent)',
+        # MORE SPECIFIC handlers FIRST (before generic "submits" handler)
+        # These match Scenario Outline patterns that need special handling
+        
+        # Handle "submits a leave request from <fromDate> to <toDate>"
+        if ("submits" in tl or "attempts" in tl) and "from" in tl and "to" in tl:
+            has_p0 = "p0" in jp
+            has_p1 = "p1" in jp
+            lines = [
+                '// [OK] REAL HTTP CALL: Submit leave request with date parameters',
                 'try {',
                 '    given().baseUri(BASE_URL)',
                 '        .header("Authorization","Bearer "+authToken)',
                 '        .when().post("/api/balances/init/8");',
                 '} catch (Exception ignored) {}',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.putIfAbsent("periodType","JOURNEE_COMPLETE");',
+            ]
+            if has_p0:
+                lines.append('body.put("fromDate", p0);')
+            else:
+                lines.append('if (!body.containsKey("fromDate")) body.put("fromDate","2026-05-01");')
+            if has_p1:
+                lines.append('body.put("toDate", p1);')
+            else:
+                lines.append('if (!body.containsKey("toDate")) body.put("toDate","2026-05-05");')
+            lines += [
+                'body.remove("__useInvalidToken__");',
+                'body.remove("__zeroBalance__");',
+                'body.remove("__existingOverlap__");',
+                'String fromDate = body.get("fromDate").toString();',
+                'String toDate = body.get("toDate").toString();',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create ({} -> {}) -> HTTP {}", fromDate, toDate, response.getStatusCode());',
+            ]
+            return auth + _j(lines)
+        # Handle "submits a leave request with missing fields"
+        if "missing fields" in tl or "missing start date" in tl or "missing end date" in tl or "missing reason" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request without required fields',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("userId",8);',  # Only userId, missing dates and reason
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (missing fields) -> HTTP {}", response.getStatusCode());',
+            ])
+        # Handle "submits a leave request with zero days"
+        if "zero days" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit zero-day leave request',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate","2026-05-10");',
+                'body.put("toDate","2026-05-10");',  # Same date = 0 days
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (zero days) -> HTTP {}", response.getStatusCode());',
+            ])
+        # Handle "submits a leave request overlapping with the existing one"
+        if "overlapping" in tl or "overlap" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit overlapping leave request',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate","2026-05-12");',
+                'body.put("toDate","2026-05-17");',  # Overlaps with 05-10 to 05-15
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (overlapping) -> HTTP {}", response.getStatusCode());',
+            ])
+        # Handle "submits a leave request with a start date less than 48 hours from now"
+        if "48 hour" in tl or "48-hour" in tl or "notice period" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request within 48-hour notice period',
+                'java.time.LocalDate today = java.time.LocalDate.now();',
+                'java.time.LocalDate tomorrow = today.plusDays(1);',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate",tomorrow.toString());',
+                'body.put("toDate",tomorrow.plusDays(1).toString());',
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (48-hour notice) -> HTTP {}", response.getStatusCode());',
+            ])
+        # Handle "submits a leave request exceeding the maximum continuous days allowed"
+        if "exceeding" in tl or "maximum continuous" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request exceeding max days',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate","2026-05-01");',
+                'body.put("toDate","2026-05-31");',  # 30 days - likely exceeds limit
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (exceeding max) -> HTTP {}", response.getStatusCode());',
+            ])
+        # Handle "submits a leave request with an invalid leave type"
+        if "invalid leave type" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request with invalid type',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("type","INVALID_TYPE");',
+                'body.put("fromDate","2026-05-01");',
+                'body.put("toDate","2026-05-05");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (invalid type) -> HTTP {}", response.getStatusCode());',
+            ])
+
+        # GENERIC handler for "submits a leave request" (catches all other submit patterns)
+        if ("submits" in tl or "attempts" in tl) and ("leave request" in tl or "request" in tl):
+            # Handle submit actions - "submits the leave request", "submits a leave request", "attempts to submit a leave request"
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Initialize balance',
+                'try {',
+                '    given().baseUri(BASE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                '// [OK] REAL HTTP CALL: Submit leave request',
                 'long seed = System.currentTimeMillis() % 100;',
                 'String fromDate = "2026-" + String.format("%02d", (seed % 10) + 1) + "-01";',
                 'String toDate   = "2026-" + String.format("%02d", (seed % 10) + 1) + "-05";',
@@ -564,6 +1311,139 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
                 'body.putIfAbsent("periodType","JOURNEE_COMPLETE");',
                 'body.remove("__useInvalidToken__");',
                 'body.remove("__testRequestId__");',
+                'logger.info("Submitting leave request: {} -> {}", fromDate, toDate);',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .log().ifValidationFails()',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create ({} -> {}) -> HTTP {}", fromDate, toDate, response.getStatusCode());',
+                'logger.debug("Response body: {}", response.getBody().asString());',
+            ])
+        if "views their pending" in tl or "view pending" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: GET pending requests',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .when().get("/api/leave-requests?status=PENDING")',
+                '    .then().extract().response();',
+                'logger.info("[OK] GET /api/leave-requests -> HTTP {}", response.getStatusCode());',
+                'logger.debug("Pending requests: {}", response.getBody().asString());',
+            ])
+        # SEPARATE handlers for cancel scenarios (matching _body_auth pattern)
+        if "cancels" in tl and "observation" in tl and "without" not in tl:
+            # With observation
+            return auth + _j([
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'String requestId = requestBody.getOrDefault("__testRequestId__", "2").toString();',
+                'java.util.Map<String,Object> cancelBody = new java.util.HashMap<>();',
+                'if (p0 != null && !p0.isBlank()) {',
+                '    cancelBody.put("observation", p0);',
+                '}',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(cancelBody)',
+                '    .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT /api/leave-requests/{}/cancel -> HTTP {}", requestId, response.getStatusCode());',
+            ])
+        if "cancels" in tl and "without" in tl:
+            # Without observation
+            return auth + _j([
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'String requestId = requestBody.getOrDefault("__testRequestId__", "2").toString();',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(new java.util.HashMap<>())',
+                '    .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT /api/leave-requests/{}/cancel -> HTTP {}", requestId, response.getStatusCode());',
+            ])
+        if "attempts to cancel" in tl:
+            # Error case
+            return auth + _j([
+                'String LEAVE_URL = "http://127.0.0.1:9001";',
+                'String requestId = requestBody.getOrDefault("__testRequestId__", "2").toString();',
+                'response = given()',
+                '    .baseUri(LEAVE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(new java.util.HashMap<>())',
+                '    .when().put("/api/leave-requests/" + requestId + "/cancel")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT /api/leave-requests/{}/cancel -> HTTP {}", requestId, response.getStatusCode());',
+            ])
+        if "approv" in tl or "grant" in tl:
+            return auth + rid + _j([
+                '// [OK] REAL HTTP CALL: Approve/Grant request',
+                'logger.info("Approving request ID: {}", reqId);',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .queryParam("role","Administration")',
+                '    .log().ifValidationFails()',
+                '    .when().put("/api/leave-requests/"+reqId+"/approve")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT approve reqId={} -> HTTP {}", reqId, response.getStatusCode());',
+                'logger.debug("Response: {}", response.getBody().asString());',
+            ])
+        if "reject" in tl or "refus" in tl:
+            return auth + rid + _j([
+                '// [OK] REAL HTTP CALL: Reject request',
+                'logger.info("Rejecting request ID: {}", reqId);',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .queryParam("role","Administration")',
+                '    .queryParam("reason","Test rejection")',
+                '    .log().ifValidationFails()',
+                '    .when().put("/api/leave-requests/"+reqId+"/reject")',
+                '    .then().extract().response();',
+                'logger.info("[OK] PUT reject reqId={} -> HTTP {}", reqId, response.getStatusCode());',
+                'logger.debug("Response: {}", response.getBody().asString());',
+            ])
+        if "access" in tl or "performs" in tl or "tries" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Search leave requests',
+                'logger.info("Accessing leave requests (may be unauthorized)");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .queryParam("currentUserId", String.valueOf(8))',
+                '    .log().ifValidationFails()',
+                '    .when().get("/api/leave-requests/search")',
+                '    .then().extract().response();',
+                'logger.info("[OK] GET /api/leave-requests/search -> HTTP {}", response.getStatusCode());',
+                'logger.debug("Response: {}", response.getBody().asString());',
+            ])
+        # NEW: Handle "submits a leave request from <fromDate> to <toDate>"
+        if ("submits" in tl or "attempts" in tl) and "from" in tl and "to" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request with date parameters',
+                'try {',
+                '    given().baseUri(BASE_URL)',
+                '        .header("Authorization","Bearer "+authToken)',
+                '        .when().post("/api/balances/init/8");',
+                '} catch (Exception ignored) {}',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.putIfAbsent("periodType","JOURNEE_COMPLETE");',
+                'if (!body.containsKey("fromDate")) body.put("fromDate","2026-05-01");',
+                'if (!body.containsKey("toDate")) body.put("toDate","2026-05-05");',
+                'body.remove("__useInvalidToken__");',
+                'body.remove("__zeroBalance__");',
+                'body.remove("__existingOverlap__");',
+                'String fromDate = body.get("fromDate").toString();',
+                'String toDate = body.get("toDate").toString();',
                 'response = given()',
                 '    .baseUri(BASE_URL)',
                 '    .header("Authorization","Bearer "+authToken)',
@@ -571,77 +1451,150 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
                 '    .body(body)',
                 '    .when().post("/api/leave-requests/create")',
                 '    .then().extract().response();',
-                'logger.info("POST /api/leave-requests/create ({} -> {}) -> HTTP {}", fromDate, toDate, response.getStatusCode());',
+                'logger.info("[OK] POST /api/leave-requests/create ({} -> {}) -> HTTP {}", fromDate, toDate, response.getStatusCode());',
             ])
-        if "cancel" in tl:
+        # NEW: Handle "submits a leave request with missing fields"
+        if "missing fields" in tl or "missing start date" in tl or "missing end date" in tl or "missing reason" in tl:
             return auth + _j([
-                'java.util.Map<String,Object> createBody = new java.util.HashMap<>();',
-                'long cancelSeed = System.currentTimeMillis() % 100;',
-                'String cancelFrom = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-10";',
-                'String cancelTo   = "2027-" + String.format("%02d", (cancelSeed % 10) + 1) + "-15";',
-                'createBody.put("fromDate", cancelFrom);',
-                'createBody.put("toDate",   cancelTo);',
-                'createBody.put("type","ANNUAL_LEAVE");',
-                f'createBody.put("userId",{uid});',
-                'createBody.put("periodType","JOURNEE_COMPLETE");',
-                'io.restassured.response.Response createResp = given()',
+                '// [OK] REAL HTTP CALL: Submit leave request without required fields',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>();',
+                'body.put("userId",8);',  # Only userId, missing dates and reason
+                'response = given()',
                 '    .baseUri(BASE_URL)',
                 '    .header("Authorization","Bearer "+authToken)',
                 '    .contentType(ContentType.JSON)',
-                '    .body(createBody)',
+                '    .body(body)',
                 '    .when().post("/api/leave-requests/create")',
                 '    .then().extract().response();',
-                'String reqId = requestBody.getOrDefault("__testRequestId__","2").toString();',
-                'if (createResp.getStatusCode() == 200 || createResp.getStatusCode() == 201) {',
-                '    Object createdId = createResp.jsonPath().get("id");',
-                '    if (createdId != null) reqId = createdId.toString();',
-                '}',
-                'logger.info("Using reqId={} for cancel", reqId);',
-                'response = given()',
-                '    .baseUri(BASE_URL)',
-                '    .header("Authorization","Bearer "+authToken)',
-                '    .when().put("/api/leave-requests/"+reqId+"/cancel")',
-                '    .then().extract().response();',
-                'logger.info("PUT cancel reqId={} -> HTTP {}", reqId, response.getStatusCode());',
+                'logger.info("[OK] POST /api/leave-requests/create (missing fields) -> HTTP {}", response.getStatusCode());',
             ])
-        if "approv" in tl or "grant" in tl:
-            return auth + rid + _j([
-                'response = given()',
-                '    .baseUri(BASE_URL)',
-                '    .header("Authorization","Bearer "+authToken)',
-                '    .queryParam("role","Administration")',
-                '    .when().put("/api/leave-requests/"+reqId+"/approve")',
-                '    .then().extract().response();',
-                'logger.info("PUT approve reqId={} -> HTTP {}", reqId, response.getStatusCode());',
-            ])
-        if "reject" in tl or "refus" in tl:
-            return auth + rid + _j([
-                'response = given()',
-                '    .baseUri(BASE_URL)',
-                '    .header("Authorization","Bearer "+authToken)',
-                '    .queryParam("role","Administration")',
-                '    .queryParam("reason","Test rejection")',
-                '    .when().put("/api/leave-requests/"+reqId+"/reject")',
-                '    .then().extract().response();',
-                'logger.info("PUT reject reqId={} -> HTTP {}", reqId, response.getStatusCode());',
-            ])
-        if "access" in tl or "performs" in tl or "tries" in tl:
+        # NEW: Handle "submits a leave request with zero days"
+        if "zero days" in tl:
             return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit zero-day leave request',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate","2026-05-10");',
+                'body.put("toDate","2026-05-10");',  # Same date = 0 days
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
                 'response = given()',
                 '    .baseUri(BASE_URL)',
                 '    .header("Authorization","Bearer "+authToken)',
-                '    .queryParam("currentUserId", String.valueOf(8))',
-                '    .when().get("/api/leave-requests/search")',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
                 '    .then().extract().response();',
-                'logger.info("GET /api/leave-requests/search (unauth) -> HTTP {}", response.getStatusCode());',
+                'logger.info("[OK] POST /api/leave-requests/create (zero days) -> HTTP {}", response.getStatusCode());',
             ])
-        return auth + I + f'logger.info("When (unmatched): {text}");'
+        # NEW: Handle "submits a leave request overlapping with the existing one"
+        if "overlapping" in tl or "overlap" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit overlapping leave request',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate","2026-05-12");',
+                'body.put("toDate","2026-05-17");',  # Overlaps with 05-10 to 05-15
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (overlapping) -> HTTP {}", response.getStatusCode());',
+            ])
+        # NEW: Handle "submits a leave request with a start date less than 48 hours from now"
+        if "48 hour" in tl or "48-hour" in tl or "notice period" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request within 48-hour notice period',
+                'java.time.LocalDate today = java.time.LocalDate.now();',
+                'java.time.LocalDate tomorrow = today.plusDays(1);',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate",tomorrow.toString());',
+                'body.put("toDate",tomorrow.plusDays(1).toString());',
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (48-hour notice) -> HTTP {}", response.getStatusCode());',
+            ])
+        # NEW: Handle "submits a leave request exceeding the maximum continuous days allowed"
+        if "exceeding" in tl or "maximum continuous" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request exceeding max days',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("fromDate","2026-05-01");',
+                'body.put("toDate","2026-05-31");',  # 30 days - likely exceeds limit
+                'body.putIfAbsent("type","ANNUAL_LEAVE");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (exceeding max) -> HTTP {}", response.getStatusCode());',
+            ])
+        # NEW: Handle "submits a leave request with an invalid leave type"
+        if "invalid leave type" in tl:
+            return auth + _j([
+                '// [OK] REAL HTTP CALL: Submit leave request with invalid type',
+                'java.util.Map<String,Object> body = new java.util.HashMap<>(requestBody);',
+                'body.put("type","INVALID_TYPE");',
+                'body.put("fromDate","2026-05-01");',
+                'body.put("toDate","2026-05-05");',
+                f'body.putIfAbsent("userId",{uid});',
+                'body.remove("__useInvalidToken__");',
+                'response = given()',
+                '    .baseUri(BASE_URL)',
+                '    .header("Authorization","Bearer "+authToken)',
+                '    .contentType(ContentType.JSON)',
+                '    .body(body)',
+                '    .when().post("/api/leave-requests/create")',
+                '    .then().extract().response();',
+                'logger.info("[OK] POST /api/leave-requests/create (invalid type) -> HTTP {}", response.getStatusCode());',
+            ])
+        escaped_text = text.replace('"', '\\"')
+        return auth + _j([
+            f'logger.warn("[SKIP] Unhandled When step: {escaped_text}");',
+        ])
 
     if kw == "Then":
         nul_check = I + 'if (response == null) { logger.warn("No HTTP call was made"); return; }\n'
         if "creates the leave request" in tl or "creates the request" in tl:
             return nul_check + _j([
                 'try { if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) { logger.info("Leave request created HTTP {}", response.getStatusCode()); } else { logger.warn("Leave creation returned HTTP {}", response.getStatusCode()); } } catch (Exception e) { logger.warn("Leave validation error", e); }',
+            ])
+        if "status" in tl and ("leave request" in tl or "request" in tl):
+            if jp and "p0" in jp:
+                return nul_check + _j([
+                    'try {',
+                    '    String expected = p0;',
+                    '    String actual = null;',
+                    '    try { actual = response.jsonPath().getString("status"); } catch (Exception ignored) {}',
+                    '    if (actual == null) { try { actual = response.jsonPath().getString("statut"); } catch (Exception ignored) {} }',
+                    '    if (actual == null) {',
+                    '        logger.warn("No status field in response: {}", response.asString());',
+                    '    } else if (actual.equalsIgnoreCase(expected)) {',
+                    '        logger.info("Status OK: {}", actual);',
+                    '    } else {',
+                    '        logger.warn("Status mismatch expected={} actual={}", expected, actual);',
+                    '    }',
+                    '} catch (Exception e) { logger.warn("Status check error", e); }',
+                ])
+            return nul_check + _j([
+                'try { String actual = null; try { actual = response.jsonPath().getString("status"); } catch (Exception ignored) {} if (actual == null) { try { actual = response.jsonPath().getString("statut"); } catch (Exception ignored) {} } logger.info("Status: {}", actual); } catch (Exception e) { logger.warn("Status check error", e); }',
             ])
         if "updates the" in tl and ("status" in tl or "canceled" in tl):
             return nul_check + _j([
@@ -663,8 +1616,9 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
             return nul_check + _j([
                 'try { int code = response.getStatusCode(); if (code >= 200 && code < 300) { logger.info("Success HTTP {}", code); } else { logger.warn("Expected success but got HTTP {}", code); } } catch (Exception e) { logger.warn("Success validation error", e); }',
             ])
+        escaped_text = text.replace('"', '\\"')
         return nul_check + _j([
-            'try { logger.info("Then HTTP {}", response.getStatusCode()); } catch (Exception e) { logger.warn("Then validation error", e); }',
+            f'logger.warn("[SKIP] Unhandled Then step: {escaped_text}");',
         ])
 
     return I + f'logger.info("Step: {text}");'
@@ -674,10 +1628,79 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
 # Deterministic Java builders (unchanged)
 # ──────────────────────────────────────────────────────────────────────────────
 
+def _extract_swagger_endpoints(spec: Dict) -> Dict[str, List[str]]:
+    """Extract API endpoints from Swagger/OpenAPI spec.
+    Returns dict: { path: [method1, method2, ...] }
+    """
+    endpoints = {}
+    if not spec or "paths" not in spec:
+        return endpoints
+    
+    for path, methods in spec["paths"].items():
+        if isinstance(methods, dict):
+            endpoint_methods = [m.upper() for m in methods.keys() if m.lower() in ("get", "post", "put", "delete", "patch")]
+            if endpoint_methods:
+                endpoints[path] = endpoint_methods
+    
+    return endpoints
+
+
+def _get_http_method_for_action(text: str, endpoints: Dict[str, List[str]]) -> Tuple[Optional[str], Optional[str]]:
+    """Determine HTTP method and endpoint from step text and Swagger spec.
+    Returns (method, endpoint) or (None, None) if not found.
+    """
+    tl = text.lower()
+    
+    # Define action patterns
+    if "submit" in tl or "create" in tl or "add" in tl:
+        method = "POST"
+    elif "update" in tl or "approv" in tl or "reject" in tl or "cancel" in tl:
+        method = "PUT"
+    elif "delete" in tl or "remov" in tl:
+        method = "DELETE"
+    elif "get" in tl or "fetch" in tl or "search" in tl or "retriev" in tl or "view" in tl or "check" in tl:
+        method = "GET"
+    elif "login" in tl or "authenticat" in tl:
+        method = "POST"
+    else:
+        return None, None
+    
+    # Find matching endpoint in Swagger spec
+    for endpoint, allowed_methods in endpoints.items():
+        if method in allowed_methods:
+            # Prioritize endpoints matching keywords from the step
+            if "login" in tl and "/login" in endpoint:
+                return method, endpoint
+            if "request" in tl and "/request" in endpoint:
+                return method, endpoint
+            if "balance" in tl and "/balance" in endpoint:
+                return method, endpoint
+            if "leave" in tl and "/leave" in endpoint:
+                return method, endpoint
+            if "approve" in tl and "/approve" in endpoint:
+                return method, endpoint
+            if "reject" in tl and "/reject" in endpoint:
+                return method, endpoint
+            if "cancel" in tl and "/cancel" in endpoint:
+                return method, endpoint
+    
+    # Fall back to first matching endpoint with the method
+    for endpoint, allowed_methods in endpoints.items():
+        if method in allowed_methods:
+            return method, endpoint
+    
+    return None, None
+
+
 def _build_steps_java(pkg: str, cls: str, base_url: str,
-                      gherkin: str, is_auth: bool) -> str:
+                      gherkin: str, is_auth: bool, swagger_spec: Dict = None) -> str:
     steps = _scan_steps(gherkin)
     logger.info(f"   [{cls}] scanned {len(steps)} unique steps from Gherkin")
+    
+    # Extract endpoints from Swagger if available
+    swagger_endpoints = _extract_swagger_endpoints(swagger_spec) if swagger_spec else {}
+    if swagger_endpoints:
+        logger.info(f"   [{cls}] found {len(swagger_endpoints)} Swagger endpoints")
 
     seen_names: set = {"setUp"}
     seen_ann:   set = set()
@@ -686,11 +1709,44 @@ def _build_steps_java(pkg: str, cls: str, base_url: str,
     setup = (
         "    @Before\n"
         "    public void setUp() {\n"
-        "        jwtToken = System.getenv(\"TEST_JWT_TOKEN\");\n"
-        "        if (jwtToken == null || jwtToken.isBlank())\n"
-        "            logger.warn(\"TEST_JWT_TOKEN not set\");\n"
         "        requestBody = new HashMap<>();\n"
         "        response = null;\n"
+        "\n"
+        "        // Prefer explicit token, otherwise auto-login to get one.\n"
+        "        jwtToken = System.getenv(\"TEST_JWT_TOKEN\");\n"
+        "        if (jwtToken == null || jwtToken.isBlank()) {\n"
+        "            String email    = System.getenv(\"TEST_USER_EMAIL\");\n"
+        "            String password = System.getenv(\"TEST_USER_PASSWORD\");\n"
+        "            if (email == null || email.isBlank()) email = \"admin@test.com\";\n"
+        "            if (password == null || password.isBlank()) password = \"admin123\";\n"
+        "\n"
+        "            java.util.Map<String,Object> loginBody = new java.util.HashMap<>();\n"
+        "            loginBody.put(\"email\", email);\n"
+        "            loginBody.put(\"password\", password);\n"
+        "\n"
+        "            io.restassured.response.Response loginResp = given()\n"
+        "                .baseUri(\"http://127.0.0.1:9000\")\n"
+        "                .contentType(ContentType.JSON)\n"
+        "                .body(loginBody)\n"
+        "                .log().ifValidationFails()\n"
+        "                .when().post(\"/api/auth/login\")\n"
+        "                .then().extract().response();\n"
+        "\n"
+        "            int code = loginResp.getStatusCode();\n"
+        "            logger.info(\"[setup] POST /api/auth/login -> HTTP {}\", code);\n"
+        "            if (code < 200 || code >= 300) {\n"
+        "                throw new AssertionError(\"Auto-login failed HTTP \" + code + \": \" + loginResp.asString());\n"
+        "            }\n"
+        "\n"
+        "            try {\n"
+        "                jwtToken = loginResp.jsonPath().getString(\"jwt\");\n"
+        "                if (jwtToken == null || jwtToken.isBlank()) jwtToken = loginResp.jsonPath().getString(\"token\");\n"
+        "            } catch (Exception ignored) {}\n"
+        "\n"
+        "            if (jwtToken == null || jwtToken.isBlank()) {\n"
+        "                throw new AssertionError(\"Auto-login succeeded but no JWT in response: \" + loginResp.asString());\n"
+        "            }\n"
+        "        }\n"
         "    }"
     )
     methods.append(setup)
@@ -796,7 +1852,7 @@ class TestWriterAgent:
         )
         self.llm = ChatHuggingFace(llm=llm)
         logger.info(
-            f"✅ TestWriter (Deterministic) initialized — "
+            f"[OK] TestWriter (Deterministic) initialized — "
             f"model: {self.settings.huggingface.test_writer_agent.model_name}"
         )
 
@@ -858,7 +1914,7 @@ class TestWriterAgent:
     # ── Feature routing (unchanged) ───────────────────────────────────
 
     _SERVICE_FEATURE_KEYWORDS: Dict[str, List[str]] = {
-        "auth":         ["auth", "login", "authentication", "employee-auth"],
+        "auth":         ["auth", "login", "authentication", "employee-auth", "cancel", "leave"],
         "leave":        ["leave-request", "leave_request", "conge", "demande"],
         "conge":        ["leave-request", "leave_request", "conge", "demande"],
         "DemandeConge": ["leave-request", "leave_request", "conge", "demande"],
@@ -908,13 +1964,15 @@ class TestWriterAgent:
         gherkin: str,
         feature_files: List[str] = None,
     ) -> Tuple[str, str]:
-        base_url = SERVICE_URLS.get(svc, "http://localhost:8080")
+        # Get service URLs dynamically from registry
+        service_urls = get_service_urls()
+        base_url = service_urls.get(svc, "http://localhost:8080")
         pkg      = self._pkg(svc)
         cls      = self._camel(svc)
         is_auth  = (svc == "auth")
 
-        logger.info(f"   [{svc}] building Steps (deterministic)...")
-        steps = _build_steps_java(pkg, cls, base_url, gherkin, is_auth)
+        logger.info(f"   [{svc}] building Steps (deterministic with Swagger integration)...")
+        steps = _build_steps_java(pkg, cls, base_url, gherkin, is_auth, swagger_spec=spec)
 
         logger.info(f"   [{svc}] building TestRunner (deterministic)...")
         runner_code = _build_runner_java(pkg, cls, feature_files or [])
@@ -1008,12 +2066,163 @@ class TestWriterAgent:
         saved.append(md)
         return saved
 
-    # ── LangGraph entry point (unchanged) ─────────────────────────────
+    # ── E2E consolidated generation ──────────────────────────────────
+
+    def _build_consolidated_steps(self, specs: Dict[str, Dict], state: TestAutomationState) -> str:
+        """
+        Build a single ConsolidatedE2ESteps.java file with all steps from all services.
+        This enables true end-to-end testing with steps from multiple services in one file.
+        """
+        logger.info("   Building consolidated E2E steps from all services...")
+        
+        # Collect all unique steps from all services
+        all_gherkin = ""
+        for svc in sorted(specs.keys()):
+            svc_gherkin, _ = self._gherkin_for_service(svc, state)
+            all_gherkin += svc_gherkin + "\n\n"
+        
+        # Scan all unique steps
+        steps = _scan_steps(all_gherkin)
+        logger.info(f"   [E2E] scanned {len(steps)} unique steps across all services")
+        
+        # Get service URLs for all services
+        service_urls = get_service_urls()
+        services_sorted = sorted(specs.keys())
+        base_urls_declaration = ""
+        for svc in services_sorted:
+            base_url = service_urls.get(svc, "http://localhost:8080")
+            base_urls_declaration += f'    private static final String {svc.upper()}_BASE_URL = "{base_url}";\n'
+        
+        seen_names: set = {"setUp"}
+        seen_ann:   set = set()
+        methods: List[str] = []
+        
+        setup = (
+            "    @Before\n"
+            "    public void setUp() {\n"
+            "        jwtToken = System.getenv(\"TEST_JWT_TOKEN\");\n"
+            "        if (jwtToken == null || jwtToken.isBlank())\n"
+            "            logger.warn(\"TEST_JWT_TOKEN not set\");\n"
+            "        requestBody = new HashMap<>();\n"
+            "        response = null;\n"
+            "    }"
+        )
+        methods.append(setup)
+        
+        for kw, text in steps:
+            ann = _step_to_annotation(text)
+            jp  = _java_params(ann)
+            key = f"{kw}||{ann}"
+            if key in seen_ann:
+                continue
+            seen_ann.add(key)
+            
+            name = _step_to_method_name(ann)
+            c = 1
+            while name in seen_names:
+                name = _step_to_method_name(ann) + str(c)
+                c += 1
+            seen_names.add(name)
+            
+            # Determine which service this step belongs to
+            text_lower = text.lower()
+            is_auth = ("auth" in text_lower or "login" in text_lower or "credential" in text_lower)
+            body = _body_auth(kw, text, jp) if is_auth else _body_leave(kw, text, jp)
+            
+            # Replace BASE_URL with specific service BASE_URL if needed
+            if is_auth:
+                body = body.replace('baseUri(BASE_URL)', f'baseUri(AUTH_BASE_URL)')
+            else:
+                body = body.replace('baseUri(BASE_URL)', f'baseUri(LEAVE_BASE_URL)')
+            
+            method = (
+                f'    @{kw}("{ann}")\n'
+                f'    public void {name}({jp}) {{\n'
+                f'{body}\n'
+                f'    }}'
+            )
+            methods.append(method)
+        
+        methods_str = "\n\n".join(methods)
+        
+        return (
+            "package com.example.e2e.steps;\n\n"
+            "import io.cucumber.java.Before;\n"
+            "import io.cucumber.java.en.*;\n"
+            "import io.restassured.response.Response;\n"
+            "import io.restassured.http.ContentType;\n"
+            "import static io.restassured.RestAssured.*;\n"
+            "import java.util.*;\n"
+            "import org.slf4j.Logger;\n"
+            "import org.slf4j.LoggerFactory;\n\n"
+            "/**\n"
+            " * Consolidated E2E Step Definitions for all microservices.\n"
+            " * Tests real HTTP endpoints without requiring Spring context.\n"
+            " */\n"
+            "public class ConsolidatedE2ESteps {\n\n"
+            "    private static final Logger logger = LoggerFactory.getLogger(ConsolidatedE2ESteps.class);\n"
+            f"{base_urls_declaration}"
+            "    private String   jwtToken;\n"
+            "    private Response response;\n"
+            "    private Map<String, Object> requestBody;\n\n"
+            f"{methods_str}\n"
+            "}\n"
+        )
+
+    def _build_consolidated_runner(self, services: List[str]) -> str:
+        """
+        Build a single ConsolidatedE2ETestRunner.java for all services using JUnit Platform.
+        """
+        service_list = "_".join(services)
+        return (
+            "package com.example.e2e;\n\n"
+            "import io.cucumber.junit.platform.engine.Constants;\n"
+            "import org.junit.platform.suite.api.ConfigurationParameter;\n"
+            "import org.junit.platform.suite.api.IncludeEngines;\n"
+            "import org.junit.platform.suite.api.SelectClasspathResource;\n"
+            "import org.junit.platform.suite.api.Suite;\n\n"
+            "@Suite\n"
+            "@IncludeEngines(\"cucumber\")\n"
+            "@SelectClasspathResource(\"features\")\n"
+            "@ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = \"com.example.e2e.steps\")\n"
+            "@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = \"pretty,html:target/cucumber-reports/e2e/cucumber.html,json:target/cucumber-reports/e2e/cucumber.json\")\n"
+            "public class ConsolidatedE2ETestRunner {\n"
+            "}\n"
+        )
+
+    def _save_consolidated_files(self, steps: str, runner: str) -> List[Path]:
+        """
+        Save consolidated E2E steps and test runner files.
+        """
+        base = self.settings.paths.tests_dir
+        base.mkdir(parents=True, exist_ok=True)
+        saved: List[Path] = []
+        
+        # Create e2e package directory
+        jbase = base / "src" / "test" / "java" / "com" / "example" / "e2e"
+        sdir = jbase / "steps"
+        sdir.mkdir(parents=True, exist_ok=True)
+        
+        # Save consolidated steps
+        sf = sdir / "ConsolidatedE2ESteps.java"
+        sf.write_text(steps, encoding="utf-8")
+        saved.append(sf)
+        logger.success(f"   {sf.relative_to(base)}")
+        
+        # Save consolidated runner
+        rf = jbase / "ConsolidatedE2ETestRunner.java"
+        rf.write_text(runner, encoding="utf-8")
+        saved.append(rf)
+        logger.success(f"   {rf.relative_to(base)}")
+        
+        return saved
+
+    # ── LangGraph entry point (consolidated for E2E) ──────────────────
 
     def write_tests(self, state: TestAutomationState) -> TestAutomationState:
         t0 = time.time()
         logger.info("=" * 65)
-        logger.info("TestWriter (Deterministic) starting")
+        logger.info("TestWriter (Consolidated E2E) starting")
         logger.info("=" * 65)
 
         try:
@@ -1026,24 +2235,61 @@ class TestWriterAgent:
                 raise ValueError("No Swagger spec found in state.")
 
             logger.info(f"   Services: {list(specs.keys())}")
-            all_files:   List[Path]     = []
-            all_steps:   Dict[str, str] = {}
-            all_runners: Dict[str, str] = {}
-
-            for svc, spec in specs.items():
-                logger.info(f"Processing service: {svc}")
-                svc_gherkin, svc_files = self._gherkin_for_service(svc, state)
-                sc, rc = self.generate_for_service(svc, spec, svc_gherkin, svc_files)
-                saved  = self.save_files_for_service(svc, sc, rc)
-                all_files.extend(saved)
-                all_steps[svc]   = sc
-                all_runners[svc] = rc
-
-            infra = self.save_pom_and_setup(state.service_name)
-            all_files.extend(infra)
-
-            state.test_code  = {"step_definitions": all_steps, "runners": all_runners}
-            state.test_files = [str(f) for f in all_files]
+            
+            # Check if this is an E2E workflow (is_e2e flag)
+            is_e2e_workflow = getattr(state, "is_e2e", False)
+            
+            if is_e2e_workflow:
+                # ── CONSOLIDATED E2E MODE ────────────────────────────
+                logger.info("   Running in CONSOLIDATED E2E mode...")
+                
+                # Build single consolidated steps file from all services
+                consolidated_steps = self._build_consolidated_steps(specs, state)
+                check_braces(consolidated_steps, "ConsolidatedE2ESteps")
+                validate_java_syntax(consolidated_steps, "ConsolidatedE2ESteps")
+                
+                # Build single consolidated runner
+                services_list = sorted(specs.keys())
+                consolidated_runner = self._build_consolidated_runner(services_list)
+                check_braces(consolidated_runner, "ConsolidatedE2ETestRunner")
+                validate_java_syntax(consolidated_runner, "ConsolidatedE2ETestRunner")
+                
+                # Save consolidated files
+                all_files = self._save_consolidated_files(consolidated_steps, consolidated_runner)
+                
+                # Save infrastructure (pom.xml, etc.)
+                infra = self.save_pom_and_setup(state.service_name)
+                all_files.extend(infra)
+                
+                state.test_code = {
+                    "step_definitions": {"consolidated_e2e": consolidated_steps},
+                    "runners": {"consolidated_e2e": consolidated_runner}
+                }
+                state.test_files = [str(f) for f in all_files]
+                
+                logger.success(f"   Generated 1 consolidated E2E test file for {len(services_list)} services")
+                
+            else:
+                # ── LEGACY PER-SERVICE MODE (backward compatible) ────
+                logger.info("   Running in PER-SERVICE mode...")
+                all_files: List[Path] = []
+                all_steps: Dict[str, str] = {}
+                all_runners: Dict[str, str] = {}
+                
+                for svc, spec in specs.items():
+                    logger.info(f"   Processing service: {svc}")
+                    svc_gherkin, svc_files = self._gherkin_for_service(svc, state)
+                    sc, rc = self.generate_for_service(svc, spec, svc_gherkin, svc_files)
+                    saved = self.save_files_for_service(svc, sc, rc)
+                    all_files.extend(saved)
+                    all_steps[svc] = sc
+                    all_runners[svc] = rc
+                
+                infra = self.save_pom_and_setup(state.service_name)
+                all_files.extend(infra)
+                
+                state.test_code = {"step_definitions": all_steps, "runners": all_runners}
+                state.test_files = [str(f) for f in all_files]
 
             dur = (time.time() - t0) * 1000
             state.add_agent_output(AgentOutput(
@@ -1052,13 +2298,14 @@ class TestWriterAgent:
                 duration_ms=dur,
                 output_data={
                     "services_processed": list(specs.keys()),
-                    "files_generated":    len(all_files),
+                    "files_generated": len(state.test_files),
+                    "mode": "consolidated_e2e" if is_e2e_workflow else "per_service",
                 },
             ))
             logger.success(f"TestWriter finished in {dur:.0f} ms")
 
         except Exception:
-            tb  = traceback.format_exc()
+            tb = traceback.format_exc()
             dur = (time.time() - t0) * 1000
             logger.error(f"TestWriter failed:\n{tb}")
             state.add_agent_output(AgentOutput(

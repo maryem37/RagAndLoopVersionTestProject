@@ -142,6 +142,8 @@ class TestExecutorAgent:
             old.unlink()
             logger.info(f"   🗑 Removed old feature: {old.name}")
         staged: List[Path] = []
+        
+        # Stage feature files from state.gherkin_files
         for src_path_str in (state.gherkin_files or []):
             src = Path(src_path_str)
             if src.exists():
@@ -151,15 +153,31 @@ class TestExecutorAgent:
                 logger.info(f"   ✓ Staged: {src.name} → {dest}")
             else:
                 logger.warning(f"   ⚠ Feature file not found: {src}")
+        
+        # ALSO stage ALL available feature files from features directory (for E2E multi-service testing)
+        features_dir = self.settings.paths.features_dir
+        if features_dir.exists():
+            for feature_file in sorted(features_dir.glob("*.feature")):
+                # Only add if not already staged
+                if not any(p.name == feature_file.name for p in staged):
+                    dest = resources_dir / feature_file.name
+                    shutil.copy2(feature_file, dest)
+                    staged.append(dest)
+                    logger.info(f"   ✓ Staged (from features): {feature_file.name} → {dest}")
+        
         logger.info(f"   {len(staged)} .feature file(s) staged in {resources_dir}")
         return staged
 
     def _build_mvn_command(self, service_name: str) -> str:
         """
         Build the Maven command as a SINGLE STRING (required for shell=True on Windows).
+        Uses ServiceRegistry to get service configuration dynamically.
         Forces IPv4 (127.0.0.1) in all service URLs to avoid the Windows IPv6 issue
         where localhost resolves to ::1 at OS level but Java connects via IPv4.
         """
+        from tools.service_registry import get_service_registry
+        
+        registry = get_service_registry()
         jwt_token = self._get_jwt_token()
         mvn = f'"{self._mvn_cmd}"' if " " in str(self._mvn_cmd) else str(self._mvn_cmd)
 
@@ -173,12 +191,15 @@ class TestExecutorAgent:
         if jwt_token:
             parts.append(f"-DTEST_JWT_TOKEN={jwt_token}")
 
-        # Force IPv4 here — Java cannot connect to IPv6 ::1 on Windows
-        auth_url  = _force_ipv4(os.environ.get("AUTH_BASE_URL",  "http://localhost:9000"))
-        leave_url = _force_ipv4(os.environ.get("LEAVE_BASE_URL", "http://localhost:9001"))
-
-        parts.append(f"-DAUTH_BASE_URL={auth_url}")
-        parts.append(f"-DLEAVE_BASE_URL={leave_url}")
+        # Build dynamic URLs for all enabled services
+        enabled_services = registry.get_enabled_services()
+        
+        # Always force IPv4 to avoid Windows localhost resolution issues
+        for service in enabled_services:
+            base_url = _force_ipv4(service.get_base_url())
+            env_var_name = f"{service.name.upper()}_BASE_URL"
+            parts.append(f"-D{env_var_name}={base_url}")
+            logger.debug(f"   Set {env_var_name}={base_url}")
 
         return " ".join(parts)
 

@@ -1,2 +1,21 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-Contract Level E2E Tests,com.example,Placeholder,5,0,0,0,2,0,2,0,2,0
+congee,tn.enis.conge.controller,UserController,154,6,20,0,28,1,13,1,3,1
+congee,tn.enis.conge.controller,AuthController,202,0,10,0,45,0,10,0,5,0
+congee,tn.enis.conge.controller,AdminController,21,6,2,0,5,1,2,1,1,1
+congee,tn.enis.conge.controller,DepartmentController,37,6,0,0,8,1,5,1,5,1
+congee,tn.enis.conge.enums,UserRole,0,21,0,0,0,4,0,1,0,1
+congee,tn.enis.conge.services.jwt,UserServiceImpl,19,0,0,0,3,0,3,0,3,0
+congee,tn.enis.conge.services.depart,DepartmentServiceImpl,74,6,6,0,15,1,9,1,6,1
+congee,tn.enis.conge.entity,Department,175,3,32,0,5,1,28,1,12,1
+congee,tn.enis.conge.entity,User,459,0,86,0,18,0,74,0,31,0
+congee,tn.enis.conge.entity,ChangePasswordAfterReset,155,0,30,0,4,0,26,0,11,0
+congee,tn.enis.conge.dto,SignupRequest,355,0,70,0,9,0,56,0,21,0
+congee,tn.enis.conge.dto,UserDto,399,0,78,0,10,0,62,0,23,0
+congee,tn.enis.conge.dto,AuthenticationResponse,155,0,30,0,4,0,26,0,11,0
+congee,tn.enis.conge.dto,AuthenticationRequest,115,0,22,0,3,0,20,0,9,0
+congee,tn.enis.conge.services.auth,AuthCongeImpl,391,0,22,0,90,0,19,0,8,0
+congee,tn.enis.conge.utils,JWTutil,96,0,4,0,23,0,12,0,10,0
+congee,tn.enis.conge.email,EmailService,73,0,4,0,24,0,5,0,3,0
+congee,tn.enis.conge,CongeeApplication,8,0,0,0,3,0,2,0,2,0
+congee,tn.enis.conge.configuration,JwtAuthenthificationFilter,89,0,14,0,19,0,10,0,3,0
+congee,tn.enis.conge.configuration,WebSecurityConfiguration,163,0,0,0,24,0,8,0,8,0

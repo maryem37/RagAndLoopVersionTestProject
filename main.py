@@ -4,7 +4,7 @@ from loguru import logger
 from agents.gherkin_generator import GherkinGeneratorAgent
 from graph.state import TestAutomationState
 
-USER_STORY_FILE = Path("examples/sample_user_story.md")
+USER_STORY_FILE = Path("examples/comprehensive_user_story.md")
 
 def main():
     try:

@@ -105,6 +105,8 @@ class TestAutomationWorkflow:
         swagger_spec:  dict = None,
         swagger_specs: dict = None,
         config:        dict = None,
+        is_e2e:        bool = False,
+        e2e_services:  list = None,
     ) -> TestAutomationState:
         import uuid
         from datetime import datetime
@@ -130,6 +132,8 @@ class TestAutomationWorkflow:
             swagger_spec=swagger_spec or {},
             swagger_specs=final_swagger_specs,
             config=config or {},
+            is_e2e=is_e2e,
+            e2e_services=e2e_services or [],
         )
 
         result = self.graph.invoke(

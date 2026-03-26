@@ -3,20 +3,23 @@ config:
   flowchart:
     curve: linear
 ---
-
-graph TD
-    __start__([__start__]):::startNode
-    generate_gherkin(generate_gherkin):::process
-    validate_gherkin(validate_gherkin):::process
-    write_tests(write_tests):::process
-    __end__([__end__]):::endNode
-
-    __start__ --> generate_gherkin
-    generate_gherkin --> validate_gherkin
-    validate_gherkin --> write_tests
-    write_tests --> __end__
-
-    %% Styles
-    classDef startNode fill:#22c55e,color:#fff,stroke:#15803d,stroke-width:2px
-    classDef process fill:#3b82f6,color:#fff,stroke:#1e40af,stroke-width:2px
-    classDef endNode fill:#ef4444,color:#fff,stroke:#7f1d1d,stroke-width:2px
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	gherkin_generator(gherkin_generator)
+	gherkin_validator(gherkin_validator)
+	test_writer(test_writer)
+	test_executor(test_executor)
+	coverage_analyst(coverage_analyst)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> gherkin_generator;
+	coverage_analyst --> __end__;
+	test_executor --> coverage_analyst;
+	gherkin_generator -. &nbsp;validate&nbsp; .-> gherkin_validator;
+	gherkin_generator -. &nbsp;end&nbsp; .-> __end__;
+	gherkin_validator -. &nbsp;write_tests&nbsp; .-> test_writer;
+	gherkin_validator -. &nbsp;end&nbsp; .-> __end__;
+	test_writer -. &nbsp;execute&nbsp; .-> test_executor;
+	test_writer -. &nbsp;end&nbsp; .-> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

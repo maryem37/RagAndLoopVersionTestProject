@@ -262,6 +262,16 @@ class TestAutomationState(BaseModel):
     healing_attempts: List[Dict] = Field(default_factory=list)
     healed_tests:     List[str]  = Field(default_factory=list)
 
+    # ── E2E Configuration ──────────────────────────────────────────────
+    is_e2e:        bool       = Field(
+        default=False,
+        description="Whether to generate consolidated E2E tests vs per-service tests"
+    )
+    e2e_services:  List[str]  = Field(
+        default_factory=list,
+        description="List of services for consolidated E2E testing"
+    )
+
     # ── Workflow metadata ──────────────────────────────────────────────
     workflow_id:     str
     service_name:    str

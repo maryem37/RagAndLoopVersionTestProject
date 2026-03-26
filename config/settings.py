@@ -37,7 +37,8 @@
 
 
 """
-Simple Configuration Settings for Test Automation System
+Configuration Settings for Test Automation System
+Now uses ServiceRegistry for dynamic microservice configuration
 """
 
 from types import SimpleNamespace
@@ -45,6 +46,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import functools
+from loguru import logger
 
 
 @functools.lru_cache(maxsize=1)
@@ -66,12 +68,16 @@ def get_settings():
     if not hf_token:
         raise ValueError("HUGGINGFACEHUB_API_TOKEN not set in .env")
 
-    # Backend ports
-    auth_port = int(os.getenv("AUTH_SERVICE_PORT", 9000))
-    leave_port = int(os.getenv("LEAVE_SERVICE_PORT", 9001))
+    # Import ServiceRegistry
+    from tools.service_registry import get_service_registry
+    registry = get_service_registry()
+    registry.validate_configuration()
 
     return SimpleNamespace(
 
+        # ================= SERVICE REGISTRY =================
+        service_registry=registry,
+        
         # ================= AI CONFIG =================
         huggingface=SimpleNamespace(
             api_token=hf_token,
@@ -111,24 +117,11 @@ def get_settings():
             pom_source=base_dir / "output" / "tests" / "pom.xml"
         ),
 
-        # ================= BACKEND =================
+        # ================= DYNAMIC SERVICES (from ServiceRegistry) =================
+        # Instead of hardcoding auth_port and leave_port, use registry
         backend=SimpleNamespace(
-            auth_service=SimpleNamespace(
-                port=auth_port,
-                base_url=f"http://localhost:{auth_port}",
-                health="/actuator/health"
-            ),
-            leave_service=SimpleNamespace(
-                port=leave_port,
-                base_url=f"http://localhost:{leave_port}",
-                health="/actuator/health"
-            )
-        ),
-
-        # ================= DOCKER (OPTIONAL) =================
-        docker=SimpleNamespace(
-            use_docker=os.getenv("USE_DOCKER", "false").lower() == "true",
-            compose_file=base_dir / "docker-compose.yml"
+            # Will be accessed dynamically via registry
+            registry=registry
         ),
 
         # ================= TEST EXECUTION =================
