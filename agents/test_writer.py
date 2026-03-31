@@ -1123,7 +1123,7 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
             ])
         escaped_text = text.replace('"', '\\"')
         return _j([
-            f'logger.warn("[SKIP] Unhandled Given step: {escaped_text}");',
+            f'throw new io.cucumber.java.PendingException("Unhandled Given step:  {escaped_text}");',
         ])
 
     if kw == "When":
@@ -1567,7 +1567,7 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
             ])
         escaped_text = text.replace('"', '\\"')
         return auth + _j([
-            f'logger.warn("[SKIP] Unhandled When step: {escaped_text}");',
+            f'throw new io.cucumber.java.PendingException("Unhandled When step:  {escaped_text}");',
         ])
 
     if kw == "Then":
@@ -1618,7 +1618,7 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
             ])
         escaped_text = text.replace('"', '\\"')
         return nul_check + _j([
-            f'logger.warn("[SKIP] Unhandled Then step: {escaped_text}");',
+            f'throw new io.cucumber.java.PendingException("Unhandled Then step:  {escaped_text}");',
         ])
 
     return I + f'logger.info("Step: {text}");'
@@ -1784,7 +1784,7 @@ def _build_steps_java(pkg: str, cls: str, base_url: str,
         "import io.cucumber.java.en.*;\n"
         "import io.restassured.response.Response;\n"
         "import io.restassured.http.ContentType;\n"
-        "import static io.restassured.RestAssured.*;\n"
+        "import static io.restassured.RestAssured.*;\nimport static org.junit.jupiter.api.Assertions.*;\n"
         "import java.util.*;\n"
         "import org.slf4j.Logger;\n"
         "import org.slf4j.LoggerFactory;\n\n"
@@ -1803,20 +1803,16 @@ def _build_runner_java(pkg: str, cls: str, feature_files: List[str]) -> str:
     runner = f"{cls}TestRunner"
     return (
         f"package com.example.{pkg};\n\n"
-        "import org.junit.runner.RunWith;\n"
-        "import io.cucumber.junit.Cucumber;\n"
-        "import io.cucumber.junit.CucumberOptions;\n\n"
-        "@RunWith(Cucumber.class)\n"
-        "@CucumberOptions(\n"
-        '    features = "classpath:features",\n'
-        f"    glue = \"com.example.{pkg}.steps\",\n"
-        "    plugin = {\n"
-        "        \"pretty\",\n"
-        f"        \"html:target/cucumber-reports/{pkg}/cucumber.html\",\n"
-        f"        \"json:target/cucumber-reports/{pkg}/cucumber.json\"\n"
-        "    },\n"
-        "    monochrome = true\n"
-        ")\n"
+        "import io.cucumber.junit.platform.engine.Constants;\n"
+        "import org.junit.platform.suite.api.ConfigurationParameter;\n"
+        "import org.junit.platform.suite.api.IncludeEngines;\n"
+        "import org.junit.platform.suite.api.SelectClasspathResource;\n"
+        "import org.junit.platform.suite.api.Suite;\n\n"
+        "@Suite\n"
+        "@IncludeEngines(\"cucumber\")\n"
+        "@SelectClasspathResource(\"features\")\n"
+        f"@ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = \"com.example.{pkg}.steps\")\n"
+        f"@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = \"pretty,html:target/cucumber-reports/{pkg}/cucumber.html,json:target/cucumber-reports/{pkg}/cucumber.json\")\n"
         f"public class {runner} {{\n"
         "}\n"
     )
@@ -1889,7 +1885,7 @@ class TestWriterAgent:
         # ── CHANGE: JaCoCo is now an explicit requirement in the prompt ──
         system = (
             "You are a Maven POM generator. Output ONLY valid pom.xml. "
-            "Include Java 17, JUnit 4, Cucumber 7.x, RestAssured 5.x, "
+            "Include Java 17, JUnit 5 (junit-jupiter, junit-platform-suite), Cucumber 7.x (cucumber-java, cucumber-junit-platform-engine), RestAssured 5.x, "
             "AssertJ 3.x, SLF4J simple. surefire 3.x with "
             "<includes><include>**/*TestRunner.java</include></includes>. "
             "REQUIRED: include jacoco-maven-plugin 0.8.11 with two executions: "
@@ -1957,6 +1953,121 @@ class TestWriterAgent:
 
     # ── Per-service generation (unchanged) ────────────────────────────
 
+
+    def _generate_steps_with_llm(self, pkg: str, cls: str, base_url: str, gherkin: str, swagger_spec: Dict = None) -> str:
+        import json
+        steps_list = _scan_steps(gherkin)
+        logger.info(f"   [{cls}] scanned {len(steps_list)} unique steps for LLM generation")
+
+        setup_block = (
+            "    @Before\n"
+            "    public void setUp() {\n"
+            "        requestBody = new HashMap<>();\n"
+            "        response = null;\n"
+            "\n"
+            "        // Prefer explicit token, otherwise auto-login to get one.\n"
+            "        jwtToken = System.getenv(\"TEST_JWT_TOKEN\");\n"
+            "        if (jwtToken == null || jwtToken.isBlank()) {\n"
+            "            String email    = System.getenv(\"TEST_USER_EMAIL\");\n"
+            "            String password = System.getenv(\"TEST_USER_PASSWORD\");\n"
+            "            if (email == null || email.isBlank()) email = \"admin@test.com\";\n"
+            "            if (password == null || password.isBlank()) password = \"admin123\";\n"
+            "\n"
+            "            java.util.Map<String,Object> loginBody = new java.util.HashMap<>();\n"
+            "            loginBody.put(\"email\", email);\n"
+            "            loginBody.put(\"password\", password);\n"
+            "\n"
+            "            io.restassured.response.Response loginResp = given()\n"
+            "                .baseUri(\"http://127.0.0.1:9000\")\n"
+            "                .contentType(ContentType.JSON)\n"
+            "                .body(loginBody)\n"
+            "                .log().ifValidationFails()\n"
+            "                .when().post(\"/api/auth/login\")\n"
+            "                .then().extract().response();\n"
+            "\n"
+            "            int code = loginResp.getStatusCode();\n"
+            "            logger.info(\"[setup] POST /api/auth/login -> HTTP {}\", code);\n"
+            "            if (code < 200 || code >= 300) {\n"
+            "                throw new AssertionError(\"Auto-login failed HTTP \" + code + \": \" + loginResp.asString());\n"
+            "            }\n"
+            "\n"
+            "            try {\n"
+            "                jwtToken = loginResp.jsonPath().getString(\"jwt\");\n"
+            "                if (jwtToken == null || jwtToken.isBlank()) jwtToken = loginResp.jsonPath().getString(\"token\");\n"
+            "            } catch (Exception ignored) {}\n"
+            "\n"
+            "            if (jwtToken == null || jwtToken.isBlank()) {\n"
+            "                throw new AssertionError(\"Auto-login succeeded but no JWT in response: \" + loginResp.asString());\n"
+            "            }\n"
+            "        }\n"
+            "    }"
+        )
+
+        swagger_str = json.dumps(swagger_spec, indent=2)[:25000] if swagger_spec else "No Swagger spec provided."
+        steps_str = "\n".join([f"{kw} {text}" for kw, text in steps_list])
+
+        system_prompt = (
+            "You are an expert Java Test Engineer writing Cucumber step definitions. "
+            "You MUST use the provided Swagger API Specification to implement the RestAssured calls.\n"
+            "Return ONLY the Java methods (@Given, @When, @Then). IMPORTANT: In @When steps that describe submitting/sending a request, YOU MUST actually trigger the RestAssured HTTP call (e.g., response = given()...) and NOT just prepare the requestBody. "
+            "Do NOT return the class declaration, package, or imports. "
+            "Assume 'jwtToken' (String), 'response' (Response), and 'requestBody' (Map<String, Object>) are available as class members. "
+            "Assume 'BASE_URL' is defined. Use JSON content type.\n\n"
+            "STRICT RULES:\n"
+            "1. ONLY valid Java code.\n"
+            "2. Ensure parameter names and types in @Given/@When/@Then annotations match the method signatures exactly. DO NOT modify the text of the Cucumber steps. Use the EXACT wording passed in the Feature file for your annotations (e.g. if the step is 'the status is \"Pending\"', use @Then(\"the status is {string}\")).\n"
+            "3. If a step involves logging in, use System.getenv(\"TEST_USER_EMAIL\") (defaulting to \"admin@test.com\") and System.getenv(\"TEST_USER_PASSWORD\") (defaulting to \"admin123\"), do NOT hardcode arbitrary emails. Extract the token from the response as `jsonPath().getString(\"jwt\")`.\n"
+            "4. If a step checks for an API error message (like 'the system displays the error \"value\"'), you MUST extract it using `response.jsonPath().getString(\"error\")` because our app returns errors in JSON (e.g. `{\"error\": \"value\"}`). Never use `response.getBody().asString()` for errors.\n"
+            "5. If a step checks unauthorized actions or blocking, accept HTTP 403 or 401 as both are acceptable (e.g. `int code = response.getStatusCode(); assertTrue(code == 401 || code == 403)`).\n"
+            "6. Generate ONLY unique @Given/@When/@Then definitions. NO duplicate step mapping strings or identical java methods allowed.\n"
+            "7. Provide ONLY the method implementations, NO markdown wrapping."
+        )
+
+        p = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("human", "Swagger Spec:\n{swagger}\n\nCucumber Steps:\n{steps}\n\nGenerate ONLY the Java methods.")
+        ])
+
+        raw = self._call_llm_with_retry(
+            p | self.llm, p | self.llm,
+            {"swagger": swagger_str, "steps": steps_str},
+            f"StepGen-{cls}"
+        )
+        
+        with open('LLM_RAW_OUTPUT_BEFORE_STRIP.txt', 'w', encoding='utf-8') as debug_f:
+            debug_f.write(raw)
+
+        if "```java" in raw:
+            raw = raw.split("```java")[1].split("```")[0]
+        elif "```" in raw:
+            raw = raw.split("```")[1].split("```")[0]
+
+        with open('LLM_RAW_OUTPUT.txt', 'w', encoding='utf-8') as debug_f:
+            debug_f.write(raw)
+        
+        methods_str = raw.strip()
+
+        return (
+            f"package com.example.{pkg}.steps;\n\n"
+            "import io.cucumber.java.Before;\n"
+            "import io.cucumber.java.en.*;\n"
+            "import io.restassured.response.Response;\n"
+            "import io.restassured.http.ContentType;\n"
+            "import static io.restassured.RestAssured.*;\nimport static org.junit.jupiter.api.Assertions.*;\n"
+            "import java.util.*;\n"
+            "import org.slf4j.Logger;\n"
+            "import org.slf4j.LoggerFactory;\n\n"
+            f"public class {cls}Steps {{\n\n"
+            f"    private static final Logger logger = LoggerFactory.getLogger({cls}Steps.class);\n"
+            f"    private static final String BASE_URL = \"{base_url}\";\n"
+            "    private String   jwtToken;\n"
+            "    private Response response;\n"
+            "    private Map<String, Object> requestBody;\n\n"
+            f"{setup_block}\n\n"
+            f"{methods_str}\n"
+            "}\n"
+        )
+
     def generate_for_service(
         self,
         svc: str,
@@ -1971,8 +2082,8 @@ class TestWriterAgent:
         cls      = self._camel(svc)
         is_auth  = (svc == "auth")
 
-        logger.info(f"   [{svc}] building Steps (deterministic with Swagger integration)...")
-        steps = _build_steps_java(pkg, cls, base_url, gherkin, is_auth, swagger_spec=spec)
+        logger.info(f"   [{svc}] building Steps (LLM with Swagger integration)...")
+        steps = self._generate_steps_with_llm(pkg, cls, base_url, gherkin, swagger_spec=spec)
 
         logger.info(f"   [{svc}] building TestRunner (deterministic)...")
         runner_code = _build_runner_java(pkg, cls, feature_files or [])
@@ -2069,105 +2180,21 @@ class TestWriterAgent:
     # ── E2E consolidated generation ──────────────────────────────────
 
     def _build_consolidated_steps(self, specs: Dict[str, Dict], state: TestAutomationState) -> str:
-        """
-        Build a single ConsolidatedE2ESteps.java file with all steps from all services.
-        This enables true end-to-end testing with steps from multiple services in one file.
-        """
-        logger.info("   Building consolidated E2E steps from all services...")
-        
-        # Collect all unique steps from all services
-        all_gherkin = ""
+        logger.info('   Building consolidated E2E steps from all services using LLM...')
+        all_gherkin = ''
+        combined_spec = {'paths': {}, 'components': {}}
+
         for svc in sorted(specs.keys()):
             svc_gherkin, _ = self._gherkin_for_service(svc, state)
-            all_gherkin += svc_gherkin + "\n\n"
-        
-        # Scan all unique steps
-        steps = _scan_steps(all_gherkin)
-        logger.info(f"   [E2E] scanned {len(steps)} unique steps across all services")
-        
-        # Get service URLs for all services
-        service_urls = get_service_urls()
-        services_sorted = sorted(specs.keys())
-        base_urls_declaration = ""
-        for svc in services_sorted:
-            base_url = service_urls.get(svc, "http://localhost:8080")
-            base_urls_declaration += f'    private static final String {svc.upper()}_BASE_URL = "{base_url}";\n'
-        
-        seen_names: set = {"setUp"}
-        seen_ann:   set = set()
-        methods: List[str] = []
-        
-        setup = (
-            "    @Before\n"
-            "    public void setUp() {\n"
-            "        jwtToken = System.getenv(\"TEST_JWT_TOKEN\");\n"
-            "        if (jwtToken == null || jwtToken.isBlank())\n"
-            "            logger.warn(\"TEST_JWT_TOKEN not set\");\n"
-            "        requestBody = new HashMap<>();\n"
-            "        response = null;\n"
-            "    }"
-        )
-        methods.append(setup)
-        
-        for kw, text in steps:
-            ann = _step_to_annotation(text)
-            jp  = _java_params(ann)
-            key = f"{kw}||{ann}"
-            if key in seen_ann:
-                continue
-            seen_ann.add(key)
-            
-            name = _step_to_method_name(ann)
-            c = 1
-            while name in seen_names:
-                name = _step_to_method_name(ann) + str(c)
-                c += 1
-            seen_names.add(name)
-            
-            # Determine which service this step belongs to
-            text_lower = text.lower()
-            is_auth = ("auth" in text_lower or "login" in text_lower or "credential" in text_lower)
-            body = _body_auth(kw, text, jp) if is_auth else _body_leave(kw, text, jp)
-            
-            # Replace BASE_URL with specific service BASE_URL if needed
-            if is_auth:
-                body = body.replace('baseUri(BASE_URL)', f'baseUri(AUTH_BASE_URL)')
-            else:
-                body = body.replace('baseUri(BASE_URL)', f'baseUri(LEAVE_BASE_URL)')
-            
-            method = (
-                f'    @{kw}("{ann}")\n'
-                f'    public void {name}({jp}) {{\n'
-                f'{body}\n'
-                f'    }}'
-            )
-            methods.append(method)
-        
-        methods_str = "\n\n".join(methods)
-        
-        return (
-            "package com.example.e2e.steps;\n\n"
-            "import io.cucumber.java.Before;\n"
-            "import io.cucumber.java.en.*;\n"
-            "import io.restassured.response.Response;\n"
-            "import io.restassured.http.ContentType;\n"
-            "import static io.restassured.RestAssured.*;\n"
-            "import java.util.*;\n"
-            "import org.slf4j.Logger;\n"
-            "import org.slf4j.LoggerFactory;\n\n"
-            "/**\n"
-            " * Consolidated E2E Step Definitions for all microservices.\n"
-            " * Tests real HTTP endpoints without requiring Spring context.\n"
-            " */\n"
-            "public class ConsolidatedE2ESteps {\n\n"
-            "    private static final Logger logger = LoggerFactory.getLogger(ConsolidatedE2ESteps.class);\n"
-            f"{base_urls_declaration}"
-            "    private String   jwtToken;\n"
-            "    private Response response;\n"
-            "    private Map<String, Object> requestBody;\n\n"
-            f"{methods_str}\n"
-            "}\n"
-        )
+            all_gherkin += svc_gherkin + '\n\n'
+
+            # Merge swaggers
+            spec = specs[svc]
+            if spec and 'paths' in spec:
+                for k, v in spec['paths'].items():
+                    combined_spec['paths'][k] = v
+
+        return self._generate_steps_with_llm('e2e', 'ConsolidatedE2E', 'http://127.0.0.1:9000', all_gherkin, combined_spec)
 
     def _build_consolidated_runner(self, services: List[str]) -> str:
         """

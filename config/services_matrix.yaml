@@ -62,10 +62,10 @@ global:
   jwt:
     login_url: "http://localhost:9000/api/auth/login"
     credentials:
-      email: "admin@test.com"
-      password: "admin123"
-    env_var: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB0ZXN0LmNvbSIsImlhdCI6MTc3NDI3NDA2MSwiZXhwIjoxNzc0MzYwNDYxfQ.Fe4PGCazkxrZyt_qfUzccjgUyWi2KGIao57_viuAGjc"
-    expiry_minutes: 24
+      email: "jane.smith@example.com"
+      password: "Secure@567"
+    env_var: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLnNtaXRoQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc0NTU3MjUzLCJleHAiOjE3NzQ2NDM2NTN9.r-T9mQxyjTBs46RV0OKQl0F1fHIViJKI4XoRq0mVpQU"
+    expiry_minutes: 1440  # 24 hours
   maven:
     executable: "C:/Users/MSI/Downloads/apache-maven-3.9.10-bin/apache-maven-3.9.10/bin/mvn.cmd"
     java_version: 17

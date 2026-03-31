@@ -1,7 +1,7 @@
 {
   "summary": {
     "service": "auth_leave",
-    "generated_at": "2026-03-26T01:45:40",
+    "generated_at": "2026-03-27T14:23:26",
     "data_source": "jacoco-xml",
     "aggregate": {
       "total_classes": 55,
@@ -36,12 +36,12 @@
       ]
     },
     "test_execution": {
-      "tests": 21,
+      "tests": 23,
       "failures": 0,
-      "errors": 0,
+      "errors": 23,
       "skipped": 0,
-      "time_s": 6.264,
-      "passed": 21,
+      "time_s": 1.124,
+      "passed": 0,
       "source": "surefire-xml"
     }
   },
