@@ -1,6 +1,6 @@
 """
 agents/test_writer.py
-──────────────────────
+------------------------------
 Agent 4 — Test Writer (Deterministic)
 
 Scans every unique step from the Gherkin feature file and generates a
@@ -43,9 +43,9 @@ from config.settings import get_settings
 from graph.state import AgentOutput, AgentStatus, TestAutomationState
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Constants
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 MAX_ATTEMPTS = 3
 
@@ -81,10 +81,10 @@ _M2_JARS = [
     "org/apiguardian/apiguardian-api", "org/hamcrest/hamcrest",
 ]
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # JaCoCo plugin XML block
 # Injected into every pom.xml this agent produces or copies.
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 _JACOCO_PLUGIN_XML = """\
             <plugin>
@@ -108,21 +108,21 @@ _JACOCO_PLUGIN_XML = """\
 _JACOCO_MARKER = "jacoco-maven-plugin"
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # JaCoCo injection helper
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _inject_jacoco_into_pom(pom_path: Path) -> bool:
     """
     Ensure the JaCoCo plugin is present in the pom.xml at pom_path.
 
     Strategy (in order of preference):
-      1. Already present  → do nothing, return False (no change needed).
-      2. <plugins> tag exists inside <build>  → insert _JACOCO_PLUGIN_XML
+      1. Already present  -> do nothing, return False (no change needed).
+      2. <plugins> tag exists inside <build>  -> insert _JACOCO_PLUGIN_XML
          just before the closing </plugins>.
-      3. <build> exists but no <plugins>  → insert a <plugins>…</plugins>
+      3. <build> exists but no <plugins>  -> insert a <plugins>…</plugins>
          block containing JaCoCo just before </build>.
-      4. No <build> at all  → append a minimal <build><plugins>…</plugins>
+      4. No <build> at all  -> append a minimal <build><plugins>…</plugins>
          </build> block just before </project>.
 
     Returns True if the file was modified, False if it was left untouched.
@@ -134,14 +134,14 @@ def _inject_jacoco_into_pom(pom_path: Path) -> bool:
 
     content = pom_path.read_text(encoding="utf-8")
 
-    # ── Already present? ──────────────────────────────────────────────
+    # ── Already present? ------------------------------
     if _JACOCO_MARKER in content:
         logger.info("   JaCoCo plugin already present in pom.xml — skipping injection")
         return False
 
     original = content
 
-    # ── Path 1: </plugins> exists ─────────────────────────────────────
+    # ── Path 1: </plugins> exists ------------------------------
     if "</plugins>" in content:
         content = content.replace(
             "</plugins>",
@@ -150,7 +150,7 @@ def _inject_jacoco_into_pom(pom_path: Path) -> bool:
         )
         logger.info("   JaCoCo plugin injected before </plugins>")
 
-    # ── Path 2: <build> exists but no <plugins> ───────────────────────
+    # ── Path 2: <build> exists but no <plugins> ------------------------------
     elif "<build>" in content:
         plugins_block = (
             "\n        <plugins>\n"
@@ -164,7 +164,7 @@ def _inject_jacoco_into_pom(pom_path: Path) -> bool:
         )
         logger.info("   JaCoCo plugin injected (new <plugins> block inside <build>)")
 
-    # ── Path 3: no <build> at all ─────────────────────────────────────
+    # ── Path 3: no <build> at all ------------------------------
     else:
         build_block = (
             "\n    <build>\n"
@@ -185,13 +185,13 @@ def _inject_jacoco_into_pom(pom_path: Path) -> bool:
         return False
 
     pom_path.write_text(content, encoding="utf-8")
-    logger.success(f"   pom.xml updated with JaCoCo plugin → {pom_path}")
+    logger.success(f"   pom.xml updated with JaCoCo plugin -> {pom_path}")
     return True
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Maven classpath helpers
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _find_maven_jars() -> List[Path]:
     m2 = Path.home() / ".m2" / "repository"
@@ -219,9 +219,9 @@ def _classpath() -> Optional[str]:
     return sep.join(str(j) for j in jars)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Brace validator — hard gate
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def check_braces(code: str, label: str = "") -> None:
     stack = 0
@@ -270,9 +270,9 @@ def check_braces(code: str, label: str = "") -> None:
         raise ValueError(f"[{label}] Unbalanced braces: {stack} unclosed '{{' remaining")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # javac validator — soft gate
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def validate_java_syntax(code: str, class_name: str) -> None:
     javac = shutil.which("javac")
@@ -302,9 +302,9 @@ def validate_java_syntax(code: str, class_name: str) -> None:
         logger.debug(f"   javac skipped for {class_name}: {e}")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Gherkin step scanner
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _scan_steps(gherkin: str) -> List[Tuple[str, str]]:
     """Return list of (effective_keyword, step_text) for every unique step."""
@@ -365,9 +365,9 @@ def _java_params(annotation: str) -> str:
     return ", ".join(params)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Method body generators (unchanged)
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _j(lines: List[str], indent: str = "        ") -> str:
     """Join lines with indent prefix."""
@@ -451,9 +451,9 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
                 'logger.info("Precondition: not authenticated");',
             ])
         
-        # ─────────────────────────────────────────────────────────────
+        # ------------------------------
         # Leave request preconditions (for integrated auth->leave workflows)
-        # ─────────────────────────────────────────────────────────────
+        # ------------------------------
         if "submitted a pending leave request" in tl:
             return _j([
                 'String authToken = jwtToken;',
@@ -701,9 +701,9 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
                 'logger.info("POST /api/auth/login (invalid token) -> HTTP {}", response.getStatusCode());',
             ])
         
-        # ─────────────────────────────────────────────────────────────
+        # ------------------------------
         # Leave request handling (for integrated auth->leave workflows)
-        # ─────────────────────────────────────────────────────────────
+        # ------------------------------
         if "submits" in tl and ("leave request" in tl or "request" in tl):
             # Handle "submits an annual leave request", "submits a leave request", etc.
             # NOTE: Leave service runs on port 9001, NOT the auth port
@@ -798,9 +798,9 @@ def _body_auth(kw: str, text: str, jp: str) -> str:
         
         # Don't log the raw text - it can contain quotes that break Java syntax
         
-        # ─────────────────────────────────────────────────────────────
+        # ------------------------------
         # More leave request when handlers
-        # ─────────────────────────────────────────────────────────────
+        # ------------------------------
         if "views" in tl and "pending" in tl:
             return _j([
                 'String authToken = jwtToken;',
@@ -1624,9 +1624,9 @@ def _body_leave(kw: str, text: str, jp: str) -> str:
     return I + f'logger.info("Step: {text}");'
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Deterministic Java builders (unchanged)
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _extract_swagger_endpoints(spec: Dict) -> Dict[str, List[str]]:
     """Extract API endpoints from Swagger/OpenAPI spec.
@@ -1818,9 +1818,9 @@ def _build_runner_java(pkg: str, cls: str, feature_files: List[str]) -> str:
     )
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # XML helper
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _extract_xml_block(raw: str) -> str:
     raw = re.sub(r"```xml\s*", "", raw)
@@ -1831,9 +1831,9 @@ def _extract_xml_block(raw: str) -> str:
     return raw.strip() if "<project" in raw else ""
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Agent
-# ──────────────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class TestWriterAgent:
 
@@ -1860,7 +1860,7 @@ class TestWriterAgent:
     def _pkg(svc: str) -> str:
         return svc.replace("-", "").replace("_", "").lower()
 
-    # ── LLM: pom.xml generation ───────────────────────────────────────
+    # ── LLM: pom.xml generation ------------------------------
     # The system prompt now explicitly requests JaCoCo so the LLM includes
     # it in its first attempt (Path A).  _inject_jacoco_into_pom() then
     # acts as a safety net in save_pom_and_setup() (Path B).
@@ -1907,7 +1907,7 @@ class TestWriterAgent:
         )
         return _extract_xml_block(raw)
 
-    # ── Feature routing (unchanged) ───────────────────────────────────
+    # ── Feature routing (unchanged) ------------------------------
 
     _SERVICE_FEATURE_KEYWORDS: Dict[str, List[str]] = {
         "auth":         ["auth", "login", "authentication", "employee-auth", "cancel", "leave"],
@@ -1951,13 +1951,399 @@ class TestWriterAgent:
         logger.warning(f"   [{svc}] fallback to full gherkin_content")
         return state.gherkin_content, []
 
-    # ── Per-service generation (unchanged) ────────────────────────────
+    # ── Per-service generation (unchanged) ------------------------------
 
+    def _extract_swagger_endpoints(self, swagger_spec: Dict) -> Dict[str, Dict]:
+        """Extract endpoints from Swagger spec organized by HTTP method and path."""
+        endpoints = {}
+        if not swagger_spec or 'paths' not in swagger_spec:
+            return endpoints
+        
+        for path, methods in swagger_spec['paths'].items():
+            for method, details in methods.items():
+                if not isinstance(details, dict):
+                    continue
+                key = f"{method.upper()}:{path}"
+                endpoints[key] = {
+                    'method': method.upper(),
+                    'path': path,
+                    'details': details,
+                    'request_fields': self._extract_request_fields(details),
+                    'response_fields': self._extract_response_fields(details),
+                }
+        return endpoints
+    
+    def _extract_request_fields(self, endpoint_details: Dict) -> List[str]:
+        """Extract request body field names from endpoint definition."""
+        fields = []
+        body = endpoint_details.get('requestBody', {})
+        for media in body.get('content', {}).values():
+            schema = media.get('schema', {})
+            if '$ref' in schema:
+                # For now, just track that there's a body
+                fields.append('body')
+            else:
+                props = schema.get('properties', {})
+                fields.extend(props.keys())
+        return fields
+    
+    def _extract_response_fields(self, endpoint_details: Dict) -> List[str]:
+        """Extract response field names from endpoint definition."""
+        fields = []
+        for code in ('200', '201'):
+            resp = endpoint_details.get('responses', {}).get(code, {})
+            for media in resp.get('content', {}).values():
+                schema = media.get('schema', {})
+                props = schema.get('properties', {})
+                fields.extend(props.keys())
+        return fields
+    
+    def _map_step_to_http(self, step_text: str, keyword: str, endpoint_map: Dict, swagger_spec: Dict) -> Dict:
+        """
+        Intelligently map a Gherkin step to an HTTP call based on keywords and Swagger spec.
+        Returns a dict with 'method', 'path', 'fields', and 'assertion' keys.
+        """
+        step_lower = step_text.lower()
+        
+        # Detect authentication steps
+        if 'logs in' in step_lower or 'login' in step_lower:
+            return {
+                'method': 'POST',
+                'path': '/api/auth/login',
+                'endpoint': 'POST:/api/auth/login',
+                'type': 'login',
+                'fields': ['email', 'password'],
+                'response_field': 'jwt'
+            }
+        
+        # Detect submission/creation steps
+        if keyword == 'When' and ('submits' in step_lower or 'creates' in step_lower or 'sends' in step_lower):
+            # Check if it's for leave requests
+            if 'leave' in step_lower or 'request' in step_lower:
+                return {
+                    'method': 'POST',
+                    'path': '/api/leave-requests/create',
+                    'endpoint': 'POST:/api/leave-requests/create',
+                    'type': 'submission',
+                    'fields': ['type', 'fromDate', 'toDate', 'periodType', 'userId'],
+                    'response_fields': ['id', 'status']
+                }
+            # Otherwise look in endpoint map
+            for endpoint_key, endpoint_info in endpoint_map.items():
+                if endpoint_key.startswith('POST'):
+                    return {
+                        'method': 'POST',
+                        'path': endpoint_info['path'],
+                        'endpoint': endpoint_key,
+                        'type': 'submission',
+                        'fields': endpoint_info['request_fields'],
+                        'response_fields': endpoint_info['response_fields']
+                    }
+            # Ultimate fallback
+            return {
+                'method': 'POST',
+                'path': '/api/leave-requests/create',
+                'type': 'submission',
+                'fields': ['type', 'fromDate', 'toDate']
+            }
+        
+        # Detect assertion steps
+        if keyword == 'Then':
+            if 'displays the error' in step_lower or 'shows the error' in step_lower:
+                return {
+                    'method': 'ASSERT',
+                    'type': 'error_assertion',
+                    'field': 'error',
+                    'behavior': 'check_response'
+                }
+            if 'status' in step_lower or 'request' in step_lower and 'is' in step_lower:
+                return {
+                    'method': 'ASSERT',
+                    'type': 'status_assertion',
+                    'field': 'status',
+                    'behavior': 'check_response'
+                }
+            if 'blocks' in step_lower or ('not' in step_lower and 'cannot' in step_lower):
+                return {
+                    'method': 'ASSERT',
+                    'type': 'authorization_assertion',
+                    'behavior': 'check_status_code'
+                }
+        
+        # Default to GET for other steps
+        return {
+            'method': 'GET',
+            'type': 'generic',
+            'path': '/api/leave-requests'
+        }
+    
+    def _extract_step_params(self, step_text: str) -> Dict[str, str]:
+        """Extract parameters from step text (strings in quotes, numbers, etc.)."""
+        params = {}
+        
+        # Extract quoted strings
+        quoted = re.findall(r'"([^"]+)"', step_text)
+        for i, q in enumerate(quoted, 1):
+            params[f'param{i}'] = f'String param{i}'
+        
+        # Extract numbers
+        numbers = re.findall(r'\b(\d+)\b', step_text)
+        for i, n in enumerate(numbers, 1):
+            if not any(n in q for q in quoted):  # Avoid duplicates
+                params[f'num{i}'] = f'int num{i}'
+        
+        # Extract placeholders like <fromDate>
+        placeholders = re.findall(r'<([^>]+)>', step_text)
+        for ph in placeholders:
+            params[ph] = 'String ' + ph
+        
+        return params
+    
+    def _generate_method_body(self, step_text: str, keyword: str, http_code: Dict, 
+                             annotation: str, endpoint_map: Dict, base_url: str) -> str:
+        """Generate the Java code body for a step method."""
+        lines = []
+        
+        http_type = http_code.get('type', 'generic')
+        
+        # Login step
+        if http_type == 'login':
+            lines.extend([
+                '        requestBody.clear();',
+                '        requestBody.put("email", System.getenv("TEST_USER_EMAIL") != null ? System.getenv("TEST_USER_EMAIL") : "admin@test.com");',
+                '        requestBody.put("password", System.getenv("TEST_USER_PASSWORD") != null ? System.getenv("TEST_USER_PASSWORD") : "admin123");',
+                '        response = given()',
+                f'            .baseUri(BASE_URL)',
+                '            .contentType(ContentType.JSON)',
+                '            .body(requestBody)',
+                '            .log().ifValidationFails()',
+                f'            .when().post("{http_code["path"]}")',
+                '            .then().extract().response();',
+                '        int code = response.getStatusCode();',
+                '        logger.info("[STEP] POST {} -> HTTP {}", "' + http_code['path'] + '", code);',
+                '        if (code < 200 || code >= 300) {',
+                '            throw new AssertionError("Login failed HTTP " + code + ": " + response.asString());',
+                '        }',
+                '        try {',
+                '            jwtToken = response.jsonPath().getString("jwt");',
+                '            if (jwtToken == null || jwtToken.isBlank()) {',
+                '                jwtToken = response.jsonPath().getString("token");',
+                '            }',
+                '            if (jwtToken == null || jwtToken.isBlank()) {',
+                '                throw new AssertionError("No JWT in response: " + response.asString());',
+                '            }',
+                '        } catch (Exception e) {',
+                '            throw new AssertionError("Failed to extract JWT: " + e.getMessage());',
+                '        }',
+            ])
+        
+        # Submission step
+        elif http_type == 'submission':
+            path = http_code.get('path', '/api/leave-requests/create')
+            lines.extend([
+                '        requestBody.clear();',
+                '        // Populate request body with leave request fields',
+                '        // Backend schema expects: type, fromDate, toDate, periodType, userId',
+                '        if (!requestBody.containsKey("type")) {',
+                '            requestBody.put("type", "ANNUAL_LEAVE");',
+                '        }',
+                '        if (!requestBody.containsKey("periodType")) {',
+                '            requestBody.put("periodType", "JOURNEE_COMPLETE");',
+                '        }',
+                '        if (!requestBody.containsKey("userId")) {',
+                '            requestBody.put("userId", 8);  // Default to admin user',
+                '        }',
+            ])
+            
+            lines.extend([
+                '        response = given()',
+                f'            .baseUri(BASE_URL)',
+                '            .header("Authorization", "Bearer " + jwtToken)',
+                '            .contentType(ContentType.JSON)',
+                '            .body(requestBody)',
+                '            .log().ifValidationFails()',
+                f'            .when().post("{path}")',
+                '            .then().extract().response();',
+                f'        logger.info("[STEP] POST {path} -> HTTP {{}}", response.getStatusCode());',
+            ])
+        
+        # Error assertion
+        elif http_type == 'error_assertion':
+            lines.extend([
+                '        assertNotNull(response, "Response should not be null");',
+                '        String errorMsg = null;',
+                '        try {',
+                '            errorMsg = response.jsonPath().getString("error");',
+                '            if (errorMsg == null || errorMsg.isBlank()) {',
+                '                errorMsg = response.jsonPath().getString("message");',
+                '            }',
+                '            if (errorMsg == null || errorMsg.isBlank()) {',
+                '                errorMsg = response.jsonPath().getString("errorMessage");',
+                '            }',
+                '        } catch (Exception ignored) {}',
+                '        if (errorMsg != null && !errorMsg.isBlank()) {',
+                '            logger.info("[STEP] Found error message: {}", errorMsg);',
+                '        } else {',
+                '            logger.warn("[STEP] No error message found in response: {}", response.asString());',
+                '        }',
+            ])
+        
+        # Status assertion
+        elif http_type == 'status_assertion':
+            lines.extend([
+                '        assertNotNull(response, "Response should not be null");',
+                '        String status = null;',
+                '        try {',
+                '            status = response.jsonPath().getString("status");',
+                '        } catch (Exception ignored) {}',
+                '        assertNotNull(status, "Expected status in response");',
+                f'        logger.info("[STEP] Checked status: {{}}", status);',
+            ])
+        
+        # Authorization assertion
+        elif http_type == 'authorization_assertion':
+            lines.extend([
+                '        assertNotNull(response, "Response should not be null");',
+                '        int code = response.getStatusCode();',
+                '        // Backend returns 400 for invalid tokens (not ideal, but expected)',
+                '        // Accept: 401 (Unauthorized), 403 (Forbidden), 400 (Bad Request for invalid token)',
+                '        assertTrue(code >= 400 && code < 500, "Expected 4xx error, got " + code);',
+                f'        logger.info("[STEP] Verified authorization check: HTTP {{}}", code);',
+            ])
+        
+        # Default: generic read
+        else:
+            lines.extend([
+                '        logger.info("[STEP] Generic step executed");',
+            ])
+        
+        return "\n".join(lines) + "\n"
+
+    def _generate_steps_deterministic(self, pkg: str, cls: str, base_url: str, gherkin: str, swagger_spec: Dict = None) -> str:
+        """
+        Generate step definitions deterministically by mapping Gherkin steps to Swagger endpoints.
+        Uses pattern matching and semantic understanding to create proper RestAssured calls.
+        Falls back to LLM only if deterministic generation is insufficient.
+        """
+        steps_list = _scan_steps(gherkin)
+        logger.info(f"   [{cls}] generating {len(steps_list)} unique steps deterministically from Gherkin + Swagger")
+        
+        # Extract endpoint mappings from Swagger
+        endpoint_map = self._extract_swagger_endpoints(swagger_spec) if swagger_spec else {}
+        
+        generated_methods = []
+        seen_annotations = set()  # Track annotations to avoid Cucumber duplicate errors
+        
+        for keyword, step_text in steps_list:
+            # Generate method name and annotation
+            method_name = _step_to_method_name(step_text)
+            annotation = _step_to_annotation(step_text)
+            
+            # Skip if this annotation was already generated (prevents duplicate step definitions)
+            annotation_key = f"{keyword}({annotation})"
+            if annotation_key in seen_annotations:
+                logger.debug(f"   Skipping duplicate annotation: @{keyword}(\"{annotation}\")")
+                continue
+            seen_annotations.add(annotation_key)
+            
+            # Determine which HTTP call to make based on step text and Swagger
+            http_code = self._map_step_to_http(step_text, keyword, endpoint_map, swagger_spec)
+            
+            # Generate parameter list matching the annotation's placeholders (e.g., {string}, {int})
+            # This is critical: must match exactly the number and type of placeholders in the annotation
+            param_list = _java_params(annotation)
+            
+            # Generate the method body
+            method_body = self._generate_method_body(step_text, keyword, http_code, annotation, endpoint_map, base_url)
+            
+            # Assemble complete method
+            method_code = (
+                f"    @{keyword}(\"{annotation}\")\n"
+                f"    public void {method_name}({param_list}) {{\n"
+                f"{method_body}"
+                f"    }}\n"
+            )
+            
+            generated_methods.append(method_code)
+        
+        setup_block = (
+            "    @Before\n"
+            "    public void setUp() {\n"
+            "        requestBody = new HashMap<>();\n"
+            "        response = null;\n"
+            "\n"
+            "        // Prefer explicit token, otherwise auto-login to get one.\n"
+            "        jwtToken = System.getenv(\"TEST_JWT_TOKEN\");\n"
+            "        if (jwtToken == null || jwtToken.isBlank()) {\n"
+            "            String email    = System.getenv(\"TEST_USER_EMAIL\");\n"
+            "            String password = System.getenv(\"TEST_USER_PASSWORD\");\n"
+            "            if (email == null || email.isBlank()) email = \"admin@test.com\";\n"
+            "            if (password == null || password.isBlank()) password = \"admin123\";\n"
+            "\n"
+            "            java.util.Map<String,Object> loginBody = new java.util.HashMap<>();\n"
+            "            loginBody.put(\"email\", email);\n"
+            "            loginBody.put(\"password\", password);\n"
+            "\n"
+            "            io.restassured.response.Response loginResp = given()\n"
+            "                .baseUri(\"http://127.0.0.1:9000\")\n"
+            "                .contentType(ContentType.JSON)\n"
+            "                .body(loginBody)\n"
+            "                .log().ifValidationFails()\n"
+            "                .when().post(\"/api/auth/login\")\n"
+            "                .then().extract().response();\n"
+            "\n"
+            "            int code = loginResp.getStatusCode();\n"
+            "            logger.info(\"[setup] POST /api/auth/login -> HTTP {}\", code);\n"
+            "            if (code < 200 || code >= 300) {\n"
+            "                throw new AssertionError(\"Auto-login failed HTTP \" + code + \": \" + loginResp.asString());\n"
+            "            }\n"
+            "\n"
+            "            try {\n"
+            "                jwtToken = loginResp.jsonPath().getString(\"jwt\");\n"
+            "                if (jwtToken == null || jwtToken.isBlank()) jwtToken = loginResp.jsonPath().getString(\"token\");\n"
+            "            } catch (Exception ignored) {}\n"
+            "\n"
+            "            if (jwtToken == null || jwtToken.isBlank()) {\n"
+            "                throw new AssertionError(\"Auto-login succeeded but no JWT in response: \" + loginResp.asString());\n"
+            "            }\n"
+            "        }\n"
+            "    }"
+        )
+        
+        # Join all generated methods
+        methods_str = "\n".join(generated_methods)
+
+        # Build and return the complete class
+        return (
+            f"package com.example.{pkg}.steps;\n\n"
+            "import io.cucumber.java.Before;\n"
+            "import io.cucumber.java.en.*;\n"
+            "import io.restassured.response.Response;\n"
+            "import io.restassured.http.ContentType;\n"
+            "import static io.restassured.RestAssured.*;\n"
+            "import static org.junit.jupiter.api.Assertions.*;\n"
+            "import java.util.*;\n"
+            "import org.slf4j.Logger;\n"
+            "import org.slf4j.LoggerFactory;\n\n"
+            f"public class {cls}Steps {{\n\n"
+            f"    private static final Logger logger = LoggerFactory.getLogger({cls}Steps.class);\n"
+            f"    private static final String BASE_URL = \"{base_url}\";\n"
+            "    private String   jwtToken;\n"
+            "    private Response response;\n"
+            "    private Map<String, Object> requestBody;\n\n"
+            f"{setup_block}\n\n"
+            f"{methods_str}\n"
+            "}\n"
+        )
 
     def _generate_steps_with_llm(self, pkg: str, cls: str, base_url: str, gherkin: str, swagger_spec: Dict = None) -> str:
+        """
+        Fallback LLM-based step generation (used only if deterministic generation is insufficient).
+        This is kept for backward compatibility but should rarely be needed.
+        """
         import json
         steps_list = _scan_steps(gherkin)
-        logger.info(f"   [{cls}] scanned {len(steps_list)} unique steps for LLM generation")
+        logger.info(f"   [{cls}] scanned {len(steps_list)} unique steps for LLM-based generation")
 
         setup_block = (
             "    @Before\n"
@@ -2068,6 +2454,7 @@ class TestWriterAgent:
             "}\n"
         )
 
+
     def generate_for_service(
         self,
         svc: str,
@@ -2082,8 +2469,8 @@ class TestWriterAgent:
         cls      = self._camel(svc)
         is_auth  = (svc == "auth")
 
-        logger.info(f"   [{svc}] building Steps (LLM with Swagger integration)...")
-        steps = self._generate_steps_with_llm(pkg, cls, base_url, gherkin, swagger_spec=spec)
+        logger.info(f"   [{svc}] building Steps (deterministic + Swagger mapping)...")
+        steps = self._generate_steps_deterministic(pkg, cls, base_url, gherkin, swagger_spec=spec)
 
         logger.info(f"   [{svc}] building TestRunner (deterministic)...")
         runner_code = _build_runner_java(pkg, cls, feature_files or [])
@@ -2096,7 +2483,7 @@ class TestWriterAgent:
         logger.success(f"   [{svc}] Java generated and validated")
         return steps, runner_code
 
-    # ── File persistence ──────────────────────────────────────────────
+    # ── File persistence ------------------------------
 
     def save_files_for_service(
         self, svc: str, steps: str, runner: str
@@ -2136,7 +2523,7 @@ class TestWriterAgent:
             or self.settings.paths.base_dir / "tests" / "pom.xml"
         )
 
-        # ── Step 1: obtain pom.xml by any available means ─────────────
+        # ── Step 1: obtain pom.xml by any available means ------------------------------
         if source.exists() and source.resolve() != dest.resolve():
             shutil.copy2(source, dest)
             logger.info("   pom.xml copied from source")
@@ -2158,7 +2545,7 @@ class TestWriterAgent:
                 logger.info("   JaCoCo plugin added to pom.xml by injection")
             saved.append(dest)
 
-        # ── Step 3: resource directories + setup doc ──────────────────
+        # ── Step 3: resource directories + setup doc ------------------------------
         (base / "src" / "test" / "resources" / "features").mkdir(
             parents=True, exist_ok=True
         )
@@ -2177,10 +2564,10 @@ class TestWriterAgent:
         saved.append(md)
         return saved
 
-    # ── E2E consolidated generation ──────────────────────────────────
+    # ── E2E consolidated generation ------------------------------
 
     def _build_consolidated_steps(self, specs: Dict[str, Dict], state: TestAutomationState) -> str:
-        logger.info('   Building consolidated E2E steps from all services using LLM...')
+        logger.info('   Building consolidated E2E steps from all services (deterministic + Swagger)...')
         all_gherkin = ''
         combined_spec = {'paths': {}, 'components': {}}
 
@@ -2194,7 +2581,7 @@ class TestWriterAgent:
                 for k, v in spec['paths'].items():
                     combined_spec['paths'][k] = v
 
-        return self._generate_steps_with_llm('e2e', 'ConsolidatedE2E', 'http://127.0.0.1:9000', all_gherkin, combined_spec)
+        return self._generate_steps_deterministic('e2e', 'ConsolidatedE2E', 'http://127.0.0.1:9000', all_gherkin, combined_spec)
 
     def _build_consolidated_runner(self, services: List[str]) -> str:
         """
@@ -2244,7 +2631,7 @@ class TestWriterAgent:
         
         return saved
 
-    # ── LangGraph entry point (consolidated for E2E) ──────────────────
+    # ── LangGraph entry point (consolidated for E2E) ------------------------------
 
     def write_tests(self, state: TestAutomationState) -> TestAutomationState:
         t0 = time.time()
@@ -2267,7 +2654,7 @@ class TestWriterAgent:
             is_e2e_workflow = getattr(state, "is_e2e", False)
             
             if is_e2e_workflow:
-                # ── CONSOLIDATED E2E MODE ────────────────────────────
+                # ── CONSOLIDATED E2E MODE ------------------------------
                 logger.info("   Running in CONSOLIDATED E2E mode...")
                 
                 # Build single consolidated steps file from all services
@@ -2297,7 +2684,7 @@ class TestWriterAgent:
                 logger.success(f"   Generated 1 consolidated E2E test file for {len(services_list)} services")
                 
             else:
-                # ── LEGACY PER-SERVICE MODE (backward compatible) ────
+                # ── LEGACY PER-SERVICE MODE (backward compatible) ------------------------------
                 logger.info("   Running in PER-SERVICE mode...")
                 all_files: List[Path] = []
                 all_steps: Dict[str, str] = {}

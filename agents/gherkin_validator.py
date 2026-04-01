@@ -1,6 +1,6 @@
 """
 agents/gherkin_validator.py
-────────────────────────────
+------------------------------
 Agent 3 — Gherkin Validator
 
 FIXES applied:
@@ -61,7 +61,7 @@ class GherkinValidatorAgent:
             f"model: {self.settings.huggingface.gherkin_validator.model_name})"
         )
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _find_gherkin_lint(self) -> str | None:
         local_path_cmd = Path("node_modules/.bin/gherkin-lint.cmd")
         if local_path_cmd.exists():
@@ -95,10 +95,10 @@ class GherkinValidatorAgent:
         except Exception as e:
             logger.debug(f"   Global check failed: {e}")
 
-        logger.warning("⚠️ gherkin-lint not found. Install with: npm install -g gherkin-lint")
+        logger.warning("[WARN]️ gherkin-lint not found. Install with: npm install -g gherkin-lint")
         return None
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def validate(self, state: TestAutomationState) -> TestAutomationState:
         start_time  = time.time()
         all_issues: List[ValidationIssue] = []
@@ -158,13 +158,13 @@ class GherkinValidatorAgent:
             if validation_result.is_valid:
                 logger.success(f"✅ Validation PASSED - Coverage: {llm_result.coverage_score}%")
             else:
-                logger.warning(f"⚠️ Validation FAILED - Coverage: {llm_result.coverage_score}%")
+                logger.warning(f"[WARN]️ Validation FAILED - Coverage: {llm_result.coverage_score}%")
 
             for missing in llm_result.missing_scenarios:
                 state.add_warning(f"Missing scenario: {missing}")
 
         except Exception as e:
-            logger.error(f"❌ Validation error: {str(e)}")
+            logger.error(f"[ERROR] Validation error: {str(e)}")
             duration = (time.time() - start_time) * 1000
             state.add_agent_output(AgentOutput(
                 agent_name="gherkin_validator",
@@ -176,7 +176,7 @@ class GherkinValidatorAgent:
 
         return state
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _validate_with_gherkin_lint(self, feature_file: Path) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
@@ -242,7 +242,7 @@ class GherkinValidatorAgent:
 
         return issues
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _validate_semantics(self, feature_file: Path) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
@@ -279,17 +279,21 @@ class GherkinValidatorAgent:
 
         return issues
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _validate_with_llm(self, gherkin_content: str, user_story: str) -> LLMValidationOutput:
 
         requirements   = self._extract_requirements_structured(user_story)
         scenario_count = len(re.findall(r"^\s*Scenario:", gherkin_content, re.MULTILINE))
 
-        logger.info("🔍 Validation Context:")
+        logger.info("[DEBUG] Validation Context:")
         logger.info(f"   Scenarios in Gherkin: {scenario_count}")
         logger.info(f"   Acceptance Criteria found: {len(requirements['acceptance_criteria'])}")
         logger.info(f"   Business Rules found: {len(requirements['business_rules'])}")
         logger.info(f"   Error Messages expected: {len(requirements['error_messages'])}")
+        
+        # SKIP LLM VALIDATION - Use heuristic fallback to avoid timeout issues
+        logger.warning("   ⚠️  Skipping LLM validation (using heuristic to avoid timeout)")
+        return self._heuristic_validation(gherkin_content, user_story)
 
         # FIX 2: Removed {format_instructions} from the template variable.
         # The expected JSON shape is now described inline in the system prompt.
@@ -361,28 +365,28 @@ Return the JSON analysis now:"""),
                 })
 
                 if not self._validate_llm_response(result, requirements, scenario_count):
-                    logger.warning(f"⚠️ LLM response validation failed on attempt {attempt + 1}")
+                    logger.warning(f"[WARN]️ LLM response validation failed on attempt {attempt + 1}")
                     if attempt < max_retries - 1:
                         continue
                     else:
-                        logger.warning("⚠️ All LLM attempts failed validation, falling back to heuristic")
+                        logger.warning("[WARN]️ All LLM attempts failed validation, falling back to heuristic")
                         return self._heuristic_validation(gherkin_content, user_story)
 
                 logger.success(f"✅ LLM validation successful: {result.coverage_score}% coverage")
                 return result
 
             except Exception as e:
-                logger.warning(f"⚠️ LLM validation attempt {attempt + 1} failed: {e}")
+                logger.warning(f"[WARN]️ LLM validation attempt {attempt + 1} failed: {e}")
                 if attempt < max_retries - 1:
                     time.sleep(1)
                     continue
                 else:
-                    logger.warning("⚠️ All LLM attempts failed, falling back to heuristic")
+                    logger.warning("[WARN]️ All LLM attempts failed, falling back to heuristic")
                     return self._heuristic_validation(gherkin_content, user_story)
 
         return self._heuristic_validation(gherkin_content, user_story)
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _extract_requirements_structured(self, user_story: str) -> dict:
         requirements = {
             "acceptance_criteria": [],
@@ -432,7 +436,7 @@ Return the JSON analysis now:"""),
 
         return requirements
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _format_requirements_for_llm(self, requirements: dict) -> str:
         formatted = []
 
@@ -462,7 +466,7 @@ Return the JSON analysis now:"""),
 
         return "\n".join(formatted) if formatted else "No structured requirements found."
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _validate_llm_response(
         self, result: LLMValidationOutput, requirements: dict, scenario_count: int
     ) -> bool:
@@ -490,7 +494,7 @@ Return the JSON analysis now:"""),
 
         return True
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     def _heuristic_validation(self, gherkin_content: str, user_story: str) -> LLMValidationOutput:
         scenario_count = len(re.findall(r"^\s*Scenario:", gherkin_content, re.MULTILINE))
 

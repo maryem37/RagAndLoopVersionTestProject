@@ -1,6 +1,6 @@
 """
 tools/service_registry.py
-─────────────────────────
+------------------------------
 Dynamic service registry that loads from services_matrix.yaml
 Provides a single source of truth for all microservices configuration
 """
@@ -66,9 +66,9 @@ class ServiceRegistry:
             for service_name, service_config in config.get('services', {}).items():
                 self.services[service_name] = Service(service_name, service_config)
             
-            logger.info(f"📋 Loaded {len(self.services)} total services from matrix")
+            logger.info(f"[LIST] Loaded {len(self.services)} total services from matrix")
         except Exception as e:
-            logger.error(f"❌ Failed to load services_matrix.yaml: {e}")
+            logger.error(f"[ERROR] Failed to load services_matrix.yaml: {e}")
             raise
     
     def get_service(self, name: str) -> Optional[Service]:
@@ -112,7 +112,7 @@ class ServiceRegistry:
                 # If nothing is ready, there must be a circular dependency
                 # or a dependency on a service that wasn't requested.
                 all_deps = {name: self.services[name].dependencies for name in remaining}
-                logger.warning(f"⚠️ Circular dependency or missing dependency detected in: {all_deps}")
+                logger.warning(f"[WARN]️ Circular dependency or missing dependency detected in: {all_deps}")
                 # To prevent an infinite loop, just add the rest alphabetically and break
                 order.extend(sorted(list(remaining)))
                 break
@@ -120,7 +120,7 @@ class ServiceRegistry:
             order.extend(sorted(ready))  # Sort for deterministic order
             remaining -= set(ready)
         
-        logger.info(f"📊 Execution order: {' → '.join(order)}")
+        logger.info(f"[CHART] Execution order: {' -> '.join(order)}")
         return order
     
     def get_service_config(self, service_name: str) -> Dict:
@@ -191,7 +191,7 @@ class ServiceRegistry:
         enabled = self.get_enabled_services()
         
         if not enabled:
-            logger.warning("⚠️ No services enabled in configuration")
+            logger.warning("[WARN]️ No services enabled in configuration")
             return False
         
         # Check for duplicate ports
@@ -199,7 +199,7 @@ class ServiceRegistry:
         for service in enabled:
             if service.port in ports:
                 logger.error(
-                    f"❌ Port conflict: {service.name} and {ports[service.port]} "
+                    f"[ERROR] Port conflict: {service.name} and {ports[service.port]} "
                     f"both use port {service.port}"
                 )
                 return False
@@ -211,7 +211,7 @@ class ServiceRegistry:
             for dep in service.dependencies:
                 if dep not in service_names:
                     logger.error(
-                        f"❌ Service '{service.name}' depends on '{dep}' "
+                        f"[ERROR] Service '{service.name}' depends on '{dep}' "
                         f"which is not configured or enabled"
                     )
                     return False
@@ -222,7 +222,7 @@ class ServiceRegistry:
     def print_summary(self) -> None:
         """Print a summary of the services configuration"""
         logger.info("\n" + "="*80)
-        logger.info("📋 SERVICE REGISTRY SUMMARY")
+        logger.info("[LIST] SERVICE REGISTRY SUMMARY")
         logger.info("="*80)
         
         enabled = self.get_enabled_services()

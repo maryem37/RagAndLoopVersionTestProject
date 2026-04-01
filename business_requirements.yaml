@@ -1,0 +1,200 @@
+# ============================================================================
+# Business Requirements for End-to-End Testing
+# Two Microservices: conge (Port 9000) + DemandeConge (Port 9001)
+# ============================================================================
+
+SERVICES:
+  # ========================================================================
+  # SERVICE 1: CONGE (Port 9000) - Authentication & User Management
+  # ========================================================================
+  - SERVICE_NAME: auth
+    PORT: 9000
+    SWAGGER_FILE: examples/sample_swagger1.json
+    DESCRIPTION: "User authentication, departments, roles management"
+
+    USER_STORIES:
+      - "As a system admin, I want to manage users and assign them to departments"
+      - "As a user, I want to authenticate and receive a JWT token"
+      - "As a team leader, I want to view users in my department"
+      - "As an admin, I want to manage departments"
+
+    BUSINESS_RULES:
+      - "User roles are: EMPLOYER, TEAM_LEADER, ADMINISTRATION"
+      - "Users must belong to a valid department"
+      - "Department IDs must be positive integers"
+      - "User email must be unique"
+      - "Passwords must be at least 8 characters"
+      - "JWT token expires after 24 hours"
+      - "Admin role can manage all users"
+      - "Team leaders can only view their own department users"
+
+    CRITICAL_ENDPOINTS:
+      - "GET /api/users/{id} - Fetch user details"
+      - "POST /api/users - Create new user"
+      - "PUT /api/users/{id} - Update user"
+      - "DELETE /api/users/{id} - Delete user"
+      - "GET /api/admin/departments/{id} - Get department"
+      - "POST /api/admin/departments - Create department"
+      - "PUT /api/admin/departments/{id} - Update department"
+      - "GET /api/auth/roles - List all roles"
+
+    TEST_SCENARIOS:
+      HAPPY_PATH:
+        - "Create valid user with all required fields"
+        - "Fetch existing user by ID"
+        - "Update user details"
+        - "List all users in department"
+        - "Assign user to valid department"
+
+      ERROR_CASES:
+        - "Create user with missing email"
+        - "Create user with duplicate email"
+        - "Fetch non-existent user (404)"
+        - "Update user with invalid role"
+        - "Assign user to non-existent department"
+
+      EDGE_CASES:
+        - "User ID at boundary (0, 1, 9999999)"
+        - "Department with no users"
+        - "User with special characters in name"
+        - "Empty department name"
+
+      SECURITY_CASES:
+        - "Access user endpoint without JWT token (401)"
+        - "Access user endpoint with expired token (401)"
+        - "Non-admin user trying to delete another user (403)"
+        - "Team leader trying to access other department (403)"
+
+  # ========================================================================
+  # SERVICE 2: DEMANDE_CONGE (Port 9001) - Leave Management
+  # ========================================================================
+  - SERVICE_NAME: leave
+    PORT: 9001
+    SWAGGER_FILE: examples/sample_swagger2.json
+    DESCRIPTION: "Leave request management, approvals, rejections"
+
+    USER_STORIES:
+      - "As a user, I want to create a leave request with start and end dates"
+      - "As a team leader, I want to approve leave requests from my team members"
+      - "As an employer, I want to reject leave requests that violate policy"
+      - "As a user, I want to view my leave request history"
+      - "As a user, I want to receive notification when my leave is approved/rejected"
+
+    BUSINESS_RULES:
+      - "Leave dates must be in the future (cannot be past dates)"
+      - "Cannot have overlapping leave requests for the same user"
+      - "Maximum 30 days leave per calendar year"
+      - "Cannot request more than 5 consecutive days without special approval"
+      - "Team leader role can approve leaves"
+      - "Employer role can reject leaves"
+      - "Admin role can override any decision"
+      - "Leave balance is tracked per user"
+      - "Approval workflow: PENDING → APPROVED or REJECTED"
+      - "Cannot modify leave request after approval"
+
+    CRITICAL_ENDPOINTS:
+      - "POST /api/leave-requests - Create leave request"
+      - "GET /api/leave-requests/{id} - Get leave request details"
+      - "PUT /api/leave-requests/{id} - Update pending leave request"
+      - "DELETE /api/leave-requests/{id} - Cancel leave request"
+      - "PUT /api/leave-requests/{id}/approve - Approve leave (Team Leader)"
+      - "PUT /api/leave-requests/{id}/reject - Reject leave (Employer)"
+      - "GET /api/leave-requests - List all user's leave requests"
+      - "GET /api/leave-requests/search - Search leaves by date range"
+
+    TEST_SCENARIOS:
+      HAPPY_PATH:
+        - "Create valid leave request with future dates"
+        - "Retrieve created leave request"
+        - "Approve pending leave request as Team Leader"
+        - "Reject pending leave request as Employer"
+        - "List all leave requests for user"
+        - "Search leave requests by date range"
+
+      ERROR_CASES:
+        - "Create leave with past dates (rejected)"
+        - "Create leave with fromDate > toDate (rejected)"
+        - "Create overlapping leave request (rejected)"
+        - "Request more than 30 days per year (rejected)"
+        - "Request more than 5 consecutive days (rejected)"
+        - "Create leave without authentication (401)"
+        - "Approve leave that's not PENDING (rejected)"
+        - "Try to approve as non-Team Leader (403)"
+
+      EDGE_CASES:
+        - "Same start and end date (0 days leave)"
+        - "Leave spanning weekends"
+        - "Leave on public holidays"
+        - "User with zero leave balance remaining"
+        - "Multiple approvals for same request"
+        - "Reject already approved leave (rejected)"
+
+      SECURITY_CASES:
+        - "Access leave endpoint without JWT token (401)"
+        - "Access other user's leave request without permission (403)"
+        - "Team leader approving leave outside their department (403)"
+        - "Non-Employer role trying to reject leave (403)"
+
+    INTEGRATION_WITH_CONGE:
+      - "Verify user exists in conge service before creating leave"
+      - "Fetch user role from conge to authorize approve/reject"
+      - "Validate user department from conge for team leader scope"
+
+# ============================================================================
+# END-TO-END INTEGRATION SCENARIOS
+# ============================================================================
+INTEGRATION_SCENARIOS:
+  - SCENARIO: "User Authentication → Leave Request Flow"
+    STEPS:
+      - "1. User authenticates with conge service → Gets JWT token"
+      - "2. User creates leave request in DemandeConge with token"
+      - "3. DemandeConge calls conge to verify user role"
+      - "4. Team leader receives notification of pending leave"
+      - "5. Team leader approves leave"
+      - "6. User receives approval notification"
+    EXPECTED_RESULT: "Leave request successfully approved"
+
+  - SCENARIO: "Overlapping Leave Rejection"
+    STEPS:
+      - "1. User creates leave from 2026-05-01 to 2026-05-10"
+      - "2. User tries to create overlapping leave 2026-05-05 to 2026-05-15"
+      - "3. System rejects second request"
+    EXPECTED_RESULT: "409 Conflict - Overlapping leave detected"
+
+  - SCENARIO: "Role-Based Approval Workflow"
+    STEPS:
+      - "1. User (Employee) creates leave request"
+      - "2. Team Leader with different role tries to approve"
+      - "3. System verifies Team Leader role from conge"
+      - "4. Team Leader successfully approves"
+      - "5. Employer verifies approval in audit log"
+    EXPECTED_RESULT: "Approval workflow executed with proper authorization"
+
+# ============================================================================
+# QUALITY METRICS TARGETS
+# ============================================================================
+COVERAGE_TARGETS:
+  LINE_COVERAGE: 60.0       # %
+  BRANCH_COVERAGE: 50.0     # %
+  METHOD_COVERAGE: 70.0     # %
+
+# ============================================================================
+# PRIORITY LEVELS
+# ============================================================================
+PRIORITY_P0:
+  - "User authentication flow"
+  - "Create leave request"
+  - "Approve/Reject leave"
+  - "Future date validation"
+  - "Overlapping leave detection"
+
+PRIORITY_P1:
+  - "Leave balance tracking"
+  - "Role-based authorization"
+  - "Department scope validation"
+  - "Search/filter leaves"
+
+PRIORITY_P2:
+  - "Notification system"
+  - "Audit logging"
+  - "Performance optimization"

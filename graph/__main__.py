@@ -1,6 +1,6 @@
 """
 graph/__main__.py
-─────────────────
+------------------------------
 Entry point for running: python -m graph
 Shows pipeline progress in console with formatted output.
 """
@@ -20,18 +20,18 @@ def main():
     """Run the full test automation pipeline."""
     
     print("\n" + "="*80)
-    print("  🚀 TEST AUTOMATION PIPELINE")
+    print("  [START] TEST AUTOMATION PIPELINE")
     print("="*80 + "\n")
     
     try:
         # Load user story
         user_story_file = Path("examples/sample_user_story.md")
         if not user_story_file.exists():
-            print(f"❌ User story not found: {user_story_file}")
+            print(f"[ERROR] User story not found: {user_story_file}")
             return 1
         
         user_story = user_story_file.read_text(encoding="utf-8")
-        print(f"✓ Loaded user story from {user_story_file}")
+        print(f"[OK] Loaded user story from {user_story_file}")
         
         # Load Swagger specs
         swagger_files = {
@@ -43,12 +43,12 @@ def main():
         for name, path in swagger_files.items():
             if path.exists():
                 swagger_specs[name] = json.load(path.open())
-                print(f"✓ Loaded Swagger spec: {name}")
+                print(f"[OK] Loaded Swagger spec: {name}")
             else:
-                print(f"⚠ Swagger file not found: {path}")
+                print(f"[WARN] Swagger file not found: {path}")
         
         if not swagger_specs:
-            print("❌ No Swagger specs found")
+            print("[ERROR] No Swagger specs found")
             return 1
         
         print("\n" + "-"*80)
@@ -68,7 +68,7 @@ def main():
         print("="*80)
         
         # Summary
-        print("\n📊 RESULTS:")
+        print("\n[CHART] RESULTS:")
         print(f"   Workflow ID: {result.workflow_id}")
         print(f"   Status: {result.workflow_status}")
         
@@ -83,7 +83,7 @@ def main():
                 print(f"   - {Path(f).name}")
         
         if result.errors:
-            print(f"\n⚠️  Errors ({len(result.errors)}):")
+            print(f"\n[WARN]️  Errors ({len(result.errors)}):")
             for err in result.errors[:3]:
                 print(f"   - {err}")
         
@@ -91,7 +91,7 @@ def main():
         return 0
         
     except Exception as e:
-        print(f"\n❌ FATAL ERROR: {e}")
+        print(f"\n[ERROR] FATAL ERROR: {e}")
         import traceback
         traceback.print_exc()
         return 1

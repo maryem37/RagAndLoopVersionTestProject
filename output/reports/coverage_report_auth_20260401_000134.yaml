@@ -1,6 +1,6 @@
 summary:
-  service: auth_leave
-  generated_at: '2026-03-27T14:23:26'
+  service: auth
+  generated_at: '2026-04-01T00:01:34'
   data_source: jacoco-xml
   aggregate:
     total_classes: 55
@@ -28,12 +28,12 @@ summary:
     - 'branch_coverage_%: 3.96% < threshold 50.0%'
     - 'method_coverage_%: 35.83% < threshold 70.0%'
   test_execution:
-    tests: 23
-    failures: 0
-    errors: 23
+    tests: 38
+    failures: 25
+    errors: 5
     skipped: 0
-    time_s: 1.124
-    passed: 0
+    time_s: 17.357
+    passed: 8
     source: surefire-xml
 packages:
 - package: tn.enis.DemandeConge

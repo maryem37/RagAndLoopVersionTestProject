@@ -1,34 +1,64 @@
 -------------------------------------------------------------------------------
 Test set: com.example.e2e.ConsolidatedE2ETestRunner
 -------------------------------------------------------------------------------
-Tests run: 23, Failures: 0, Errors: 23, Skipped: 0, Time elapsed: 1.124 s <<< FAILURE! -- in com.example.e2e.ConsolidatedE2ETestRunner
-Leave Request Lifecycle.Employee submits a valid leave request -- Time elapsed: 0.202 s <<< ERROR!
+Tests run: 39, Failures: 8, Errors: 23, Skipped: 0, Time elapsed: 8.852 s <<< FAILURE! -- in com.example.e2e.ConsolidatedE2ETestRunner
+Leave Request Lifecycle.Employee submits a valid leave request -- Time elapsed: 3.252 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theLeaveRequestStatusIsX(ConsolidatedE2ESteps.java:135)
+	at ✽.the leave request status is "Pending"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:11)
+
+Examples.Example #1.1 -- Time elapsed: 0.242 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Pending"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:35)
+
+Examples.Example #1.2 -- Time elapsed: 0.237 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Rejected"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:35)
+
+Examples.Example #1.3 -- Time elapsed: 0.269 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Approved"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:35)
+
+Examples.Example #1.1 -- Time elapsed: 0.223 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Pending"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:45)
+
+Examples.Example #1.2 -- Time elapsed: 0.284 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Pending"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:45)
+
+Examples.Example #1.3 -- Time elapsed: 0.277 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Pending"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:45)
+
+Examples.Example #1.4 -- Time elapsed: 0.222 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected status in response ==> expected: not <null>
+	at com.example.e2e.steps.ConsolidatedE2ESteps.theStatusIsX(ConsolidatedE2ESteps.java:316)
+	at ✽.the status is "Pending"(classpath:features/auth-leave_01_leave-request-lifecycle_20260401_121211.feature:45)
+
+Leave Request Management - Complete Feature Story.Employee submits a leave request with invalid leave type -- Time elapsed: 0.100 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 4 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee has sufficient leave balance")
-public void the_employee_has_sufficient_leave_balance() {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits an annual leave request from {string} to {string}")
-public void the_employee_submits_an_annual_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the request includes a valid reason")
-public void the_request_includes_a_valid_reason() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the leave request status is {string}")
-public void the_leave_request_status_is(String string) {
+@When("the employee submits a leave request with invalid type")
+public void the_employee_submits_a_leave_request_with_invalid_type() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -45,28 +75,23 @@ public void the_leave_request_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Leave Request Lifecycle.Employee submits without filling all required fields -- Time elapsed: 0.005 s <<< ERROR!
+Leave Request Management - Complete Feature Story.Employee submits a leave request with empty fields -- Time elapsed: 0.013 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee has sufficient leave balance")
-public void the_employee_has_sufficient_leave_balance() {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request without a reason")
-public void the_employee_submits_a_leave_request_without_a_reason() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
+@When("the employee submits a leave request with missing required fields")
+public void the_employee_submits_a_leave_request_with_missing_required_fields() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -83,28 +108,23 @@ public void the_system_displays_the_error(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Leave Request Lifecycle.Employee submits with invalid leave type -- Time elapsed: 0.012 s <<< ERROR!
+Leave Request Management - Complete Feature Story.Employee submits with zero days requested -- Time elapsed: 0.009 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee has sufficient leave balance")
-public void the_employee_has_sufficient_leave_balance() {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request with type {string}")
-public void the_employee_submits_a_leave_request_with_type(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
+@When("the employee submits a leave request with zero days")
+public void the_employee_submits_a_leave_request_with_zero_days() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -121,28 +141,23 @@ public void the_system_displays_the_error(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Leave Request Lifecycle.Employee submits overlapping with another request -- Time elapsed: 0.006 s <<< ERROR!
+Leave Request Management - Complete Feature Story.Employee submits without respecting notice period -- Time elapsed: 0.023 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee has sufficient leave balance")
-public void the_employee_has_sufficient_leave_balance() {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request overlapping with an existing request")
-public void the_employee_submits_a_leave_request_overlapping_with_an_existing_request() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
+@When("the employee submits a leave request with less than {int} hours notice")
+public void the_employee_submits_a_leave_request_with_less_than_hours_notice(Integer int1) {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -159,28 +174,18 @@ public void the_system_displays_the_error(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Leave Request Lifecycle.Employee submits with insufficient balance -- Time elapsed: 0.006 s <<< ERROR!
+Leave Request Management - Complete Feature Story.Unauthorized employee attempts to create request -- Time elapsed: 0.015 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee has zero balance")
-public void the_employee_has_zero_balance() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits an annual leave request from {string} to {string}")
-public void the_employee_submits_an_annual_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
+@Given("an unauthorized user tries to submit a leave request")
+public void an_unauthorized_user_tries_to_submit_a_leave_request() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -197,28 +202,122 @@ public void the_system_displays_the_error(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Leave Request Lifecycle.Unauthorized employee attempts to create request -- Time elapsed: 0.007 s <<< ERROR!
+Leave Request Management - Complete Feature Story.Manager approves pending leave request -- Time elapsed: 0.012 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee does not have valid credentials")
-public void the_employee_does_not_have_valid_credentials() {
+@Given("there is a pending leave request")
+public void there_is_a_pending_leave_request() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee tries to submit a leave request")
-public void the_employee_tries_to_submit_a_leave_request() {
+@When("the manager approves the leave request")
+public void the_manager_approves_the_leave_request() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Then("the system blocks the action")
-public void the_system_blocks_the_action() {
+
+	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
+	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+Leave Request Management - Complete Feature Story.Manager rejects pending leave request -- Time elapsed: 0.010 s <<< ERROR!
+io.cucumber.junit.platform.engine.UndefinedStepException: 
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
+You can implement these steps using the snippet(s) below:
+
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@Given("there is a pending leave request")
+public void there_is_a_pending_leave_request() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@When("the manager rejects the leave request with reason {string}")
+public void the_manager_rejects_the_leave_request_with_reason(String string) {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+
+	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
+	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+Leave Request Management - Complete Feature Story.Cannot approve already processed request -- Time elapsed: 0.011 s <<< ERROR!
+io.cucumber.junit.platform.engine.UndefinedStepException: 
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
+You can implement these steps using the snippet(s) below:
+
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@Given("there is an approved leave request")
+public void there_is_an_approved_leave_request() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@When("the manager attempts to approve the already processed request")
+public void the_manager_attempts_to_approve_the_already_processed_request() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+
+	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
+	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+Leave Request Management - Complete Feature Story.Cannot approve non-existent request -- Time elapsed: 0.011 s <<< ERROR!
+io.cucumber.junit.platform.engine.UndefinedStepException: 
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
+You can implement these steps using the snippet(s) below:
+
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@Given("there is no such leave request")
+public void there_is_no_such_leave_request() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@When("the manager attempts to approve a non-existent request")
+public void the_manager_attempts_to_approve_a_non_existent_request() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -237,21 +336,16 @@ public void the_system_blocks_the_action() {
 
 Examples.Example #1.1 -- Time elapsed: 0.007 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -270,23 +364,18 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.2 -- Time elapsed: 0.005 s <<< ERROR!
+Examples.Example #1.2 -- Time elapsed: 0.012 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -305,23 +394,18 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.3 -- Time elapsed: 0.005 s <<< ERROR!
+Examples.Example #1.1 -- Time elapsed: 0.010 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -340,23 +424,18 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.1 -- Time elapsed: 0.004 s <<< ERROR!
+Examples.Example #1.2 -- Time elapsed: 0.011 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a {string} leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2, String string3) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -375,23 +454,18 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.2 -- Time elapsed: 0.006 s <<< ERROR!
+Examples.Example #1.3 -- Time elapsed: 0.009 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a {string} leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2, String string3) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -410,23 +484,18 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.3 -- Time elapsed: 0.004 s <<< ERROR!
+Examples.Example #1.4 -- Time elapsed: 0.022 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a {string} leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2, String string3) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -445,23 +514,23 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.4 -- Time elapsed: 0.004 s <<< ERROR!
+Examples.Example #1.1 -- Time elapsed: 0.063 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a {string} leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2, String string3) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@When("the employee submits a leave request with period type {string}")
+public void the_employee_submits_a_leave_request_with_period_type(String string) {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -480,23 +549,23 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.1 -- Time elapsed: 0.006 s <<< ERROR!
+Examples.Example #1.2 -- Time elapsed: 0.026 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request with period type {string} from {string} to {string}")
-public void the_employee_submits_a_leave_request_with_period_type_from_to(String string, String string2, String string3) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@When("the employee submits a leave request with period type {string}")
+public void the_employee_submits_a_leave_request_with_period_type(String string) {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -515,23 +584,23 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.2 -- Time elapsed: 0.004 s <<< ERROR!
+Examples.Example #1.3 -- Time elapsed: 0.014 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request with period type {string} from {string} to {string}")
-public void the_employee_submits_a_leave_request_with_period_type_from_to(String string, String string2, String string3) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@When("the employee submits a leave request with period type {string}")
+public void the_employee_submits_a_leave_request_with_period_type(String string) {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -550,23 +619,23 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.3 -- Time elapsed: 0.008 s <<< ERROR!
+Examples.Example #1.4 -- Time elapsed: 0.010 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 2 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request with period type {string} from {string} to {string}")
-public void the_employee_submits_a_leave_request_with_period_type_from_to(String string, String string2, String string3) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@When("the employee submits a leave request with period type {string}")
+public void the_employee_submits_a_leave_request_with_period_type(String string) {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -585,23 +654,18 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.4 -- Time elapsed: 0.004 s <<< ERROR!
+Examples.Example #1.1 -- Time elapsed: 0.011 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@When("the Employee submits a leave request with period type {string} from {string} to {string}")
-public void the_employee_submits_a_leave_request_with_period_type_from_to(String string, String string2, String string3) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
@@ -620,208 +684,78 @@ public void the_status_is(String string) {
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
-Examples.Example #1.1 -- Time elapsed: 0.005 s <<< ERROR!
+Examples.Example #1.2 -- Time elapsed: 0.011 s <<< ERROR!
 io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
 You can implement these steps using the snippet(s) below:
 
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }
-@Given("the Employee has {string} balance")
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+
+	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
+	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+Examples.Example #1.3 -- Time elapsed: 0.026 s <<< ERROR!
+io.cucumber.junit.platform.engine.UndefinedStepException: 
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
+You can implement these steps using the snippet(s) below:
+
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@Given("the employee has sufficient balance")
+public void the_employee_has_sufficient_balance() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+
+	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
+	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
+	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
+	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
+	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
+	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
+	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+Leave Request Management - Complete Feature Story.Test with different balances -- Time elapsed: 0.030 s <<< ERROR!
+io.cucumber.junit.platform.engine.UndefinedStepException: 
+The step 'the Employer logs in with valid credentials' and 1 other step(s) are undefined.
+You can implement these steps using the snippet(s) below:
+
+@Given("the Employer logs in with valid credentials")
+public void the_employer_logs_in_with_valid_credentials() {
+    // Write code here that turns the phrase above into concrete actions
+    throw new io.cucumber.java.PendingException();
+}
+@Given("the employee has {string} balance")
 public void the_employee_has_balance(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits a leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-
-	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
-	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
-	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
-	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
-	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
-Examples.Example #1.2 -- Time elapsed: 0.004 s <<< ERROR!
-io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 3 other step(s) are undefined.
-You can implement these steps using the snippet(s) below:
-
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Given("the Employee has {string} balance")
-public void the_employee_has_balance(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits a leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-
-	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
-	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
-	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
-	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
-	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
-Examples.Example #1.1 -- Time elapsed: 0.006 s <<< ERROR!
-io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
-You can implement these steps using the snippet(s) below:
-
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits a leave request less than {string} hours before start date")
-public void the_employee_submits_a_leave_request_less_than_hours_before_start_date(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-
-	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
-	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
-	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
-	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
-	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
-Examples.Example #1.1 -- Time elapsed: 0.004 s <<< ERROR!
-io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
-You can implement these steps using the snippet(s) below:
-
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits a leave request with {string} days")
-public void the_employee_submits_a_leave_request_with_days(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-
-	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
-	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
-	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
-	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
-	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
-Examples.Example #1.2 -- Time elapsed: 0.005 s <<< ERROR!
-io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
-You can implement these steps using the snippet(s) below:
-
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits a leave request with {string} days")
-public void the_employee_submits_a_leave_request_with_days(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the system displays the error {string}")
-public void the_system_displays_the_error(String string) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-
-	at io.cucumber.core.runtime.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:69)
-	at io.cucumber.junit.platform.engine.TestCaseResultObserver.assertTestCasePassed(TestCaseResultObserver.java:22)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.lambda$runTestCase$4(CucumberEngineExecutionContext.java:114)
-	at io.cucumber.core.runtime.CucumberExecutionContext.lambda$runTestCase$5(CucumberExecutionContext.java:137)
-	at io.cucumber.core.runtime.RethrowingThrowableCollector.executeAndThrow(RethrowingThrowableCollector.java:23)
-	at io.cucumber.core.runtime.CucumberExecutionContext.runTestCase(CucumberExecutionContext.java:137)
-	at io.cucumber.junit.platform.engine.CucumberEngineExecutionContext.runTestCase(CucumberEngineExecutionContext.java:109)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:168)
-	at io.cucumber.junit.platform.engine.NodeDescriptor$PickleDescriptor.execute(NodeDescriptor.java:90)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
-Leave Request Lifecycle.Employee submits with different boundary conditions -- Time elapsed: 0.005 s <<< ERROR!
-io.cucumber.junit.platform.engine.UndefinedStepException: 
-The step 'the Employee logs in with valid credentials' and 2 other step(s) are undefined.
-You can implement these steps using the snippet(s) below:
-
-@Given("the Employee logs in with valid credentials")
-public void the_employee_logs_in_with_valid_credentials() {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@When("the Employee submits a leave request from {string} to {string}")
-public void the_employee_submits_a_leave_request_from_to(String string, String string2) {
-    // Write code here that turns the phrase above into concrete actions
-    throw new io.cucumber.java.PendingException();
-}
-@Then("the status is {string}")
-public void the_status_is(String string) {
     // Write code here that turns the phrase above into concrete actions
     throw new io.cucumber.java.PendingException();
 }

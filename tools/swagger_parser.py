@@ -131,24 +131,24 @@ def get_api_context_for_service(swagger_spec: Dict, service_name: str) -> str:
         Formatted string with all endpoints of that single service
     """
     if not swagger_spec or "paths" not in swagger_spec:
-        logger.warning(f"⚠️ Swagger spec vide ou invalide pour : {service_name}")
+        logger.warning(f"[WARN]️ Swagger spec vide ou invalide pour : {service_name}")
         return f"No Swagger spec available for {service_name}"
 
     context_parts = []
 
-    # ── En-tête service ──────────────────────────────────────────────
+    # ── En-tête service ------------------------------
     context_parts.append(f"{'=' * 60}")
     context_parts.append(f"SERVICE: {service_name.upper()}")
     context_parts.append(f"{'=' * 60}")
 
-    # ── Info générale ────────────────────────────────────────────────
+    # ── Info générale ------------------------------
     info = swagger_spec.get("info", {})
     if info.get("title"):
         context_parts.append(f"Title   : {info['title']}")
     if info.get("version"):
         context_parts.append(f"Version : {info['version']}")
 
-    # ── Base URL ─────────────────────────────────────────────────────
+    # ── Base URL ------------------------------
     servers = swagger_spec.get("servers", [])
     if servers:
         base_url = servers[0].get("url", "")
@@ -157,7 +157,7 @@ def get_api_context_for_service(swagger_spec: Dict, service_name: str) -> str:
     context_parts.append("")
     context_parts.append("ENDPOINTS:")
 
-    # ── Endpoints ────────────────────────────────────────────────────
+    # ── Endpoints ------------------------------
     paths = swagger_spec.get("paths", {})
     if not paths:
         context_parts.append("  (no endpoints found)")
@@ -256,7 +256,7 @@ def get_api_context_multi(swagger_specs: Dict[str, Dict]) -> str:
     parts = []
     for service_name, spec in swagger_specs.items():
         if not spec or "paths" not in spec:
-            logger.warning(f"⚠️ Spec invalide pour : {service_name} — ignorée")
+            logger.warning(f"[WARN]️ Spec invalide pour : {service_name} — ignorée")
             continue
         parts.append(get_api_context_for_service(spec, service_name))
 

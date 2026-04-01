@@ -15,7 +15,7 @@ if __name__ == "__main__":
     agent = GherkinValidatorAgent()
     result = agent.validate(test_state)
     
-    rprint("📊 Validation Result:")
+    rprint("[CHART] Validation Result:")
     if result.validation_result:
         rprint(f"Valid: {result.validation_result.is_valid}")
         rprint(f"Coverage: {result.validation_result.coverage_score}%")

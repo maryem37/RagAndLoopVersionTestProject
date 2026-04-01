@@ -67,8 +67,8 @@ class TestExecutorAgent:
         self._mvn_cmd  = self._detect_maven()
         logger.info(
             f"✅ Test Executor initialized  "
-            f"[java={'✓' if self._java_cmd else '✗'}] "
-            f"[maven={'✓' if self._mvn_cmd else '✗'}]"
+            f"[java={'[OK]' if self._java_cmd else '[FAIL]'}] "
+            f"[maven={'[OK]' if self._mvn_cmd else '[FAIL]'}]"
         )
 
     def _detect_java(self) -> Optional[str]:
@@ -80,7 +80,7 @@ class TestExecutorAgent:
             candidate = Path(java_home) / "bin" / "java"
             if candidate.exists():
                 return str(candidate)
-        logger.warning("⚠️ java not found in PATH or JAVA_HOME")
+        logger.warning("[WARN]️ java not found in PATH or JAVA_HOME")
         return None
 
     def _detect_maven(self) -> Optional[str]:
@@ -97,7 +97,7 @@ class TestExecutorAgent:
         common = Path(r"C:\Users") / os.environ.get("USERNAME", "") / "Downloads"
         for p in common.glob("apache-maven-*/bin/mvn.cmd"):
             return str(p)
-        logger.warning("⚠️ mvn not found in PATH, MAVEN_HOME, or M2_HOME")
+        logger.warning("[WARN]️ mvn not found in PATH, MAVEN_HOME, or M2_HOME")
         return None
 
     def _get_jwt_token(self) -> str:
@@ -150,9 +150,9 @@ class TestExecutorAgent:
                 dest = resources_dir / src.name
                 shutil.copy2(src, dest)
                 staged.append(dest)
-                logger.info(f"   ✓ Staged: {src.name} → {dest}")
+                logger.info(f"   [OK] Staged: {src.name} -> {dest}")
             else:
-                logger.warning(f"   ⚠ Feature file not found: {src}")
+                logger.warning(f"   [WARN] Feature file not found: {src}")
         
         # ALSO stage ALL available feature files from features directory (for E2E multi-service testing)
         features_dir = self.settings.paths.features_dir
@@ -163,7 +163,7 @@ class TestExecutorAgent:
                     dest = resources_dir / feature_file.name
                     shutil.copy2(feature_file, dest)
                     staged.append(dest)
-                    logger.info(f"   ✓ Staged (from features): {feature_file.name} → {dest}")
+                    logger.info(f"   [OK] Staged (from features): {feature_file.name} -> {dest}")
         
         logger.info(f"   {len(staged)} .feature file(s) staged in {resources_dir}")
         return staged
@@ -225,12 +225,12 @@ class TestExecutorAgent:
                 # Log full output for debugging
                 logger.debug(f"   Maven output:\n{result.raw_output}")
         except subprocess.TimeoutExpired:
-            result.raw_output = "❌ Maven execution timed out after 300s."
+            result.raw_output = "[ERROR] Maven execution timed out after 300s."
             result.errors.append("Execution timeout exceeded.")
             result.success = False
         except FileNotFoundError as exc:
             result.raw_output = (
-                f"❌ Maven executable not found: {exc}\n"
+                f"[ERROR] Maven executable not found: {exc}\n"
                 f"   Tried: {self._mvn_cmd}\n"
                 f"   Add Maven's bin/ directory to your system PATH."
             )
@@ -262,20 +262,20 @@ class TestExecutorAgent:
                 dest_size = dest_xml.stat().st_size if dest_xml.exists() else 0
                 if src_size > dest_size:
                     shutil.copy2(source_xml, dest_xml)
-                    logger.info(f"   ✓ Backed up JaCoCo XML: {dest_xml}")
+                    logger.info(f"   [OK] Backed up JaCoCo XML: {dest_xml}")
                 else:
-                    logger.info(f"   ✓ Kept existing JaCoCo XML (microservice, {dest_size//1024}KB > {src_size//1024}KB)")
+                    logger.info(f"   [OK] Kept existing JaCoCo XML (microservice, {dest_size//1024}KB > {src_size//1024}KB)")
             if source_csv.exists():
                 dest_csv = backup_dir / "jacoco.csv"
                 src_size  = source_csv.stat().st_size
                 dest_size = dest_csv.stat().st_size if dest_csv.exists() else 0
                 if src_size > dest_size:
                     shutil.copy2(source_csv, dest_csv)
-                    logger.info(f"   ✓ Backed up JaCoCo CSV: {dest_csv}")
+                    logger.info(f"   [OK] Backed up JaCoCo CSV: {dest_csv}")
                 else:
-                    logger.info(f"   ✓ Kept existing JaCoCo CSV (microservice)")
+                    logger.info(f"   [OK] Kept existing JaCoCo CSV (microservice)")
         except Exception as exc:
-            logger.warning(f"   ⚠ Could not backup JaCoCo reports: {exc}")
+            logger.warning(f"   [WARN] Could not backup JaCoCo reports: {exc}")
 
     def _parse_surefire_summary(self, tests_dir: Path, result: TestExecutionResult) -> None:
         pattern = re.search(
@@ -400,12 +400,12 @@ class TestExecutorAgent:
 
     def execute(self, state: TestAutomationState) -> TestAutomationState:
         start_time = time.time()
-        logger.info(f"🚀 Test Executor starting for: {state.service_name}")
+        logger.info(f"[START] Test Executor starting for: {state.service_name}")
 
         blocking = self._preflight_checks(state)
         if blocking:
             for issue in blocking:
-                logger.error(f"   ❌ Pre-flight: {issue}")
+                logger.error(f"   [ERROR] Pre-flight: {issue}")
                 state.add_error(f"Test execution pre-flight failed: {issue}")
             duration = (time.time() - start_time) * 1000
             state.add_agent_output(AgentOutput(
@@ -446,7 +446,7 @@ class TestExecutorAgent:
             )
         else:
             logger.warning(
-                f"⚠️  Tests completed with failures  "
+                f"[WARN]️  Tests completed with failures  "
                 f"passed={exec_result.passed}  failed={exec_result.failed}  "
                 f"skipped={exec_result.skipped}  pass_rate={exec_result.pass_rate}%"
             )

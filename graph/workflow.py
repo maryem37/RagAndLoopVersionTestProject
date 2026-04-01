@@ -1,10 +1,10 @@
 """
 graph/workflow.py
-──────────────────
+------------------------------
 LangGraph Workflow — Multi-Agent Test Automation Pipeline
 
 Pipeline:
-  gherkin_generator → gherkin_validator → test_writer → test_executor → coverage_analyst → END
+  gherkin_generator -> gherkin_validator -> test_writer -> test_executor -> coverage_analyst -> END
 """
 
 from typing import Literal, Optional
@@ -27,24 +27,24 @@ class TestAutomationWorkflow:
         self.graph  = self._build_graph()
         logger.info("✅ Test Automation Workflow initialized")
         logger.info(
-            "📋 Pipeline: gherkin_generator → gherkin_validator → "
-            "test_writer → test_executor → coverage_analyst"
+            "[LIST] Pipeline: gherkin_generator -> gherkin_validator -> "
+            "test_writer -> test_executor -> coverage_analyst"
         )
 
     def _build_graph(self) -> StateGraph:
         workflow = StateGraph(TestAutomationState)
 
-        # ── Nodes ─────────────────────────────────────────────────────
+        # ── Nodes ------------------------------
         workflow.add_node("gherkin_generator",  gherkin_generator_node)
         workflow.add_node("gherkin_validator",  gherkin_validator_node)
         workflow.add_node("test_writer",        test_writer_node)
         workflow.add_node("test_executor",      test_executor_node)
         workflow.add_node("coverage_analyst",   coverage_analyst_node)   # ← NEW
 
-        # ── Entry point ───────────────────────────────────────────────
+        # ── Entry point ------------------------------
         workflow.set_entry_point("gherkin_generator")
 
-        # ── Transitions ───────────────────────────────────────────────
+        # ── Transitions ------------------------------
         workflow.add_conditional_edges(
             "gherkin_generator",
             self._after_generation,
@@ -64,39 +64,39 @@ class TestAutomationWorkflow:
         workflow.add_edge("test_executor",    "coverage_analyst")   # ← NEW
         workflow.add_edge("coverage_analyst", END)                  # ← NEW
 
-        logger.info("📊 Workflow graph compiled successfully")
+        logger.info("[CHART] Workflow graph compiled successfully")
         return workflow.compile(checkpointer=self.memory)
 
-    # ── Routing conditions ────────────────────────────────────────────
+    # ── Routing conditions ------------------------------
 
     def _after_generation(self, state: TestAutomationState) -> Literal["validate", "end"]:
         last = state.agent_outputs[-1] if state.agent_outputs else None
         if last and last.status == AgentStatus.SUCCESS and state.gherkin_content and state.gherkin_files:
-            logger.info("✓ Gherkin generation successful → validation")
+            logger.info("[OK] Gherkin generation successful -> validation")
             return "validate"
-        logger.warning("✗ Gherkin generation failed → end")
+        logger.warning("[FAIL] Gherkin generation failed -> end")
         return "end"
 
     def _after_validation(self, state: TestAutomationState) -> Literal["write_tests", "end"]:
         if state.validation_result:
             errors = sum(1 for i in state.validation_result.issues if i.level == "error")
             if state.validation_result.is_valid or errors == 0:
-                logger.info("✓ Validation passed → test writing")
+                logger.info("[OK] Validation passed -> test writing")
                 return "write_tests"
-            logger.error("✗ Critical validation errors → end")
+            logger.error("[FAIL] Critical validation errors -> end")
             return "end"
-        logger.warning("✗ No validation result → end")
+        logger.warning("[FAIL] No validation result -> end")
         return "end"
 
     def _after_writing(self, state: TestAutomationState) -> Literal["execute", "end"]:
         last = state.agent_outputs[-1] if state.agent_outputs else None
         if last and last.status == AgentStatus.SUCCESS and state.test_files:
-            logger.info("✓ Test files generated → execution")
+            logger.info("[OK] Test files generated -> execution")
             return "execute"
-        logger.warning("✗ Test writing failed → end")
+        logger.warning("[FAIL] Test writing failed -> end")
         return "end"
 
-    # ── Main run ──────────────────────────────────────────────────────
+    # ── Main run ------------------------------
 
     def run(
         self,
@@ -112,7 +112,7 @@ class TestAutomationWorkflow:
         from datetime import datetime
 
         logger.info("=" * 80)
-        logger.info("🚀 Starting Test Automation Workflow")
+        logger.info("[START] Starting Test Automation Workflow")
         logger.info(f"   Service: {service_name}")
         logger.info("=" * 80)
 
@@ -145,32 +145,32 @@ class TestAutomationWorkflow:
         self._log_summary(final_state)
         return final_state
 
-    # ── Summary ───────────────────────────────────────────────────────
+    # ── Summary ------------------------------
 
     def _log_summary(self, state: TestAutomationState) -> None:
         logger.info("\n" + "=" * 80)
-        logger.info("📊 WORKFLOW EXECUTION SUMMARY")
+        logger.info("[CHART] WORKFLOW EXECUTION SUMMARY")
         logger.info("=" * 80)
         logger.info(f"Workflow ID : {state.workflow_id}")
         logger.info(f"Service     : {state.service_name}")
         logger.info(f"Status      : {state.workflow_status.upper()}")
 
-        logger.info("\n📋 Agent Execution:")
+        logger.info("\n[LIST] Agent Execution:")
         for output in state.agent_outputs:
-            icon = "✓" if output.status == AgentStatus.SUCCESS else "✗"
+            icon = "[OK]" if output.status == AgentStatus.SUCCESS else "[FAIL]"
             logger.info(f"  {icon} {output.agent_name}  [{output.duration_ms:.0f}ms]")
             if output.agent_name == "coverage_analyst" and output.output_data:
                 d = output.output_data
                 logger.info(f"      Lines    : {d.get('line_coverage_%', 'N/A')}%")
                 logger.info(f"      Branches : {d.get('branch_coverage_%', 'N/A')}%")
                 logger.info(f"      Methods  : {d.get('method_coverage_%', 'N/A')}%")
-                logger.info(f"      QG       : {'PASSED ✅' if d.get('quality_gate_passed') else 'FAILED ❌'}")
+                logger.info(f"      QG       : {'PASSED ✅' if d.get('quality_gate_passed') else 'FAILED [ERROR]'}")
                 if d.get("yaml_report"):
                     logger.info(f"      YAML     : {d['yaml_report']}")
                 if d.get("json_report"):
                     logger.info(f"      JSON     : {d['json_report']}")
 
-        logger.info("\n📁 Artifacts:")
+        logger.info("\n[FILE] Artifacts:")
         logger.info(f"  Gherkin files : {len(state.gherkin_files)}")
         logger.info(f"  Test files    : {len(state.test_files)}")
         coverage_files = getattr(state, "coverage_files", [])
@@ -180,11 +180,11 @@ class TestAutomationWorkflow:
 
         if state.errors:
             for err in state.errors:
-                logger.error(f"  ❌ {err}")
+                logger.error(f"  [ERROR] {err}")
 
         logger.info("=" * 80 + "\n")
 
-    # ── Async run ─────────────────────────────────────────────────────
+    # ── Async run ------------------------------
 
     async def arun(
         self,

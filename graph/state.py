@@ -18,9 +18,9 @@ from typing import Any, List, Dict, Optional, Union
 from pydantic import BaseModel, Field
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Agent output tracking
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class AgentStatus:
     """Constants for agent execution status"""
@@ -39,9 +39,9 @@ class AgentOutput(BaseModel):
     error_message: Optional[str]   = None
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Validation models
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class ValidationIssue(BaseModel):
     """Represents a single validation issue"""
@@ -61,9 +61,9 @@ class ValidationResult(BaseModel):
     suggestions:       List[str]             = Field(default_factory=list)
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # LLM Validation Output Models
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class LLMValidationIssue(BaseModel):
     """Issue identified by LLM during validation"""
@@ -79,16 +79,16 @@ class LLMValidationOutput(BaseModel):
     suggestions:       List[str]                 = Field(default_factory=list)
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Multi-service test code model
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class TestCodeOutput(BaseModel):
     """
     Holds generated test code for one OR multiple services.
 
-    Single service  → step_definitions / runners are plain strings
-    Multi-service   → step_definitions / runners are dicts
+    Single service  -> step_definitions / runners are plain strings
+    Multi-service   -> step_definitions / runners are dicts
                       { "auth": "<java code>", "leave": "<java code>" }
     """
     step_definitions: Union[str, Dict[str, str]] = ""
@@ -111,25 +111,25 @@ class TestCodeOutput(BaseModel):
         return []
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Main workflow state
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class TestAutomationState(BaseModel):
     """
     Central state object passed between all agents in the workflow.
 
-    DATA FLOW (agent → fields written → fields read by next agent):
+    DATA FLOW (agent -> fields written -> fields read by next agent):
 
-      Agent 2  gherkin_generator  →  gherkin_content, gherkin_files
-      Agent 3  gherkin_validator  →  validation_result, validation_passed
-      Agent 4  test_writer        →  test_code, test_files
-      Agent 5  test_executor      →  execution_result   ← coverage_analyst READS this
-      Agent 6  coverage_analyst   →  coverage_report, coverage_files, coverage_percentage
-      Agent 7  self_healing       →  healing_attempts, healed_tests
+      Agent 2  gherkin_generator  ->  gherkin_content, gherkin_files
+      Agent 3  gherkin_validator  ->  validation_result, validation_passed
+      Agent 4  test_writer        ->  test_code, test_files
+      Agent 5  test_executor      ->  execution_result   ← coverage_analyst READS this
+      Agent 6  coverage_analyst   ->  coverage_report, coverage_files, coverage_percentage
+      Agent 7  self_healing       ->  healing_attempts, healed_tests
     """
 
-    # ── Input ─────────────────────────────────────────────────────────
+    # ── Input ------------------------------
     user_story:           str
     swagger_spec:         Dict            = Field(default_factory=dict)
     swagger_specs:        Dict[str, Dict] = Field(default_factory=dict)
@@ -146,18 +146,18 @@ class TestAutomationState(BaseModel):
         ),
     )
 
-    # ── Agent 2 — Gherkin Generation ──────────────────────────────────
+    # ── Agent 2 — Gherkin Generation ------------------------------
     gherkin_scenarios: List[str]    = Field(default_factory=list)
     gherkin_file_path: Optional[str] = None
     gherkin_content:   str           = ""
     gherkin_files:     List[str]     = Field(default_factory=list)
 
-    # ── Agent 3 — Gherkin Validation ──────────────────────────────────
+    # ── Agent 3 — Gherkin Validation ------------------------------
     validation_passed: bool                      = False
     validation_errors: List[str]                 = Field(default_factory=list)
     validation_result: Optional[ValidationResult] = None
 
-    # ── Agent 4 — Test Writing ─────────────────────────────────────────
+    # ── Agent 4 — Test Writing ------------------------------
     test_code:  Dict[str, Any] = Field(
         default_factory=dict,
         description=(
@@ -168,7 +168,7 @@ class TestAutomationState(BaseModel):
     )
     test_files: List[str] = Field(default_factory=list)
 
-    # ── Agent 5 — Test Execution ───────────────────────────────────────
+    # ── Agent 5 — Test Execution ------------------------------
     #
     # execution_result is written by TestExecutorAgent and READ by
     # CoverageAnalystAgent.  The coverage analyst accesses these keys:
@@ -197,7 +197,7 @@ class TestAutomationState(BaseModel):
     test_passed:           bool           = False
     failed_tests:          List[str]      = Field(default_factory=list)
 
-    # ── Agent 6 — Coverage Analysis ────────────────────────────────────
+    # ── Agent 6 — Coverage Analysis ------------------------------
     #
     # Written by CoverageAnalystAgent after it reads execution_result
     # and parses JaCoCo XML/CSV from target/site/jacoco/.
@@ -258,11 +258,11 @@ class TestAutomationState(BaseModel):
         ),
     )
 
-    # ── Agent 7 — Self-Healing ─────────────────────────────────────────
+    # ── Agent 7 — Self-Healing ------------------------------
     healing_attempts: List[Dict] = Field(default_factory=list)
     healed_tests:     List[str]  = Field(default_factory=list)
 
-    # ── E2E Configuration ──────────────────────────────────────────────
+    # ── E2E Configuration ------------------------------
     is_e2e:        bool       = Field(
         default=False,
         description="Whether to generate consolidated E2E tests vs per-service tests"
@@ -272,22 +272,22 @@ class TestAutomationState(BaseModel):
         description="List of services for consolidated E2E testing"
     )
 
-    # ── Workflow metadata ──────────────────────────────────────────────
+    # ── Workflow metadata ------------------------------
     workflow_id:     str
     service_name:    str
     current_agent:   Optional[str] = None
     workflow_status: str           = "in_progress"
 
-    # ── Agent tracking ─────────────────────────────────────────────────
+    # ── Agent tracking ------------------------------
     agent_outputs: List[AgentOutput] = Field(default_factory=list)
     warnings:      List[str]         = Field(default_factory=list)
     errors:        List[str]         = Field(default_factory=list)
 
-    # ── Pydantic config ────────────────────────────────────────────────
+    # ── Pydantic config ------------------------------
     class Config:
         arbitrary_types_allowed = True
 
-    # ── Generic helpers ────────────────────────────────────────────────
+    # ── Generic helpers ------------------------------
 
     def add_agent_output(self, output: AgentOutput) -> None:
         self.agent_outputs.append(output)
@@ -305,7 +305,7 @@ class TestAutomationState(BaseModel):
                 return output
         return None
 
-    # ── Multi-service test code helpers ────────────────────────────────
+    # ── Multi-service test code helpers ------------------------------
 
     def get_steps_for_service(self, service_name: str) -> str:
         steps = self.test_code.get("step_definitions", "")
@@ -328,7 +328,7 @@ class TestAutomationState(BaseModel):
     def is_multi_service(self) -> bool:
         return isinstance(self.test_code.get("step_definitions", ""), dict)
 
-    # ── Coverage helpers ───────────────────────────────────────────────
+    # ── Coverage helpers ------------------------------
 
     def get_coverage_line_rate(self) -> float:
         """
@@ -372,7 +372,7 @@ class TestAutomationState(BaseModel):
                 pass
         return []
 
-    # ── Workflow status helpers ────────────────────────────────────────
+    # ── Workflow status helpers ------------------------------
 
     def is_workflow_successful(self) -> bool:
         return (
@@ -386,7 +386,7 @@ class TestAutomationState(BaseModel):
 
     def get_workflow_summary(self) -> Dict:
         summary = {
-            # ── Workflow metadata ──────────────────────────────────────
+            # ── Workflow metadata ------------------------------
             "workflow_id":           self.workflow_id,
             "service_name":          self.service_name,
             "status":                self.workflow_status,
@@ -396,21 +396,21 @@ class TestAutomationState(BaseModel):
             "total_duration_ms":     sum(
                 o.duration_ms for o in self.agent_outputs if o.duration_ms
             ),
-            # ── Gherkin ───────────────────────────────────────────────
+            # ── Gherkin ------------------------------
             "gherkin_files":         len(self.gherkin_files),
-            # ── Validation ────────────────────────────────────────────
+            # ── Validation ------------------------------
             "validation_passed":     self.validation_passed,
-            # ── Test code ─────────────────────────────────────────────
+            # ── Test code ------------------------------
             "test_files_generated":  len(self.test_files),
             "swagger_specs_count":   len(self.swagger_specs),
             "generated_services":    self.get_generated_services(),
             "is_multi_service":      self.is_multi_service(),
-            # ── Execution ─────────────────────────────────────────────
+            # ── Execution ------------------------------
             "tests_total":           (self.execution_result or {}).get("total",    0),
             "tests_passed":          (self.execution_result or {}).get("passed",   0),
             "tests_failed":          (self.execution_result or {}).get("failed",   0),
             "tests_pass_rate_%":     (self.execution_result or {}).get("pass_rate", 0.0),
-            # ── Coverage ──────────────────────────────────────────────
+            # ── Coverage ------------------------------
             "coverage_analysed":     self.coverage_report is not None,
             "coverage_line_%":       self.get_coverage_line_rate(),
             "coverage_quality_gate": self.get_coverage_quality_gate(),
@@ -420,9 +420,9 @@ class TestAutomationState(BaseModel):
         return summary
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Additional helper models
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class WorkflowConfig(BaseModel):
     """Configuration for workflow execution"""
@@ -443,9 +443,9 @@ class TestExecutionResult(BaseModel):
     test_details:     List[Dict] = Field(default_factory=list)
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Export
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 __all__ = [
     "TestAutomationState",

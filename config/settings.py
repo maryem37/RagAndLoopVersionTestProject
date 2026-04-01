@@ -45,8 +45,42 @@ from types import SimpleNamespace
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import sys
 import functools
 from loguru import logger
+
+
+# ==============================
+# Windows UTF-8 Logging Configuration
+# ==============================
+
+def _configure_windows_logging():
+    """
+    Configure loguru for Windows to avoid UnicodeEncodeError.
+    Remove default handler and use ASCII-safe format on Windows.
+    """
+    if sys.platform == "win32":
+        logger.remove()  # Remove default handler
+        
+        # Use format without emoji and unicode characters
+        log_format = (
+            "<level>{level: <8}</level> | "
+            "{name:40} | "
+            "{message}"
+        )
+        
+        logger.add(
+            sys.stderr,
+            format=log_format,
+            level="INFO",
+            colorize=False,  # No colors on Windows to avoid encoding issues
+            backtrace=True,
+            diagnose=False,
+        )
+
+
+# Apply Windows logging fix immediately on import
+_configure_windows_logging()
 
 
 @functools.lru_cache(maxsize=1)

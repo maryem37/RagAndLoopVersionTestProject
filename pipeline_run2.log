@@ -1,0 +1,396 @@
+﻿python : INFO     | tools.service_registry                   | [LIST] Loaded 2 
+total services from matrix
+Au caractère Ligne:1 : 1
++ python run_pipeline_windows.py --services auth 2>&1 | Out-File -Encod ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (INFO     | tool...ces from matrix 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+INFO     | tools.service_registry                   | Ô£à ServiceRegistry 
+loaded with 2 enabled services
+INFO     | tools.service_registry                   | 
+===============================================================================
+=
+INFO     | tools.service_registry                   | [LIST] SERVICE REGISTRY 
+SUMMARY
+INFO     | tools.service_registry                   | =========================
+=======================================================
+INFO     | tools.service_registry                   | 
+Ô£à Enabled Services: 2
+INFO     | tools.service_registry                   |   ÔÇó auth               
+  port= 9000 db=mysql    deps=none
+INFO     | tools.service_registry                   |   ÔÇó leave              
+  port= 9001 db=mysql    deps=['auth']
+INFO     | tools.service_registry                   | 
+===============================================================================
+=
+
+INFO     | run_pipeline                             | ƒôï Services to test: 
+auth
+INFO     | run_pipeline                             | Ô£à Loaded Swagger spec 
+for auth from examples\sample_swagger1.json
+INFO     | run_pipeline                             | Ô£à Loaded Swagger spec 
+for leave from examples\sample_swagger2.json
+INFO     | graph.workflow                           | [CHART] Workflow graph 
+compiled successfully
+INFO     | graph.workflow                           | Ô£à Test Automation 
+Workflow initialized
+INFO     | graph.workflow                           | [LIST] Pipeline: 
+gherkin_generator -> gherkin_validator -> test_writer -> test_executor -> 
+coverage_analyst
+INFO     | run_pipeline                             | 
+===============================================================================
+=
+INFO     | run_pipeline                             | ƒÜÇ END-TO-END Testing 
+Services: auth
+INFO     | run_pipeline                             | =========================
+=======================================================
+
+INFO     | graph.workflow                           | =========================
+=======================================================
+INFO     | graph.workflow                           | [START] Starting Test 
+Automation Workflow
+INFO     | graph.workflow                           |    Service: auth
+INFO     | graph.workflow                           | =========================
+=======================================================
+INFO     | tools.service_registry                   | Ô£à Configuration 
+validation passed
+INFO     | agents.gherkin_generator                 | Ô£à Gherkin Generator 
+(Swagger-driven) initialized ÔÇö model: Qwen/Qwen2.5-Coder-32B-Instruct
+INFO     | agents.gherkin_generator                 | [START] Gherkin 
+Generator (Swagger-driven) ÔÇö project: auth
+INFO     | agents.gherkin_generator                 |    Swagger facts 
+extracted from 2 service(s)
+INFO     | agents.gherkin_generator                 | [LIST] Extracted 1 user 
+story/stories -> 1 feature file(s)
+INFO     | agents.gherkin_generator                 | ƒôî 1 user story/stories 
+-> 1 feature file(s)
+INFO     | agents.gherkin_generator                 |    No quoted error 
+messages found in user story
+INFO     | agents.gherkin_generator                 |    Generating feature 
+1/1...
+INFO     | agents.gherkin_generator                 | ­ƒñû LLM call attempt 1/3
+WARNING  | agents.gherkin_generator                 | [WARN] Removed (covered 
+by Outline): 'Scenario: Employee submits a leave request with end date before 
+start date'
+WARNING  | agents.gherkin_generator                 | [WARN] Removed (covered 
+by Outline): 'Scenario: Employee submits a leave request with past dates'
+WARNING  | agents.gherkin_generator                 | [WARN] Removed (covered 
+by Outline): 'Scenario: Employee submits a leave request with insufficient 
+balance'
+WARNING  | agents.gherkin_generator                 | Ô£Ä Outline->Scenario 
+(invalid Examples: 0 rows)
+INFO     | agents.gherkin_generator                 |    ƒùæ Removed: 
+auth_01_leave-request-lifecycle-management_20260331_222935.feature
+SUCCESS  | agents.gherkin_generator                 | [SAVE] Saved .feature -> 
+C:\Bureau\Bureau\project_test\output\features\auth_01_leave-request-management-
+complete-featur_20260331_224138.feature
+SUCCESS  | agents.gherkin_generator                 | Ô£à Gherkin generated 
+ÔÇö 1 file(s) in 14678 ms
+INFO     | graph.workflow                           | [OK] Gherkin generation 
+successful -> validation
+INFO     | agents.gherkin_validator                 |    Found gherkin-lint 
+(local, Windows): node_modules\.bin\gherkin-lint.cmd
+INFO     | agents.gherkin_validator                 | Ô£à Gherkin Validator 
+initialized (gherkin-lint: enabled, model: mistralai/Mistral-7B-Instruct-v0.2)
+INFO     | agents.gherkin_validator                 |    Running gherkin-lint 
+syntax validation...
+INFO     | agents.gherkin_validator                 |    gherkin-lint: 0 
+issues found
+INFO     | agents.gherkin_validator                 |    Semantic check: 0 
+issues found
+INFO     | agents.gherkin_validator                 |    Running LLM 
+validation...
+INFO     | agents.gherkin_validator                 | [DEBUG] Validation 
+Context:
+INFO     | agents.gherkin_validator                 |    Scenarios in Gherkin: 
+19
+INFO     | agents.gherkin_validator                 |    Acceptance Criteria 
+found: 0
+INFO     | agents.gherkin_validator                 |    Business Rules found: 
+0
+INFO     | agents.gherkin_validator                 |    Error Messages 
+expected: 0
+INFO     | agents.gherkin_validator                 |    Invoking LLM for 
+validation (attempt 1/2)...
+WARNING  | agents.gherkin_validator                 | [WARN]´©Å LLM validation 
+attempt 1 failed: (Request ID: 
+Root=1-69cc3f91-00548e5d766e474531661b10;8e47dce6-5ea7-4c94-8ccd-b8cd8cc828bb)
+
+Bad request:
+{'message': "The requested model 'mistralai/Mistral-7B-Instruct-v0.2' is not 
+supported by any provider you have enabled.", 'type': 'invalid_request_error', 
+'param': 'model', 'code': 'model_not_supported'}
+INFO     | agents.gherkin_validator                 |    Invoking LLM for 
+validation (attempt 2/2)...
+WARNING  | agents.gherkin_validator                 | [WARN]´©Å LLM validation 
+attempt 2 failed: (Request ID: 
+Root=1-69cc3f92-282a33917378f47830bae88f;838e8f23-cc0b-49c9-a2ee-059c73a7f75e)
+
+Bad request:
+{'message': "The requested model 'mistralai/Mistral-7B-Instruct-v0.2' is not 
+supported by any provider you have enabled.", 'type': 'invalid_request_error', 
+'param': 'model', 'code': 'model_not_supported'}
+WARNING  | agents.gherkin_validator                 | [WARN]´©Å All LLM 
+attempts failed, falling back to heuristic
+INFO     | agents.gherkin_validator                 | Heuristic validation: 19 
+scenarios vs 1 requirements = 100% coverage
+SUCCESS  | agents.gherkin_validator                 | Ô£à Validation PASSED - 
+Coverage: 100.0%
+INFO     | graph.workflow                           | [OK] Validation passed 
+-> test writing
+INFO     | agents.test_writer                       | [OK] TestWriter 
+(Deterministic) initialized ÔÇö model: Qwen/Qwen2.5-Coder-32B-Instruct
+INFO     | agents.test_writer                       | 
+=================================================================
+INFO     | agents.test_writer                       | TestWriter (Consolidated 
+E2E) starting
+INFO     | agents.test_writer                       | 
+=================================================================
+INFO     | agents.test_writer                       |    Services: ['auth', 
+'leave']
+INFO     | agents.test_writer                       |    Running in 
+CONSOLIDATED E2E mode...
+INFO     | agents.test_writer                       |    Building consolidated 
+E2E steps from all services (deterministic + Swagger)...
+INFO     | agents.test_writer                       |    [auth] using: 
+auth_01_leave-request-management-complete-featur_20260331_224138.feature
+WARNING  | agents.test_writer                       |    [leave] fallback to 
+full gherkin_content
+INFO     | agents.test_writer                       |    [ConsolidatedE2E] 
+generating 54 unique steps deterministically from Gherkin + Swagger
+WARNING  | agents.test_writer                       |    javac hint for 
+ConsolidatedE2ESteps: 9 error(s). First: ConsolidatedE2ESteps.java:8: error: 
+package org.junit.jupiter.api does not exist
+WARNING  | agents.test_writer                       |    javac hint for 
+ConsolidatedE2ETestRunner: 9 error(s). First: 
+ConsolidatedE2ETestRunner.java:4: error: package org.junit.platform.suite.api 
+does not exist
+SUCCESS  | agents.test_writer                       |    
+src\test\java\com\example\e2e\steps\ConsolidatedE2ESteps.java
+SUCCESS  | agents.test_writer                       |    
+src\test\java\com\example\e2e\ConsolidatedE2ETestRunner.java
+INFO     | agents.test_writer                       |    pom.xml already in 
+place
+INFO     | agents.test_writer                       |    JaCoCo plugin already 
+present in pom.xml ÔÇö skipping injection
+SUCCESS  | agents.test_writer                       |    Generated 1 
+consolidated E2E test file for 2 services
+SUCCESS  | agents.test_writer                       | TestWriter finished in 
+1648 ms
+INFO     | graph.workflow                           | [OK] Test files 
+generated -> execution
+INFO     | agents.test_executor                     | Ô£à Test Executor 
+initialized  [java=[OK]] [maven=[OK]]
+INFO     | agents.test_executor                     | [START] Test Executor 
+starting for: auth
+INFO     | agents.test_executor                     | 1´©ÅÔâú  Staging 
+.feature files...
+INFO     | agents.test_executor                     |    ƒùæ Removed old 
+feature: 
+auth-leave_01_leave-request-lifecycle-management_20260331_212906.feature
+INFO     | agents.test_executor                     |    ƒùæ Removed old 
+feature: auth_01_leave-request-lifecycle-management_20260331_222935.feature
+INFO     | agents.test_executor                     |    [OK] Staged: 
+auth_01_leave-request-management-complete-featur_20260331_224138.feature -> C:\
+Bureau\Bureau\project_test\output\tests\src\test\resources\features\auth_01_lea
+ve-request-management-complete-featur_20260331_224138.feature
+INFO     | agents.test_executor                     |    [OK] Staged (from 
+features): 
+auth-leave_01_leave-request-lifecycle-management_20260331_212906.feature -> C:\
+Bureau\Bureau\project_test\output\tests\src\test\resources\features\auth-leave_
+01_leave-request-lifecycle-management_20260331_212906.feature
+INFO     | agents.test_executor                     |    2 .feature file(s) 
+staged in 
+C:\Bureau\Bureau\project_test\output\tests\src\test\resources\features
+INFO     | agents.test_executor                     | 2´©ÅÔâú  Executing Maven 
+contract tests...
+INFO     | agents.test_executor                     |    Running: 
+C:\Users\MSI\Downloads\apache-maven-3.9.10-bin\apache-maven-3.9.10\bin\mvn 
+clean verify -Dservice.name=auth -DTEST_JWT_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJzdWIi
+OiJqYW5lLnNtaXRoQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc0MDAwMzI2LCJleHAiOjE3NzQwODY3MjZ
+9.snILgUjdNzXNVz5D8ud9SAIyk_I5KbmqXWu9pThbz9I 
+-DAUTH_BASE_URL=http://127.0.0.1:9000 -DLEAVE_BASE_URL=http://127.0.0.1:9001
+INFO     | agents.test_executor                     |    Working directory: 
+C:\Bureau\Bureau\project_test\output\tests
+INFO     | agents.test_executor                     | 3´©ÅÔâú  Parsing test 
+reports...
+INFO     | agents.test_executor                     |    Cucumber JSON report 
+parsed: C:\Bureau\Bureau\project_test\output\tests\target\cucumber-reports\e2e\
+cucumber.json
+INFO     | agents.test_executor                     |    HTML report: C:\Bureau
+\Bureau\project_test\output\tests\target\cucumber-reports\e2e\cucumber.html
+WARNING  | agents.test_executor                     | [WARN]´©Å  Tests 
+completed with failures  passed=64  failed=26  skipped=0  pass_rate=71.11%
+WARNING  | agents.test_executor                     |    Ôå│ [Employee submits 
+a valid leave request] org.opentest4j.AssertionFailedError: Expected status in 
+response ==> expected: not <null>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder
+.java:152)
+
+	at org.junit.jupi
+WARNING  | agents.test_executor                     |    Ôå│ [Employee submits 
+with boundary date values] org.opentest4j.AssertionFailedError: Expected 
+status in response ==> expected: not <null>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder
+.java:152)
+
+	at org.junit.jupi
+WARNING  | agents.test_executor                     |    Ôå│ [Employee submits 
+with boundary date values] org.opentest4j.AssertionFailedError: Expected 
+status in response ==> expected: not <null>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder
+.java:152)
+
+	at org.junit.jupi
+WARNING  | agents.test_executor                     |    Ôå│ [Employee submits 
+with boundary date values] org.opentest4j.AssertionFailedError: Expected 
+status in response ==> expected: not <null>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder
+.java:152)
+
+	at org.junit.jupi
+WARNING  | agents.test_executor                     |    Ôå│ [Employee submits 
+with boundary date values] org.opentest4j.AssertionFailedError: Expected 
+status in response ==> expected: not <null>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder
+.java:152)
+
+	at org.junit.jupi
+SUCCESS  | agents.test_executor                     | Ô£à Test Executor 
+finished in 29157ms
+INFO     | agents.coverage_analyst                  | Ô£à Coverage Analyst 
+Agent initialized (JaCoCo / Surefire / heuristic)
+INFO     | agents.coverage_analyst                  | [START] Coverage Analyst 
+starting ÔÇö service: auth
+INFO     | agents.coverage_analyst                  |    Found JaCoCo XML: 
+C:\Bureau\Bureau\project_test\output\jacoco\report\jacoco.xml
+INFO     | agents.coverage_analyst                  |    Found JaCoCo CSV: 
+C:\Bureau\Bureau\project_test\output\jacoco\report\jacoco.csv
+INFO     | agents.coverage_analyst                  |    Parsing JaCoCo XML: 
+C:\Bureau\Bureau\project_test\output\jacoco\report\jacoco.xml
+INFO     | agents.coverage_analyst                  |    JaCoCo XML parsed: 55 
+classes across 26 packages
+INFO     | agents.coverage_analyst                  |    Data source: JaCoCo 
+XML [OK]
+INFO     | agents.coverage_analyst                  | 
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔ
+öÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+INFO     | agents.coverage_analyst                  | [CHART] COVERAGE REPORT 
+ÔÇö auth
+INFO     | agents.coverage_analyst                  | ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔ
+öÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+INFO     | agents.coverage_analyst                  |   Data source      : 
+jacoco-xml
+INFO     | agents.coverage_analyst                  |   Generated at     : 
+2026-03-31T22:42:11
+INFO     | agents.coverage_analyst                  |   Packages         : 26
+INFO     | agents.coverage_analyst                  |   Classes          : 55
+INFO     | agents.coverage_analyst                  | ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔ
+öÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+INFO     | agents.coverage_analyst                  |   Line   coverage  :  
+34.92%  (316/905)
+INFO     | agents.coverage_analyst                  |   Branch coverage  :   
+3.96%  (50/1264)
+INFO     | agents.coverage_analyst                  |   Method coverage  :  
+35.83%  (172/480)
+INFO     | agents.coverage_analyst                  | ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔ
+öÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+INFO     | agents.coverage_analyst                  |   Tests total      : 45
+INFO     | agents.coverage_analyst                  |   Tests passed     : 19
+INFO     | agents.coverage_analyst                  |   Tests failed     : 26
+INFO     | agents.coverage_analyst                  |   Tests skipped    : 0
+INFO     | agents.coverage_analyst                  | ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔ
+öÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+WARNING  | agents.coverage_analyst                  |   [ERROR] Quality gate   
+: FAILED
+WARNING  | agents.coverage_analyst                  |        -> 
+line_coverage_%: 34.92% < threshold 60.0%
+WARNING  | agents.coverage_analyst                  |        -> 
+branch_coverage_%: 3.96% < threshold 50.0%
+WARNING  | agents.coverage_analyst                  |        -> 
+method_coverage_%: 35.83% < threshold 70.0%
+INFO     | agents.coverage_analyst                  | ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔ
+öÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö
+ÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+SUCCESS  | agents.coverage_analyst                  |    ƒôä YAML report -> C:\
+Bureau\Bureau\project_test\output\reports\coverage_report_auth_20260331_224211.
+yaml
+SUCCESS  | agents.coverage_analyst                  |    ƒôä JSON report -> C:\
+Bureau\Bureau\project_test\output\reports\coverage_report_auth_20260331_224211.
+json
+SUCCESS  | agents.coverage_analyst                  | Ô£à Coverage Analyst 
+finished in 127 ms  [line=34.92%  branch=3.96%  method=35.83%]
+INFO     | graph.workflow                           | 
+===============================================================================
+=
+INFO     | graph.workflow                           | [CHART] WORKFLOW 
+EXECUTION SUMMARY
+INFO     | graph.workflow                           | =========================
+=======================================================
+INFO     | graph.workflow                           | Workflow ID : 
+auth_20260331_224123_13d99088
+INFO     | graph.workflow                           | Service     : auth
+INFO     | graph.workflow                           | Status      : COMPLETED
+INFO     | graph.workflow                           | 
+[LIST] Agent Execution:
+INFO     | graph.workflow                           |   [OK] gherkin_generator 
+ [14678ms]
+INFO     | graph.workflow                           |   [OK] gherkin_validator 
+ [1787ms]
+INFO     | graph.workflow                           |   [OK] test_writer  
+[1648ms]
+INFO     | graph.workflow                           |   [FAIL] test_executor  
+[29157ms]
+INFO     | graph.workflow                           |   [OK] coverage_analyst  
+[127ms]
+INFO     | graph.workflow                           |       Lines    : 34.92%
+INFO     | graph.workflow                           |       Branches : 3.96%
+INFO     | graph.workflow                           |       Methods  : 35.83%
+INFO     | graph.workflow                           |       QG       : FAILED 
+[ERROR]
+INFO     | graph.workflow                           |       YAML     : C:\Burea
+u\Bureau\project_test\output\reports\coverage_report_auth_20260331_224211.yaml
+INFO     | graph.workflow                           |       JSON     : C:\Burea
+u\Bureau\project_test\output\reports\coverage_report_auth_20260331_224211.json
+INFO     | graph.workflow                           | 
+[FILE] Artifacts:
+INFO     | graph.workflow                           |   Gherkin files : 1
+INFO     | graph.workflow                           |   Test files    : 4
+INFO     | graph.workflow                           |   Coverage files: 2
+INFO     | graph.workflow                           |     - C:\Bureau\Bureau\pr
+oject_test\output\reports\coverage_report_auth_20260331_224211.yaml
+INFO     | graph.workflow                           |     - C:\Bureau\Bureau\pr
+oject_test\output\reports\coverage_report_auth_20260331_224211.json
+INFO     | graph.workflow                           | =========================
+=======================================================
+
+
+================================================================================
+  TEST AUTOMATION PIPELINE (CONSOLIDATED E2E)
+================================================================================
+
+
+================================================================================
+  CONSOLIDATED E2E PIPELINE COMPLETED
+================================================================================
+
+[PASSED] auth                           | Status: completed
+   Generated 1 consolidated feature file(s)
+   Generated 4 test file(s)
+   Coverage: 0.0%
+
+[OK] End-to-end consolidated tests completed!
+

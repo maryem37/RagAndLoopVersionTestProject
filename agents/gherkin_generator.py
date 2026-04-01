@@ -1,6 +1,6 @@
 """
 agents/gherkin_generator.py
-────────────────────────────
+------------------------------
 Agent 2 — Enterprise Gherkin Generator — Swagger-Driven (Zero-Shot)
 
 KEY FIX — SWAGGER-DRIVEN GHERKIN:
@@ -9,12 +9,12 @@ KEY FIX — SWAGGER-DRIVEN GHERKIN:
           No role/actor extraction. No error message extraction.
 
   Now: Python extracts EXACT facts BEFORE calling the LLM:
-         1. _extract_swagger_facts()  → actors/roles from enum fields,
+         1. _extract_swagger_facts()  -> actors/roles from enum fields,
                                         status values from enum fields,
                                         required fields per endpoint,
                                         enum values per field,
                                         response field names
-         2. _extract_error_messages() → exact error messages from user story
+         2. _extract_error_messages() -> exact error messages from user story
                                         as a numbered list — LLM copies them verbatim
          3. Prompt injects both as HARD FACTS with explicit "use only these" rules
 
@@ -22,7 +22,7 @@ KEY FIX — SWAGGER-DRIVEN GHERKIN:
   Everything is read from Swagger and from the user story text.
 
 Pipeline
-────────
+------------------------------
 user_story + swagger_specs (all services)
     └─► _extract_swagger_facts()    extract enums, roles, statuses, fields from ALL specs
     └─► _extract_error_messages()   extract error messages from user story text
@@ -48,9 +48,9 @@ from config.settings import get_settings
 from graph.state import AgentOutput, AgentStatus, TestAutomationState
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Pre-compiled regex constants
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 _RE_STEP_PREFIX      = re.compile(r"^\s*(Given|When|Then|And|But)\s+", re.IGNORECASE)
 _RE_SCENARIO_OUTLINE = re.compile(r"^\s*Scenario Outline\s*:", re.IGNORECASE)
@@ -105,13 +105,13 @@ _PLACEHOLDER_FALLBACKS: Dict[str, str] = {
 }
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # SWAGGER FACT EXTRACTION
 #
 # These functions read the Swagger specs BEFORE the LLM is called.
 # The LLM receives concrete extracted facts — not vague descriptions.
 # This prevents hallucination of field names, actors, and enum values.
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 def _resolve_ref(ref: str, spec: dict) -> dict:
     """Resolve $ref like '#/components/schemas/Foo' to its schema dict."""
@@ -202,7 +202,7 @@ def _extract_swagger_facts(swagger_specs: dict) -> str:
             all_roles: List[str] = []
             for values in actor_enums.values():
                 all_roles.extend(values)
-            lines.append(f"  → use one of: {list(dict.fromkeys(all_roles))}")
+            lines.append(f"  -> use one of: {list(dict.fromkeys(all_roles))}")
 
         if status_enums:
             lines.append("")
@@ -317,7 +317,7 @@ def _extract_error_messages(user_story: str) -> str:
 
     # Pattern 1: quoted strings after error/message/displays keywords
     pattern1 = re.compile(
-        r'(?:error|message|displays?|shows?|warning|msg)\s*[:\-→]?\s*["\u201c\u201d]([^"\u201c\u201d]+)["\u201c\u201d]',
+        r'(?:error|message|displays?|shows?|warning|msg)\s*[:\-->]?\s*["\u201c\u201d]([^"\u201c\u201d]+)["\u201c\u201d]',
         re.IGNORECASE,
     )
     for m in pattern1.finditer(user_story):
@@ -372,9 +372,9 @@ def _extract_error_messages(user_story: str) -> str:
     return result
 
 
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 # Agent
-# ──────────────────────────────────────────────────────────────────────
+# ------------------------------
 
 class GherkinGeneratorAgent:
     """
@@ -402,9 +402,9 @@ class GherkinGeneratorAgent:
             f"model: {self.settings.huggingface.gherkin_generator.model_name}"
         )
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     # PROMPT
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
 
     def _create_prompt(self) -> ChatPromptTemplate:
         system = """\
@@ -426,13 +426,13 @@ You have THREE inputs:
   INPUT 3 — Error messages extracted verbatim from the user story
 
 Rules:
-  • Actors and roles → use ONLY values from INPUT 2 ACTORS / ROLES section
-  • Status values    → use ONLY values from INPUT 2 STATUS VALUES section
-  • Error messages   → copy EXACTLY from INPUT 3, character by character
+  • Actors and roles -> use ONLY values from INPUT 2 ACTORS / ROLES section
+  • Status values    -> use ONLY values from INPUT 2 STATUS VALUES section
+  • Error messages   -> copy EXACTLY from INPUT 3, character by character
                        Do NOT translate. Do NOT paraphrase. Do NOT invent.
-  • Field names      → use ONLY field names listed in INPUT 2 endpoints
-  • Enum values      → use ONLY "allowed values" listed in INPUT 2
-  • Business rules   → derive from INPUT 1 only
+  • Field names      -> use ONLY field names listed in INPUT 2 endpoints
+  • Enum values      -> use ONLY "allowed values" listed in INPUT 2
+  • Business rules   -> derive from INPUT 1 only
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 E2E CHAIN PRINCIPLE
@@ -447,7 +447,7 @@ Correct chain example:
   When the employee submits a leave request
   Then the leave request status is "Pending"
 
-This touches Auth service → Business service. That is E2E.
+This touches Auth service -> Business service. That is E2E.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 STEP TEXT RULES
@@ -488,7 +488,7 @@ Feature: <title from user story>
 SCENARIO RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ✓ USE SCENARIO OUTLINES FOR PARAMETERIZED TESTS
+  [OK] USE SCENARIO OUTLINES FOR PARAMETERIZED TESTS
     Use Scenario Outline with Examples table for different test data.
     This lets you test multiple combinations with one step definition.
     Example:
@@ -506,7 +506,7 @@ SCENARIO RULES
   - NEVER hardcode specific dates like "January 10, 2024" — use abstract placeholders
   - ONE nominal (happy-path) scenario only — chain ALL services
   - ONE failure scenario per distinct error message in INPUT 3
-  - ONE unauthorized scenario → "Then the system blocks the action"
+  - ONE unauthorized scenario -> "Then the system blocks the action"
   - Create SCENARIO OUTLINES for boundary conditions, not separate scenarios
   - Status values always in double quotes
   - Given = precondition only, never an action
@@ -516,7 +516,7 @@ SCENARIO RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COVERAGE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ☑  ONE nominal scenario (login → action → result)
+  ☑  ONE nominal scenario (login -> action -> result)
   ☑  One scenario per error message in INPUT 3
   ☑  Unauthorized access
   ☑  Missing required fields (based on INPUT 2 required fields)
@@ -543,15 +543,15 @@ Output a single valid .feature file. First line must be "Feature:":
             ("human",  human),
         ])
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     # FEATURE EXTRACTION
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
 
     def extract_features(self, text: str) -> List[str]:
         """Split multi-story input into individual story blocks."""
         gherkin_step_re = re.compile(r"^\s*(Given|When|Then|And|But)\s+", re.IGNORECASE)
         if sum(1 for l in text.splitlines() if gherkin_step_re.match(l)) >= 3:
-            logger.info("📋 Input is existing Gherkin — passing through as-is")
+            logger.info("[LIST] Input is existing Gherkin — passing through as-is")
             return [text.strip()]
 
         blocks:  List[str] = []
@@ -584,20 +584,20 @@ Output a single valid .feature file. First line must be "Feature:":
         if not result and text.strip():
             result = [text.strip()]
 
-        logger.info(f"📋 Extracted {len(result)} user story/stories → {len(result)} feature file(s)")
+        logger.info(f"[LIST] Extracted {len(result)} user story/stories -> {len(result)} feature file(s)")
         return result
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     # POST-PROCESSING PIPELINE
     # (unchanged from original — all fixes are in the prompt layer)
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
 
     def _clean_markdown(self, text: str) -> str:
         text = re.sub(r"```gherkin\s*", "", text)
         text = re.sub(r"```\s*",        "", text)
         match = re.search(r"^(Feature:)", text, re.MULTILINE)
         if not match:
-            logger.warning("⚠ No Feature: block in LLM output. Raw: " + repr(text[:300]))
+            logger.warning("[WARN] No Feature: block in LLM output. Raw: " + repr(text[:300]))
             return ""
         text = text[match.start():]
         gherkin_kw = re.compile(
@@ -628,7 +628,7 @@ Output a single valid .feature file. First line must be "Feature:":
             line = _RE_BARE_PATH_IN_STEP.sub("", line)
             line = line.rstrip(" .,;:")
             if line != original:
-                logger.warning(f"✎ Stripped URL from step: '{original.strip()}' → '{line.strip()}'")
+                logger.warning(f"✎ Stripped URL from step: '{original.strip()}' -> '{line.strip()}'")
             lines.append(line)
         return "\n".join(lines)
 
@@ -644,7 +644,7 @@ Output a single valid .feature file. First line must be "Feature:":
                 line,
             )
             if line != original:
-                logger.debug(f"✎ First-person: '{original.strip()}' → '{line.strip()}'")
+                logger.debug(f"✎ First-person: '{original.strip()}' -> '{line.strip()}'")
             lines.append(line)
         return "\n".join(lines)
 
@@ -661,7 +661,7 @@ Output a single valid .feature file. First line must be "Feature:":
             line = _A.sub(r"\1entered\2", line)
             line = _B.sub(r"enters\1",    line)
             if line != original:
-                logger.debug(f"✎ selected→entered: '{original.strip()}'")
+                logger.debug(f"✎ selected->entered: '{original.strip()}'")
             lines.append(line)
         return "\n".join(lines)
 
@@ -683,7 +683,7 @@ Output a single valid .feature file. First line must be "Feature:":
                     if re.match(r"^\s*Given\s+",       line, re.IGNORECASE):
                         if given_seen:
                             line = re.sub(r"^(\s*)Given\s+", r"\1And ", line)
-                            logger.debug(f"✎ Dup Given→And: '{line.strip()}'")
+                            logger.debug(f"✎ Dup Given->And: '{line.strip()}'")
                         else:
                             given_seen = True
                 fixed.append(line)
@@ -722,7 +722,7 @@ Output a single valid .feature file. First line must be "Feature:":
                     line = re.sub(rf"<{re.escape(key)}>", value, line, flags=re.IGNORECASE)
                 for token in re.findall(r"<([^>|\s]+)>", line):
                     fallback = token.replace("_", " ").title()
-                    logger.warning(f"⚠ Placeholder <{token}> → '{fallback}'")
+                    logger.warning(f"[WARN] Placeholder <{token}> -> '{fallback}'")
                     line = line.replace(f"<{token}>", f'"{fallback}"')
             result.append(line)
         return "\n".join(result)
@@ -737,7 +737,7 @@ Output a single valid .feature file. First line must be "Feature:":
             if in_background and re.match(r"^\s*Scenario", line):
                 in_background = False
             if in_background and _RE_STATUS.search(stripped):
-                logger.warning(f"⚠ Removed status from Background: '{stripped}'"); continue
+                logger.warning(f"[WARN] Removed status from Background: '{stripped}'"); continue
             result.append(line)
         return "\n".join(result)
 
@@ -758,13 +758,13 @@ Output a single valid .feature file. First line must be "Feature:":
             header     = block.splitlines()[0].strip()
             then_count = len(re.findall(r"^\s*Then\s+", block, re.MULTILINE))
             if then_count == 0:
-                logger.warning(f"⚠ Removed (no Then): '{header}'"); continue
+                logger.warning(f"[WARN] Removed (no Then): '{header}'"); continue
             dup = False
             for line in block.splitlines():
                 if re.match(r"^\s*When\s+", line):
                     sig = re.sub(r'"[^"]*"', '".*"', line.strip().lower())
                     if sig in outline_sigs:
-                        logger.warning(f"⚠ Removed (covered by Outline): '{header}'")
+                        logger.warning(f"[WARN] Removed (covered by Outline): '{header}'")
                         dup = True; break
             if not dup: result.append(block)
         return "".join(result)
@@ -833,7 +833,7 @@ Output a single valid .feature file. First line must be "Feature:":
             if not ex_match:
                 fixed = re.sub(r"^(\s*)Scenario Outline\s*:", r"\1Scenario:", block, count=1, flags=re.MULTILINE)
                 fixed = re.sub(r"<[^>]+>", "value", fixed)
-                logger.warning("✎ Outline→Scenario (no Examples)"); result.append(fixed); continue
+                logger.warning("✎ Outline->Scenario (no Examples)"); result.append(fixed); continue
             after = block[ex_match.end():]
             rows  = [l for l in after.splitlines() if l.strip().startswith("|") and l.strip().endswith("|")]
             valid = True
@@ -850,7 +850,7 @@ Output a single valid .feature file. First line must be "Feature:":
                 fixed = re.sub(r"^(\s*)Scenario Outline\s*:", r"\1Scenario:", block, count=1, flags=re.MULTILINE)
                 fixed = re.sub(r"\n\s*Examples\s*:.*", "", fixed, flags=re.DOTALL)
                 fixed = re.sub(r"<[^>]+>", "value", fixed)
-                logger.warning(f"✎ Outline→Scenario (invalid Examples: {len(rows)} rows)")
+                logger.warning(f"✎ Outline->Scenario (invalid Examples: {len(rows)} rows)")
                 result.append(fixed)
             else:
                 result.append(block)
@@ -889,7 +889,7 @@ Output a single valid .feature file. First line must be "Feature:":
             has_err = any(_RE_ERR.match(l) for l in lines)
             if has_suc and not has_err:
                 if seen:
-                    logger.warning(f"⚠ Collapsed dup nominal: '{lines[0].strip()}'"); continue
+                    logger.warning(f"[WARN] Collapsed dup nominal: '{lines[0].strip()}'"); continue
                 seen = True
             result.append(block)
         return "".join(result)
@@ -967,7 +967,7 @@ Output a single valid .feature file. First line must be "Feature:":
                 outline.append(f"{ind}    | " + " | ".join(v.ljust(cw[n]) for n, v in enumerate(row)) + " |")
             merged[indices[0]] = "\n".join(outline) + "\n"
             for idx in indices[1:]: drop.add(idx)
-            logger.info(f"↔ Merged {len(indices)} same-error → Outline: '{title[:60]}'")
+            logger.info(f"↔ Merged {len(indices)} same-error -> Outline: '{title[:60]}'")
 
         result = []
         for i, block in enumerate(parts):
@@ -990,10 +990,10 @@ Output a single valid .feature file. First line must be "Feature:":
             # Check if Examples section exists
             examples_match = re.search(r"^\s*Examples\s*:", block, re.MULTILINE)
             if not examples_match:
-                # No Examples → convert to Scenario
+                # No Examples -> convert to Scenario
                 fixed = re.sub(r"^(\s*)Scenario Outline\s*:", r"\1Scenario:", block, count=1, flags=re.MULTILINE)
                 fixed = re.sub(r"<[^>]+>", "value", fixed)
-                logger.warning("⚠ Fixed Outline→Scenario: no Examples section")
+                logger.warning("[WARN] Fixed Outline->Scenario: no Examples section")
                 result.append(fixed)
                 continue
             
@@ -1005,7 +1005,7 @@ Output a single valid .feature file. First line must be "Feature:":
                 fixed = re.sub(r"^(\s*)Scenario Outline\s*:", r"\1Scenario:", block, count=1, flags=re.MULTILINE)
                 fixed = re.sub(r"\n\s*Examples\s*:.*", "", fixed, flags=re.DOTALL)
                 fixed = re.sub(r"<[^>]+>", "value", fixed)
-                logger.warning(f"⚠ Fixed Outline→Scenario: invalid Examples ({len(table_rows)} rows)")
+                logger.warning(f"[WARN] Fixed Outline->Scenario: invalid Examples ({len(table_rows)} rows)")
                 result.append(fixed)
                 continue
             
@@ -1020,7 +1020,7 @@ Output a single valid .feature file. First line must be "Feature:":
                 fixed = re.sub(r"^(\s*)Scenario Outline\s*:", r"\1Scenario:", block, count=1, flags=re.MULTILINE)
                 fixed = re.sub(r"\n\s*Examples\s*:.*", "", fixed, flags=re.DOTALL)
                 fixed = re.sub(r"<[^>]+>", "value", fixed)
-                logger.warning(f"⚠ Fixed Outline→Scenario: mismatched parameters {param_matches} vs {header_cols}")
+                logger.warning(f"[WARN] Fixed Outline->Scenario: mismatched parameters {param_matches} vs {header_cols}")
                 result.append(fixed)
                 continue
             
@@ -1040,9 +1040,9 @@ Output a single valid .feature file. First line must be "Feature:":
         cleaned = "\n".join(lines)
         return cleaned if cleaned.endswith("\n") else cleaned + "\n"
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     # SAVE
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
 
     def save_feature_file(self, content: str, service_name: str = "feature", index: int = 1) -> Path:
         features_dir: Path = self.settings.paths.features_dir
@@ -1057,12 +1057,12 @@ Output a single valid .feature file. First line must be "Feature:":
         filepath = features_dir / filename
         if not content.endswith("\n"): content += "\n"
         filepath.write_text(content, encoding="utf-8", newline="\n")
-        logger.success(f"💾 Saved .feature → {filepath}")
+        logger.success(f"[SAVE] Saved .feature -> {filepath}")
         return filepath
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     # SINGLE GENERATION
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
 
     def generate_single(self, story: str, swagger_context: str = "", error_messages: str = "") -> str:
         prompt = self._create_prompt()
@@ -1099,14 +1099,14 @@ Output a single valid .feature file. First line must be "Feature:":
                 raw = response.content if hasattr(response, "content") else str(response)
                 if re.search(r"^Feature:", raw, re.MULTILINE):
                     break
-                logger.warning(f"⚠ Attempt {attempt}: no Feature: block. Retrying.")
+                logger.warning(f"[WARN] Attempt {attempt}: no Feature: block. Retrying.")
                 active_chain = _retry_prompt | self.llm
                 if attempt == max_attempts:
-                    logger.error("❌ LLM failed to produce Feature: block after 3 attempts.")
+                    logger.error("[ERROR] LLM failed to produce Feature: block after 3 attempts.")
         except Exception as api_err:
             error_str = str(api_err)
             if "402" in error_str or "Payment Required" in error_str or "depleted" in error_str:
-                logger.warning(f"⚠️  API payment required (402) - will use stable file fallback instead")
+                logger.warning(f"[WARN]️  API payment required (402) - will use stable file fallback instead")
                 raise  # Re-raise to trigger fallback
             else:
                 raise  # Re-raise other errors
@@ -1130,13 +1130,13 @@ Output a single valid .feature file. First line must be "Feature:":
         raw = self._clean_output(raw)
         return raw
 
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
     # LANGGRAPH ENTRY POINT
-    # ──────────────────────────────────────────────────────────────────
+    # ------------------------------
 
     def generate(self, state: TestAutomationState) -> TestAutomationState:
         start = time.time()
-        logger.info(f"🚀 Gherkin Generator (Swagger-driven) — project: {state.service_name}")
+        logger.info(f"[START] Gherkin Generator (Swagger-driven) — project: {state.service_name}")
 
         try:
             # Step 1 — extract exact facts from Swagger BEFORE calling LLM
@@ -1155,7 +1155,7 @@ Output a single valid .feature file. First line must be "Feature:":
             if not features:
                 raise ValueError("No feature specifications found in user_story input")
 
-            logger.info(f"📌 {len(features)} user story/stories → {len(features)} feature file(s)")
+            logger.info(f"📌 {len(features)} user story/stories -> {len(features)} feature file(s)")
 
             all_contents: List[str] = []
             all_files:    List[str] = []
@@ -1197,7 +1197,7 @@ Output a single valid .feature file. First line must be "Feature:":
         except Exception as e:
             duration_ms = (time.time() - start) * 1000
             tb = traceback.format_exc()
-            logger.error(f"❌ Gherkin generation failed:\n{tb}")
+            logger.error(f"[ERROR] Gherkin generation failed:\n{tb}")
             
             # FALLBACK: Use any available feature file instead of regenerating
             logger.info("🔄 Using cached feature file instead of regenerating...")
@@ -1232,7 +1232,7 @@ Output a single valid .feature file. First line must be "Feature:":
                     logger.success(f"✅ Continuing pipeline with cached feature file")
                     return state
             except Exception as cache_err:
-                logger.warning(f"⚠️  Cached file fallback failed: {cache_err}")
+                logger.warning(f"[WARN]️  Cached file fallback failed: {cache_err}")
             
             # No stable fallback available
             state.add_agent_output(AgentOutput(
