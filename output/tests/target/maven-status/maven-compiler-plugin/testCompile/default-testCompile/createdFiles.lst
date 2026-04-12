@@ -1,2 +1,5 @@
+com\example\e2e\LeaveRequestCoverageTest.class
+LeaveServiceCalls.class
+com\example\e2e\RealIntegrationTest.class
 com\example\e2e\ConsolidatedE2ETestRunner.class
 com\example\e2e\steps\ConsolidatedE2ESteps.class

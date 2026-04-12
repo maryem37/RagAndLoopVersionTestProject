@@ -55,10 +55,11 @@ class ClassCoverage:
 
     __slots__ = (
         "class_name", "package", "source_file",
+        "instruction_covered", "instruction_missed",
         "line_covered", "line_missed",
         "branch_covered", "branch_missed",
         "method_covered", "method_missed",
-        "complexity",
+        "complexity_covered", "complexity_missed",
     )
 
     def __init__(
@@ -66,24 +67,35 @@ class ClassCoverage:
         class_name:     str,
         package:        str  = "",
         source_file:    str  = "",
+        instruction_covered: int = 0,
+        instruction_missed:  int = 0,
         line_covered:   int  = 0,
         line_missed:    int  = 0,
         branch_covered: int  = 0,
         branch_missed:  int  = 0,
         method_covered: int  = 0,
         method_missed:  int  = 0,
-        complexity:     int  = 0,
+        complexity_covered:  int  = 0,
+        complexity_missed:   int  = 0,
     ) -> None:
         self.class_name     = class_name
         self.package        = package
         self.source_file    = source_file
+        self.instruction_covered = instruction_covered
+        self.instruction_missed  = instruction_missed
         self.line_covered   = line_covered
         self.line_missed    = line_missed
         self.branch_covered = branch_covered
         self.branch_missed  = branch_missed
         self.method_covered = method_covered
         self.method_missed  = method_missed
-        self.complexity     = complexity
+        self.complexity_covered = complexity_covered
+        self.complexity_missed  = complexity_missed
+
+    @property
+    def instruction_rate(self) -> float:
+        total = self.instruction_covered + self.instruction_missed
+        return round(self.instruction_covered / total * 100, 2) if total else 0.0
 
     @property
     def line_rate(self) -> float:
@@ -100,11 +112,20 @@ class ClassCoverage:
         total = self.method_covered + self.method_missed
         return round(self.method_covered / total * 100, 2) if total else 0.0
 
+    @property
+    def complexity(self) -> int:
+        return self.complexity_covered + self.complexity_missed
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "class":          self.class_name,
             "package":        self.package,
             "source_file":    self.source_file,
+            "instructions": {
+                "covered": self.instruction_covered,
+                "missed":  self.instruction_missed,
+                "rate_%":  self.instruction_rate,
+            },
             "lines": {
                 "covered": self.line_covered,
                 "missed":  self.line_missed,
@@ -115,12 +136,16 @@ class ClassCoverage:
                 "missed":  self.branch_missed,
                 "rate_%":  self.branch_rate,
             },
+            "complexity": {
+                "covered": self.complexity_covered,
+                "missed":  self.complexity_missed,
+                "total":   self.complexity,
+            },
             "methods": {
                 "covered": self.method_covered,
                 "missed":  self.method_missed,
                 "rate_%":  self.method_rate,
             },
-            "complexity": self.complexity,
         }
 
 
@@ -137,6 +162,10 @@ class PackageCoverage:
     def _sum(self, attr: str) -> int:
         return sum(getattr(c, attr) for c in self.classes)
 
+    @property
+    def instruction_covered(self) -> int: return self._sum("instruction_covered")
+    @property
+    def instruction_missed(self)  -> int: return self._sum("instruction_missed")
     @property
     def line_covered(self)   -> int: return self._sum("line_covered")
     @property
@@ -155,6 +184,24 @@ class PackageCoverage:
         return round(covered / total * 100, 2) if total else 0.0
 
     @property
+    def complexity_covered(self) -> int: return self._sum("complexity_covered")
+    @property
+    def complexity_missed(self)  -> int: return self._sum("complexity_missed")
+
+    def _class_covered_count(self) -> int:
+        return sum(1 for c in self.classes if c.line_covered > 0)
+
+    def _class_missed_count(self) -> int:
+        return sum(1 for c in self.classes if c.line_covered == 0)
+
+    @property
+    def class_covered(self) -> int: return self._class_covered_count()
+    @property
+    def class_missed(self)  -> int: return self._class_missed_count()
+
+    @property
+    def instruction_rate(self) -> float: return self._rate(self.instruction_covered, self.instruction_missed)
+    @property
     def line_rate(self)   -> float: return self._rate(self.line_covered,   self.line_missed)
     @property
     def branch_rate(self) -> float: return self._rate(self.branch_covered, self.branch_missed)
@@ -165,9 +212,13 @@ class PackageCoverage:
         return {
             "package": self.name,
             "class_count": len(self.classes),
+            "instructions": {"covered": self.instruction_covered, "missed": self.instruction_missed, "rate_%": self.instruction_rate},
             "lines":    {"covered": self.line_covered,   "missed": self.line_missed,   "rate_%": self.line_rate},
             "branches": {"covered": self.branch_covered, "missed": self.branch_missed, "rate_%": self.branch_rate},
+            "complexity": {"covered": self.complexity_covered, "missed": self.complexity_missed, "total": self.complexity_covered + self.complexity_missed},
             "methods":  {"covered": self.method_covered, "missed": self.method_missed, "rate_%": self.method_rate},
+            "classes_covered": self.class_covered,
+            "classes_missed": self.class_missed,
             "classes":  [c.to_dict() for c in sorted(self.classes, key=lambda x: x.class_name)],
         }
 
@@ -210,6 +261,26 @@ class CoverageReport:
         return round(covered / total * 100, 2) if total else 0.0
 
     @property
+    def total_instruction_covered(self) -> int:
+        return sum(p.instruction_covered for p in self.packages)
+
+    @property
+    def total_instruction_missed(self) -> int:
+        return sum(p.instruction_missed for p in self.packages)
+
+    @property
+    def total_complexity_covered(self) -> int:
+        return sum(p.complexity_covered for p in self.packages)
+
+    @property
+    def total_complexity_missed(self) -> int:
+        return sum(p.complexity_missed for p in self.packages)
+
+    @property
+    def instruction_rate(self) -> float:
+        return self._rate(self.total_instruction_covered, self.total_instruction_missed)
+
+    @property
     def line_rate(self)   -> float: return self._rate(self.total_line_covered,   self.total_line_missed)
     @property
     def branch_rate(self) -> float: return self._rate(self.total_branch_covered, self.total_branch_missed)
@@ -247,6 +318,11 @@ class CoverageReport:
             "aggregate": {
                 "total_classes":  self.total_classes,
                 "total_packages": len(self.packages),
+                "instructions": {
+                    "covered": self.total_instruction_covered,
+                    "missed":  self.total_instruction_missed,
+                    "rate_%":  self.instruction_rate,
+                },
                 "lines": {
                     "covered": self.total_line_covered,
                     "missed":  self.total_line_missed,
@@ -256,6 +332,11 @@ class CoverageReport:
                     "covered": self.total_branch_covered,
                     "missed":  self.total_branch_missed,
                     "rate_%":  self.branch_rate,
+                },
+                "complexity": {
+                    "covered": self.total_complexity_covered,
+                    "missed":  self.total_complexity_missed,
+                    "total":   self.total_complexity_covered + self.total_complexity_missed,
                 },
                 "methods": {
                     "covered": self.total_method_covered,
@@ -344,19 +425,23 @@ def _parse_jacoco_xml(xml_path: Path) -> Optional[CoverageReport]:
             lc, lm = _counter(cls_elem, "LINE")
             bc, bm = _counter(cls_elem, "BRANCH")
             mc, mm = _counter(cls_elem, "METHOD")
-            cc, _  = _counter(cls_elem, "COMPLEXITY")
+            ic, im = _counter(cls_elem, "INSTRUCTION")
+            cc, cm = _counter(cls_elem, "COMPLEXITY")
 
             cls = ClassCoverage(
                 class_name     = simple_name,
                 package        = pkg_name,
                 source_file    = source_file,
+                instruction_covered = ic,
+                instruction_missed  = im,
                 line_covered   = lc,
                 line_missed    = lm,
                 branch_covered = bc,
                 branch_missed  = bm,
                 method_covered = mc,
                 method_missed  = mm,
-                complexity     = cc,
+                complexity_covered = cc,
+                complexity_missed  = cm,
             )
             pkg.add(cls)
 
@@ -418,13 +503,16 @@ def _parse_jacoco_csv(csv_path: Path) -> Optional[CoverageReport]:
         cls = ClassCoverage(
             class_name     = cls_name,
             package        = pkg_name,
+            instruction_covered = col(row, "INSTRUCTION_COVERED"),
+            instruction_missed  = col(row, "INSTRUCTION_MISSED"),
             line_covered   = col(row, "LINE_COVERED"),
             line_missed    = col(row, "LINE_MISSED"),
             branch_covered = col(row, "BRANCH_COVERED"),
             branch_missed  = col(row, "BRANCH_MISSED"),
             method_covered = col(row, "METHOD_COVERED"),
             method_missed  = col(row, "METHOD_MISSED"),
-            complexity     = col(row, "COMPLEXITY_COVERED") + col(row, "COMPLEXITY_MISSED"),
+            complexity_covered = col(row, "COMPLEXITY_COVERED"),
+            complexity_missed  = col(row, "COMPLEXITY_MISSED"),
         )
 
         if pkg_name not in pkg_map:
@@ -541,8 +629,13 @@ def _locate_jacoco_reports(tests_dir: Path) -> Dict[str, Optional[Path]]:
         if p not in candidates_csv:
             candidates_csv.append(p)
 
-    found_xml = next((p for p in candidates_xml if p.exists()), None)
-    found_csv = next((p for p in candidates_csv if p.exists()), None)
+    existing_xml = [p for p in candidates_xml if p.exists()]
+    existing_csv = [p for p in candidates_csv if p.exists()]
+
+    # Choose the newest report, not the first match.
+    # This avoids accidentally using stale artifacts under output/jacoco/report.
+    found_xml = max(existing_xml, key=lambda p: p.stat().st_mtime, default=None)
+    found_csv = max(existing_csv, key=lambda p: p.stat().st_mtime, default=None)
 
     if found_xml:
         logger.info(f"   Found JaCoCo XML: {found_xml}")
@@ -670,47 +763,156 @@ class CoverageAnalystAgent:
           1. JaCoCo XML  (most detailed — class + branch + line + method)
           2. JaCoCo CSV  (class-level, no method breakdown)
           3. Heuristic   (test counts only from console output)
+        
+        IMPORTANT: Check if tests actually executed before using JaCoCo files.
+        If no tests ran, return empty report (0% coverage) instead of stale data.
         """
+        import time
+        from pathlib import Path
+        
+        # ── Check if tests actually executed (prefer state, fallback to surefire) --------
+        # Rationale: on Windows and in iterative runs, old Surefire/JaCoCo artifacts may
+        # remain on disk. If the executor failed preflight, we must not treat those
+        # artifacts as part of this run.
+        tests_executed = False
+        executor_reported_this_run = False
+        if hasattr(state, "execution_result") and state.execution_result is not None:
+            # If the executor wrote execution_result, trust it as the source of truth
+            # for "did tests run in THIS run". Do not fall back to old Surefire files.
+            executor_reported_this_run = True
+            try:
+                tests_executed = int(state.execution_result.get("total", 0)) > 0
+            except Exception:
+                tests_executed = False
+
+        surefire_dir = tests_dir / "target" / "surefire-reports"
+        surefire = _parse_surefire_xml(surefire_dir)
+        if not executor_reported_this_run:
+            tests_executed = surefire.get("tests", 0) > 0
+
+        # Capture a time anchor for staleness checks: latest Surefire XML mtime.
+        # If tests executed in this run, a JaCoCo report older than the test run
+        # is considered stale (even if it exists).
+        latest_surefire_mtime = 0.0
+        try:
+            if surefire_dir.exists():
+                latest_surefire_mtime = max(
+                    (p.stat().st_mtime for p in surefire_dir.glob("*.xml")),
+                    default=0.0,
+                )
+        except Exception:
+            latest_surefire_mtime = 0.0
+        
         paths  = _locate_jacoco_reports(tests_dir)
         report = None
+        
+        # ── Check if JaCoCo XML/CSV are fresh enough to belong to THIS run --------
+        # Two accepted freshness signals:
+        #  1) Report is very recent (mtime within the last 2 minutes), OR
+        #  2) If tests executed, report mtime is at/after the latest Surefire XML.
+        # This prevents accidentally parsing stale artifacts from older runs.
+        is_xml_fresh = False
+        is_csv_fresh = False
+        if paths["xml"] and paths["xml"].exists():
+            file_mtime = paths["xml"].stat().st_mtime
+            current_time = time.time()
+            age_seconds = current_time - file_mtime
+            is_xml_fresh = (age_seconds < 120) or (
+                tests_executed and latest_surefire_mtime and file_mtime >= (latest_surefire_mtime - 5)
+            )
+            if not is_xml_fresh:
+                logger.warning(
+                    f"   ⚠️  JaCoCo XML is stale (age: {age_seconds:.0f}s) — ignoring"
+                )
 
-        # ── Source 1: JaCoCo XML ------------------------------
-        if paths["xml"]:
+        if paths["csv"] and paths["csv"].exists():
+            file_mtime = paths["csv"].stat().st_mtime
+            current_time = time.time()
+            age_seconds = current_time - file_mtime
+            is_csv_fresh = (age_seconds < 120) or (
+                tests_executed and latest_surefire_mtime and file_mtime >= (latest_surefire_mtime - 5)
+            )
+            if not is_csv_fresh:
+                logger.warning(
+                    f"   ⚠️  JaCoCo CSV is stale (age: {age_seconds:.0f}s) — ignoring"
+                )
+
+        # ── Source 1: JaCoCo XML (only if report belongs to this run) --------
+        if paths["xml"] and is_xml_fresh:
             report = _parse_jacoco_xml(paths["xml"])
             if report:
                 logger.info("   Data source: JaCoCo XML [OK]")
 
-        # ── Source 2: JaCoCo CSV ------------------------------
-        if report is None and paths["csv"]:
+        # ── Source 2: JaCoCo CSV (only if report belongs to this run) --------
+        if report is None and paths["csv"] and is_csv_fresh:
             report = _parse_jacoco_csv(paths["csv"])
             if report:
                 logger.info("   Data source: JaCoCo CSV [OK]")
 
-        # ── Source 3: Heuristic from console output ------------------------------
+        # ── Fallback: allow last-known JaCoCo when tests ran ---------------
+        # If tests executed but no fresh JaCoCo was produced in this run
+        # (e.g., services were not started with JaCoCo tcpserver), keep the
+        # most recent report instead of returning 0%. We still mark it stale.
+        if report is None and tests_executed:
+            if paths["xml"] and paths["xml"].exists():
+                stale_report = _parse_jacoco_xml(paths["xml"])
+                if stale_report and stale_report.total_classes > 0:
+                    stale_report.source = "jacoco-xml-stale"
+                    stale_report.warnings.append(
+                        "JaCoCo XML is older than the current test run. Showing last-known coverage; start services with JaCoCo tcpserver to generate fresh coverage for this run."
+                    )
+                    report = stale_report
+                    logger.warning("   ⚠️  Using stale JaCoCo XML as last-known coverage")
+            if report is None and paths["csv"] and paths["csv"].exists():
+                stale_report = _parse_jacoco_csv(paths["csv"])
+                if stale_report and stale_report.total_classes > 0:
+                    stale_report.source = "jacoco-csv-stale"
+                    stale_report.warnings.append(
+                        "JaCoCo CSV is older than the current test run. Showing last-known coverage; start services with JaCoCo tcpserver to generate fresh coverage for this run."
+                    )
+                    report = stale_report
+                    logger.warning("   ⚠️  Using stale JaCoCo CSV as last-known coverage")
+
+        # ── Source 3: Heuristic or empty report --------
         if report is None:
-            raw_output = ""
-            if hasattr(state, "execution_result") and state.execution_result:
-                raw_output = state.execution_result.get("raw_output_tail", "")
-            report = _heuristic_from_console(raw_output, service_name)
-            logger.warning("   Data source: heuristic (no JaCoCo instrumentation)")
-
-            # Embed JaCoCo setup hint
-            if not _check_pom_for_jacoco(tests_dir):
-                report.warnings.append(
-                    "jacoco-maven-plugin not detected in pom.xml. "
-                    "To enable coverage: add the JaCoCo plugin (snippet below)."
+            if not tests_executed:
+                logger.warning("   ⚠️  NO TESTS EXECUTED and no recent JaCoCo report — returning 0% coverage")
+                report = CoverageReport(
+                    service_name=service_name,
+                    source="no-tests-executed",
                 )
-                report.warnings.append(_JACOCO_PLUGIN_SNIPPET.strip())
+            else:
+                logger.warning("   ⚠️  TESTS EXECUTED but no recent coverage data — returning 0% coverage")
+                report = CoverageReport(
+                    service_name=service_name,
+                    source="tests-executed-no-coverage-data",
+                )
+                raw_output = ""
+                if hasattr(state, "execution_result") and state.execution_result:
+                    raw_output = state.execution_result.get("raw_output_tail", "")
+                if raw_output and not report.test_summary:
+                    report = _heuristic_from_console(raw_output, service_name)
+            if report is None:
+                raw_output = ""
+                if hasattr(state, "execution_result") and state.execution_result:
+                    raw_output = state.execution_result.get("raw_output_tail", "")
+                report = _heuristic_from_console(raw_output, service_name)
+                logger.warning("   Data source: heuristic (no JaCoCo instrumentation)")
 
-        # ── Enrich with Surefire test summary ------------------------------
-        surefire_dir = tests_dir / "target" / "surefire-reports"
-        surefire     = _parse_surefire_xml(surefire_dir)
-        if surefire["tests"] > 0:
-            report.test_summary = {**surefire, "source": "surefire-xml"}
-        elif not report.test_summary:
-            # Pull from state.execution_result if available
-            if hasattr(state, "execution_result") and state.execution_result:
-                er = state.execution_result
+                # Embed JaCoCo setup hint
+                if not _check_pom_for_jacoco(tests_dir):
+                    report.warnings.append(
+                        "jacoco-maven-plugin not detected in pom.xml. "
+                        "To enable coverage: add the JaCoCo plugin (snippet below)."
+                    )
+                    report.warnings.append(_JACOCO_PLUGIN_SNIPPET.strip())
+
+        # ── Enrich with test execution summary --------
+        # Prefer the executor's state.execution_result when present (source of truth for THIS run).
+        # Fall back to parsing Surefire XML only when execution_result is absent.
+        if report.test_summary is None or not report.test_summary:
+            if hasattr(state, "execution_result") and state.execution_result is not None:
+                er = state.execution_result or {}
                 report.test_summary = {
                     "tests":    er.get("total",   0),
                     "passed":   er.get("passed",  0),
@@ -719,6 +921,8 @@ class CoverageAnalystAgent:
                     "skipped":  er.get("skipped", 0),
                     "source":   "state.execution_result",
                 }
+            elif surefire.get("tests", 0) > 0:
+                report.test_summary = {**surefire, "source": "surefire-xml"}
 
         return report
 
@@ -742,6 +946,12 @@ class CoverageAnalystAgent:
         logger.info(sep)
         logger.info(f"  Data source      : {report.source}")
         logger.info(f"  Generated at     : {report.generated_at}")
+        
+        # Warn if this is a no-tests-executed report (not stale data)
+        if report.source == "no-tests-executed":
+            logger.warning("  ⚠️  NO TESTS WERE EXECUTED IN THIS RUN")
+            logger.warning("  ⚠️  Coverage metrics below are ZERO (not stale data)")
+        
         logger.info(f"  Packages         : {len(report.packages)}")
         logger.info(f"  Classes          : {report.total_classes}")
         logger.info(sep)
@@ -811,7 +1021,8 @@ class CoverageAnalystAgent:
 
             # ── Attach to state ------------------------------
             state.coverage_report = report.to_dict()
-            state.coverage_files  = [str(yaml_path), str(json_path)]
+            state.coverage_files  = [str(yaml_path).strip(), str(json_path).strip()]
+            state.coverage_percentage = float(report.line_rate)
 
             duration_ms = (time.time() - start) * 1000
 
@@ -855,6 +1066,165 @@ class CoverageAnalystAgent:
             state.add_error(f"Coverage analysis failed: {tb}")
 
         return state
+
+    # ------------------------------
+    # Option B Markdown report (human-friendly)
+    # ------------------------------
+
+    def _render_option_b_package_table(self, coverage_report_dict: Dict[str, Any]) -> str:
+        """Render a JaCoCo-HTML-like summary table in Markdown using coverage_report dict."""
+        packages = coverage_report_dict.get("packages", []) if isinstance(coverage_report_dict, dict) else []
+        if not packages:
+            return "(No package-level coverage data found.)"
+
+        # Build rows from aggregated package dicts
+        rows = []
+        for pkg in packages:
+            pkg_name = pkg.get("package", "")
+            instr = pkg.get("instructions", {}) or {}
+            br = pkg.get("branches", {}) or {}
+            ln = pkg.get("lines", {}) or {}
+            mt = pkg.get("methods", {}) or {}
+            cx = pkg.get("complexity", {}) or {}
+
+            instr_missed = int(instr.get("missed", 0))
+            instr_cov = float(instr.get("rate_%", 0.0))
+            branch_missed = int(br.get("missed", 0))
+            branch_cov = float(br.get("rate_%", 0.0))
+            cxty_missed = int(cx.get("missed", 0))
+            cxty_total = int(cx.get("total", 0))
+            lines_missed = int(ln.get("missed", 0))
+            lines_total = int(ln.get("covered", 0)) + int(ln.get("missed", 0))
+            methods_missed = int(mt.get("missed", 0))
+            methods_total = int(mt.get("covered", 0)) + int(mt.get("missed", 0))
+            classes_missed = int(pkg.get("classes_missed", 0))
+            classes_total = int(pkg.get("class_count", 0))
+
+            rows.append({
+                "Element": pkg_name,
+                "Missed Instructions": instr_missed,
+                "Instr Cov": instr_cov,
+                "Missed Branches": branch_missed,
+                "Branch Cov": branch_cov,
+                "Missed Cxty": f"{cxty_missed}",
+                "Cxty": f"{cxty_total}",
+                "Missed Lines": f"{lines_missed}",
+                "Lines": f"{lines_total}",
+                "Missed Methods": f"{methods_missed}",
+                "Methods": f"{methods_total}",
+                "Missed Classes": f"{classes_missed}",
+                "Classes": f"{classes_total}",
+            })
+
+        # Sort by missed instructions desc (like "worst first")
+        rows.sort(key=lambda r: int(r["Missed Instructions"]), reverse=True)
+
+        header = (
+            "| Element | Missed Instructions | Cov. | Missed Branches | Cov. | Missed | Cxty | Missed | Lines | Missed | Methods | Missed | Classes |\n"
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"
+        )
+
+        def fmt_pct(x: float) -> str:
+            return f"{x:.0f} %" if abs(x - round(x)) < 1e-9 else f"{x:.2f} %"
+
+        lines = [header]
+        for r in rows:
+            lines.append(
+                "| {Element} | {Missed Instructions} | {InstrCov} | {Missed Branches} | {BranchCov} | {Missed Cxty} | {Cxty} | {Missed Lines} | {Lines} | {Missed Methods} | {Methods} | {Missed Classes} | {Classes} |".format(
+                    Element=r["Element"],
+                    **{
+                        "Missed Instructions": r["Missed Instructions"],
+                        "InstrCov": fmt_pct(float(r["Instr Cov"])),
+                        "Missed Branches": r["Missed Branches"],
+                        "BranchCov": fmt_pct(float(r["Branch Cov"])),
+                        "Missed Cxty": r["Missed Cxty"],
+                        "Cxty": r["Cxty"],
+                        "Missed Lines": r["Missed Lines"],
+                        "Lines": r["Lines"],
+                        "Missed Methods": r["Missed Methods"],
+                        "Methods": r["Methods"],
+                        "Missed Classes": r["Missed Classes"],
+                        "Classes": r["Classes"],
+                    },
+                )
+            )
+
+        return "\n".join(lines)
+
+    def write_option_b_report(self, state: TestAutomationState, out_path: Optional[Path] = None) -> Path:
+        """Write/refresh OPTION_B_COVERAGE_REPORT.md from the latest analyzed coverage."""
+        base_dir = Path(self.settings.paths.base_dir)
+        tests_dir = Path(self.settings.paths.tests_dir)
+
+        if out_path is None:
+            out_path = base_dir / "OPTION_B_COVERAGE_REPORT.md"
+
+        coverage_report_dict = getattr(state, "coverage_report", None) or {}
+        summary = coverage_report_dict.get("summary", {}) if isinstance(coverage_report_dict, dict) else {}
+        agg = summary.get("aggregate", {}) if isinstance(summary, dict) else {}
+
+        # File paths
+        report_html = tests_dir / "target" / "site" / "jacoco" / "index.html"
+        jacoco_csv  = tests_dir / "target" / "site" / "jacoco" / "jacoco.csv"
+        target_dir  = tests_dir / "target"
+
+        def file_size(path: Path) -> Optional[int]:
+            try:
+                return path.stat().st_size if path.exists() else None
+            except OSError:
+                return None
+
+        real_conge = target_dir / "real-conge.exec"
+        real_demande = target_dir / "real-demande.exec"
+        merged_exec = target_dir / "jacoco.exec"
+
+        md = []
+        md.append("# Option B Implementation Report: Real Service Coverage Analysis\n")
+        md.append("## Executive Summary\n")
+        md.append("This report is generated by the local coverage agent (`CoverageAnalystAgent`) using the latest JaCoCo outputs produced in the test harness.")
+        md.append("")
+        md.append("### Latest Coverage Snapshot\n")
+        md.append(f"- Data source: **{summary.get('data_source', 'unknown')}**")
+        md.append(f"- Instruction coverage: **{agg.get('instructions', {}).get('rate_%', 0)}%**")
+        md.append(f"- Line coverage: **{agg.get('lines', {}).get('rate_%', 0)}%**")
+        md.append(f"- Branch coverage: **{agg.get('branches', {}).get('rate_%', 0)}%**")
+        md.append(f"- Method coverage: **{agg.get('methods', {}).get('rate_%', 0)}%**")
+        md.append("")
+        md.append("### Coverage Artifacts\n")
+        md.append(f"- HTML report: `{report_html}`")
+        if jacoco_csv.exists():
+            md.append(f"- CSV report: `{jacoco_csv}`")
+        md.append(f"- Exec (merged): `{merged_exec}` (bytes={file_size(merged_exec)})")
+        md.append(f"- Exec (service conge): `{real_conge}` (bytes={file_size(real_conge)})")
+        md.append(f"- Exec (service DemandeConge): `{real_demande}` (bytes={file_size(real_demande)})")
+        md.append("")
+        md.append("## How Coverage Is Produced (Option B)\n")
+        md.append("1. Start each microservice with the JaCoCo `-javaagent` (writes `target/jacoco.exec` inside the service).")
+        md.append("2. Run E2E tests from the harness (HTTP calls hit real services).")
+        md.append("3. Stop microservices gracefully so JaCoCo flushes execution data (`dumponexit=true`).")
+        md.append("4. Copy each service `jacoco.exec` into the harness as `target/real-conge.exec` and `target/real-demande.exec`.")
+        md.append("5. Run `mvn -DskipTests verify` in the harness to merge + generate the report.")
+        md.append("")
+        md.append("## Coverage by Package\n")
+        md.append(self._render_option_b_package_table(coverage_report_dict))
+        md.append("")
+        md.append("## Quick Commands\n")
+        md.append("```powershell")
+        md.append("cd C:\\Bureau\\Bureau\\project_test")
+        md.append("powershell -ExecutionPolicy Bypass -File .\\run_real_coverage.ps1")
+        md.append("```")
+        md.append("")
+        md.append("Or manual merge/report (after copying exec files):\n")
+        md.append("```powershell")
+        md.append("cd C:\\Bureau\\Bureau\\project_test\\output\\tests")
+        md.append("mvn -DskipTests verify")
+        md.append("```")
+        md.append("")
+        md.append(f"---\n\n**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+
+        out_path.write_text("\n".join(md) + "\n", encoding="utf-8")
+        logger.success(f"📄 Option B report updated -> {out_path}")
+        return out_path
 
 
 # ------------------------------

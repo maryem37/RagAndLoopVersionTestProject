@@ -1,0 +1,11 @@
+java.net.SocketException: Connection reset
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:328)
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:355)
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:808)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:966)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:961)
+	at java.base/java.io.FilterInputStream.read(FilterInputStream.java:82)
+	at org.jacoco.agent.rt.internal_4742761.core.data.ExecutionDataReader.read(ExecutionDataReader.java:84)
+	at org.jacoco.agent.rt.internal_4742761.output.TcpConnection.run(TcpConnection.java:60)
+	at org.jacoco.agent.rt.internal_4742761.output.TcpServerOutput$1.run(TcpServerOutput.java:64)
+	at java.base/java.lang.Thread.run(Thread.java:842)

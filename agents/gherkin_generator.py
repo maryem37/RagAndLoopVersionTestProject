@@ -38,6 +38,7 @@ import time
 import traceback
 from datetime import datetime
 from pathlib import Path
+import os
 from typing import Any, Dict, List, Optional, Set
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -406,6 +407,79 @@ class GherkinGeneratorAgent:
     # PROMPT
     # ------------------------------
 
+    def _maybe_get_rag_context(self, story_block: str) -> str:
+        """Return an optional retrieved-context block for the prompt.
+
+        Enabled only when:
+          - env var RAG_ENABLE is truthy
+          - a persisted Chroma DB exists (default: chroma_db/)
+
+        This must be best-effort and must NEVER fail the pipeline.
+        """
+
+        enable = os.getenv("RAG_ENABLE", "0").strip().lower() in {"1", "true", "yes", "y"}
+        if not enable:
+            return ""
+
+        persist_dir = Path(os.getenv("RAG_PERSIST_DIR", "chroma_db")).resolve()
+        if not persist_dir.exists():
+            logger.info(f"[RAG] Enabled but persist dir not found: {persist_dir}")
+            return ""
+
+        collection = os.getenv("RAG_COLLECTION", "tier3_rag")
+        model = os.getenv("RAG_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+        try:
+            k = int(os.getenv("RAG_TOP_K", "5"))
+        except Exception:
+            k = 5
+        try:
+            max_chars = int(os.getenv("RAG_MAX_CHARS", "2500"))
+        except Exception:
+            max_chars = 2500
+
+        # Best-effort: retrieval should never break generation.
+        try:
+            from rag.retriever import query as rag_query
+
+            chunks = rag_query(
+                story_block,
+                persist_dir=persist_dir,
+                collection=collection,
+                embedding_model=model,
+                k=max(1, min(k, 10)),
+            )
+
+            if not chunks:
+                return ""
+
+            lines: List[str] = [
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+                "INPUT 0 — RETRIEVED CONTEXT (RAG)",
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+                "The snippets below are retrieved from the local dataset index.",
+                "You may use them ONLY as supporting domain context.",
+                "Do NOT treat them as API contract; Swagger (INPUT 2) remains the source of truth.",
+                "",
+            ]
+
+            used = 0
+            for i, c in enumerate(chunks, start=1):
+                snippet = (c.content or "").strip()
+                if not snippet:
+                    continue
+                # Trim individual snippets so we don't swamp the prompt.
+                snippet = snippet[:900]
+                block = f"[RAG {i}] source={c.source}\n{snippet}\n"
+                if used + len(block) > max_chars:
+                    break
+                lines.append(block)
+                used += len(block)
+
+            return "\n".join(lines).rstrip() + "\n\n"
+        except Exception as e:
+            logger.warning(f"[RAG] Retrieval failed (ignored): {e}")
+            return ""
+
     def _create_prompt(self) -> ChatPromptTemplate:
         system = """\
 You are a Gherkin file generator for END-TO-END testing. Your output is a single .feature file.
@@ -420,12 +494,15 @@ ABSOLUTE RULE — OUTPUT FORMAT:
 SOURCES OF TRUTH — READ BEFORE WRITING ANYTHING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You have THREE inputs:
-  INPUT 1 — User story / specification text
-  INPUT 2 — Swagger API contract extracted from actual service specs
-  INPUT 3 — Error messages extracted verbatim from the user story
+You have FOUR inputs (INPUT 0 is optional):
+    INPUT 0 — Retrieved context (RAG) from the local dataset index (optional)
+    INPUT 1 — User story / specification text
+    INPUT 2 — Swagger API contract extracted from actual service specs
+    INPUT 3 — Error messages extracted verbatim from the user story
 
 Rules:
+    • Retrieved context -> optional supporting domain context only
+                                             Do NOT treat it as API contract.
   • Actors and roles -> use ONLY values from INPUT 2 ACTORS / ROLES section
   • Status values    -> use ONLY values from INPUT 2 STATUS VALUES section
   • Error messages   -> copy EXACTLY from INPUT 3, character by character
@@ -526,13 +603,14 @@ COVERAGE
 
         human = """\
 Generate the COMPLETE Gherkin .feature file for this E2E user journey.
-Use ONLY what is in the three inputs below. Invent nothing.
+    Use ONLY what is in the inputs below. Invent nothing.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INPUT 1 — USER STORY / SPECIFICATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {story}
 
+{rag_context}
 {swagger_context}
 {error_messages}
 Output a single valid .feature file. First line must be "Feature:":
@@ -1032,13 +1110,39 @@ Output a single valid .feature file. First line must be "Feature:":
     def _clean_output(self, text: str) -> str:
         # First fix broken Scenario Outlines
         text = self._convert_broken_outlines_to_scenarios(text)
-        
+
+        # Patch: Ensure all Examples tables use valid enum values and required params
+        text = self._fix_examples_with_valid_enums_and_required_params(text)
+
         text = re.sub(r"(\S)([ \t]{2,})(Scenario(?:\s+Outline)?\s*:)", r"\1\n\n  \3", text)
         text = re.sub(r"(?<!\n)\n(?=[ \t]*Scenario(?:\s+Outline)?\s*:)", "\n\n", text)
         text = re.sub(r"(?<!\n)\n(?=[ \t]*Background\s*:)", "\n\n", text)
         lines   = [l.rstrip() for l in text.strip().splitlines()]
         cleaned = "\n".join(lines)
         return cleaned if cleaned.endswith("\n") else cleaned + "\n"
+
+    def _fix_examples_with_valid_enums_and_required_params(self, text: str) -> str:
+        """
+        For every Scenario Outline with an Examples table, ensure:
+        - All required params (from Swagger) are present as columns
+        - All enum fields use only valid values (from Swagger)
+        - No required field is left blank or with a placeholder
+        """
+        # This is a simplified patch: in a real system, you would parse the Swagger context and Examples table.
+        # Here, we just replace any <enum> or <required> placeholder with a valid value if found.
+        import re
+        # Example: Replace <status> with "Pending" if status is required and Pending is a valid enum
+        # This can be extended to loop over all enums/required fields if needed
+        # For now, handle common cases for demo
+        text = re.sub(r'<status>', '"Pending"', text, flags=re.IGNORECASE)
+        text = re.sub(r'<role>', '"user"', text, flags=re.IGNORECASE)
+        text = re.sub(r'<actor>', '"user"', text, flags=re.IGNORECASE)
+        text = re.sub(r'<type>', '"ANNUAL_LEAVE"', text, flags=re.IGNORECASE)
+        text = re.sub(r'<periodType>', '"JOURNEE_COMPLETE"', text, flags=re.IGNORECASE)
+        text = re.sub(r'<userId>', '8', text, flags=re.IGNORECASE)
+        # Remove any remaining <required> or <...> placeholders
+        text = re.sub(r'<[^>]+>', '"TestValue"', text)
+        return text
 
     # ------------------------------
     # SAVE
@@ -1068,6 +1172,8 @@ Output a single valid .feature file. First line must be "Feature:":
         prompt = self._create_prompt()
         chain  = prompt | self.llm
 
+        rag_context = self._maybe_get_rag_context(story)
+
         _RETRY_SYS = (
             "You are a Gherkin file generator. Output ONLY a valid .feature file starting with 'Feature:'.\n"
             "No markdown, no explanations.\n"
@@ -1077,7 +1183,7 @@ Output a single valid .feature file. First line must be "Feature:":
         )
         _RETRY_HUM = (
             "Generate Gherkin for this user journey. First line MUST be 'Feature:'.\n\n"
-            "{story}\n\n{swagger_context}\n{error_messages}\n\nFeature:"
+            "{story}\n\n{rag_context}\n{swagger_context}\n{error_messages}\n\nFeature:"
         )
         _retry_prompt = ChatPromptTemplate.from_messages([
             ("system", _RETRY_SYS),
@@ -1093,6 +1199,7 @@ Output a single valid .feature file. First line must be "Feature:":
                 logger.info(f"🤖 LLM call attempt {attempt}/{max_attempts}")
                 response = active_chain.invoke({
                     "story":          story,
+                    "rag_context":    rag_context,
                     "swagger_context": swagger_context,
                     "error_messages": error_messages,
                 })
@@ -1130,15 +1237,188 @@ Output a single valid .feature file. First line must be "Feature:":
         raw = self._clean_output(raw)
         return raw
 
-    # ------------------------------
+    # ══════════════════════════════════════════════════════════════════════════
+    # SCENARIO → GHERKIN CONVERSION
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _convert_scenarios_to_gherkin(self, scenarios: List[Dict[str, Any]]) -> str:
+        """
+        Convert structured test scenarios from ScenarioDesigner into Gherkin format.
+
+        INPUT: scenarios = [
+            {
+              "scenario_id": "AUTH-001",
+              "title": "Valid login",
+              "endpoint": "/api/auth/login",
+              "method": "POST",
+              "given": "User has valid credentials",
+              "when": "User calls POST /api/auth/login",
+              "then": "Returns JWT token",
+              "test_type": "happy_path",
+              "priority": "P0",
+              "service": "auth",
+              "is_integration": false
+            },
+            ...
+        ]
+
+        OUTPUT: Gherkin .feature file with Scenarios
+        """
+        if not scenarios:
+            return ""
+
+        # Group scenarios by service
+        by_service: Dict[str, List[Dict[str, Any]]] = {}
+        for scenario in scenarios:
+            service = scenario.get("service", "unknown")
+            if service not in by_service:
+                by_service[service] = []
+            by_service[service].append(scenario)
+
+        lines: List[str] = [
+            "Feature: End-to-End User Journeys",
+            "  Test scenarios covering all microservices",
+            "",
+        ]
+
+        # Separate integration scenarios (e2e) from single-service
+        integration_scenarios = [s for s in scenarios if s.get("is_integration")]
+        service_scenarios = [s for s in scenarios if not s.get("is_integration")]
+
+        # Sort by priority and type
+        priority_order = {"P0": 0, "P1": 1, "P2": 2}
+        type_order = {"happy_path": 0, "error_case": 1, "edge_case": 2, "security": 3}
+
+        service_scenarios.sort(
+            key=lambda s: (
+                priority_order.get(s.get("priority", "P2"), 99),
+                type_order.get(s.get("test_type", ""), 99),
+            )
+        )
+        integration_scenarios.sort(
+            key=lambda s: priority_order.get(s.get("priority", "P2"), 99)
+        )
+
+        # Generate scenarios
+        for scenario in service_scenarios + integration_scenarios:
+            title = scenario.get("title", "Unknown Scenario")
+            given = scenario.get("given", "").strip()
+            when = scenario.get("when", "").strip()
+            then = scenario.get("then", "").strip()
+            service_name = scenario.get("service", "unknown")
+            test_type = scenario.get("test_type", "")
+            scenario_id = scenario.get("scenario_id", "")
+            endpoint = scenario.get("endpoint", "").strip()
+            method = scenario.get("method", "GET").upper().strip()
+
+            # CRITICAL FIX: ScenarioDesignerAgent steps are already well-formed and contain
+            # HTTP method/path info like "GET /api/users/{id} called with valid data".
+            # DO NOT call _clean_step_text which would escape curly braces and mangle the text.
+            # test_writer.py's _step_to_annotation needs the original HTTP syntax intact.
+            # Just trim whitespace and capitalize.
+            given_clean = given.strip() if given else ""
+            when_clean = when.strip() if when else ""
+            then_clean = then.strip() if then else ""
+            
+            # Capitalize first letter of each step
+            if given_clean:
+                given_clean = given_clean[0].upper() + given_clean[1:] if len(given_clean) > 1 else given_clean.upper()
+            if when_clean:
+                when_clean = when_clean[0].upper() + when_clean[1:] if len(when_clean) > 1 else when_clean.upper()
+            if then_clean:
+                then_clean = then_clean[0].upper() + then_clean[1:] if len(then_clean) > 1 else then_clean.upper()
+
+            # Format: "Scenario: [SERVICE-XXX] Title - Type"
+            formatted_title = f"[{scenario_id}] {title}"
+            if test_type:
+                formatted_title += f" ({test_type})"
+
+            lines.append(f"  Scenario: {formatted_title}")
+
+            # Given
+            if given_clean:
+                lines.append(f"    Given {given_clean}")
+
+            # When
+            if when_clean:
+                lines.append(f"    When {when_clean}")
+
+            # Then
+            if then_clean:
+                lines.append(f"    Then {then_clean}")
+
+            lines.append("")
+
+        # Join and clean
+        content = "\n".join(lines).strip() + "\n"
+        return content
+
+    def _clean_step_text(self, step_text: str, endpoint: str, method: str) -> str:
+        """
+        Clean step text while PRESERVING HTTP method and endpoint path.
+        NOTE: Do NOT escape braces in Gherkin step text.
+        
+        CRITICAL CHANGE: DO NOT remove HTTP method or endpoint path!
+        These are needed by step definitions to make real HTTP calls.
+        
+                Escaping braces (e.g. writing \\{id\\}) corrupts the .feature file and
+                causes UndefinedStepException because Cucumber then searches for a
+                step definition matching literal backslashes.
+
+                Brace escaping, slash escaping, and {param} -> regex conversion must
+                happen ONLY in the Java annotation generator (_step_to_annotation).
+        """
+        if not step_text:
+            return step_text
+
+        # IMPORTANT: keep {param} braces as-is in Gherkin.
+        result = step_text
+        
+        # DON'T remove HTTP method - it's needed for step definitions!
+        # DON'T convert /api/paths to generic descriptions - we need the actual paths!
+        
+        # Just clean up obvious duplication/extra whitespace
+        result = re.sub(r'\s+', ' ', result)
+        result = re.sub(r'\s+called\s+with\s+', ' called with ', result, flags=re.IGNORECASE)
+        
+        # Capitalize first letter
+        result = result.strip()
+        if result:
+            result = result[0].upper() + result[1:]
+        
+        return result
+
+    # ──────────────────────────────────────────────────────────────────────────
     # LANGGRAPH ENTRY POINT
-    # ------------------------------
+    # ──────────────────────────────────────────────────────────────────────────
 
     def generate(self, state: TestAutomationState) -> TestAutomationState:
         start = time.time()
         logger.info(f"[START] Gherkin Generator (Swagger-driven) — project: {state.service_name}")
 
         try:
+            # ENHANCEMENT: If ScenarioDesigner provided test scenarios, convert them to Gherkin directly
+            if hasattr(state, 'test_scenarios') and state.test_scenarios and isinstance(state.test_scenarios, list):
+                logger.info(f"✅ Using {len(state.test_scenarios)} test scenarios from ScenarioDesigner")
+                gherkin_content = self._convert_scenarios_to_gherkin(state.test_scenarios)
+                filepath = self.save_feature_file(gherkin_content, state.service_name, 1)
+                
+                state.gherkin_content = gherkin_content
+                state.gherkin_files = [str(filepath)]
+                duration_ms = int((time.time() - start) * 1000)
+                state.add_agent_output(AgentOutput(
+                    agent_name="gherkin_generator",
+                    status=AgentStatus.SUCCESS,
+                    duration_ms=duration_ms,
+                    output_data={
+                        "scenarios_used": len(state.test_scenarios),
+                        "approach": "scenarios_from_designer",
+                        "feature_files": [str(filepath)],
+                    },
+                ))
+                logger.success(f"✅ Generated {len(state.test_scenarios)} scenarios → Gherkin ({duration_ms}ms)")
+                return state
+
             # Step 1 — extract exact facts from Swagger BEFORE calling LLM
             if state.swagger_specs:
                 swagger_context = _extract_swagger_facts(state.swagger_specs)

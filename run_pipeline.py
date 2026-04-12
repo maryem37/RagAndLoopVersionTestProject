@@ -13,6 +13,7 @@ Usage:
 import json
 import sys
 import argparse
+import os
 from pathlib import Path
 
 # Add project to path
@@ -126,6 +127,31 @@ def main():
     results = {}
     try:
         workflow = TestAutomationWorkflow()
+
+        # Optional: override coverage thresholds via env vars
+        # (coverage_analyst reads these from state.config['coverage_thresholds']).
+        coverage_thresholds = {}
+        env_to_key = {
+            "MIN_LINE_COVERAGE": "line_coverage_%",
+            "MIN_BRANCH_COVERAGE": "branch_coverage_%",
+            "MIN_METHOD_COVERAGE": "method_coverage_%",
+            # aliases
+            "COVERAGE_MIN_LINE": "line_coverage_%",
+            "COVERAGE_MIN_BRANCH": "branch_coverage_%",
+            "COVERAGE_MIN_METHOD": "method_coverage_%",
+        }
+        for env_name, key in env_to_key.items():
+            raw = os.getenv(env_name)
+            if raw is None or not str(raw).strip():
+                continue
+            try:
+                coverage_thresholds[key] = float(str(raw).strip())
+            except ValueError:
+                logger.warning(f"⚠️  Ignoring invalid {env_name}={raw!r} (expected float)")
+
+        runtime_config = {}
+        if coverage_thresholds:
+            runtime_config["coverage_thresholds"] = coverage_thresholds
         
         logger.info(f"\n{'='*80}")
         logger.info(f"🚀 END-TO-END Testing Services: {', '.join(services_to_run)}")
@@ -134,21 +160,22 @@ def main():
         # Process all services together as one consolidated E2E test
         consolidated_service_name = "_".join(services_to_run)
         
-        result = workflow.run(
+        workflow_state = workflow.run(
             user_story=user_story,
             service_name=consolidated_service_name,
             swagger_spec=all_swagger_specs,  # Pass all specs for consolidated testing
             swagger_specs=all_swagger_specs,  # Pass ALL swagger specs for E2E context
+            config=runtime_config,
             is_e2e=True,  # Flag to indicate end-to-end consolidated testing
             e2e_services=services_to_run,  # List of services being tested together
         )
         
         results[consolidated_service_name] = {
-            'workflow_id': result.workflow_id,
-            'status': result.workflow_status,
-            'gherkin_files': result.gherkin_files,
-            'test_files': result.test_files,
-            'coverage_percentage': result.coverage_percentage,
+            'workflow_id': workflow_state.workflow_id,
+            'status': workflow_state.workflow_status,
+            'gherkin_files': workflow_state.gherkin_files,
+            'test_files': workflow_state.test_files,
+            'coverage_percentage': workflow_state.coverage_percentage,
         }
         
         # Print summary
@@ -156,18 +183,23 @@ def main():
         print("  CONSOLIDATED E2E PIPELINE COMPLETED")
         print("="*80 + "\n")
         
-        for service_name, result in results.items():
-            status_text = "PASSED" if result['status'] == 'completed' else "FAILED"
-            print(f"[{status_text}] {service_name:30} | Status: {result['status']}")
-            if result['gherkin_files']:
-                print(f"   Generated {len(result['gherkin_files'])} consolidated feature file(s)")
-            if result['test_files']:
-                print(f"   Generated {len(result['test_files'])} test file(s)")
-            if result['coverage_percentage'] is not None:
-                print(f"   Coverage: {result['coverage_percentage']:.1f}%")
+        for service_name, summary in results.items():
+            status_text = "PASSED" if summary['status'] == 'completed' else "FAILED"
+            print(f"[{status_text}] {service_name:30} | Status: {summary['status']}")
+            if summary['gherkin_files']:
+                print(f"   Generated {len(summary['gherkin_files'])} consolidated feature file(s)")
+            if summary['test_files']:
+                print(f"   Generated {len(summary['test_files'])} test file(s)")
+            if summary['coverage_percentage'] is not None:
+                print(f"   Coverage: {summary['coverage_percentage']:.1f}%")
         
-        print("\n[OK] End-to-end consolidated tests completed!\n")
-        return 0
+        if workflow_state.workflow_status == 'completed':
+            print("\n[OK] End-to-end consolidated tests completed!\n")
+        else:
+            print("\n[FAILED] End-to-end consolidated tests failed.\n")
+
+        # Fail the process if the workflow failed (e.g., backend not running, tests failed hard).
+        return 0 if workflow_state.workflow_status == 'completed' else 1
         
     except Exception as e:
         logger.exception(f"❌ Pipeline failed: {e}")

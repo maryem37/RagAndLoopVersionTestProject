@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.example.e2e.LeaveRequestCoverageTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 5, Time elapsed: 0.012 s -- in com.example.e2e.LeaveRequestCoverageTest

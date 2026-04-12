@@ -1,0 +1,33 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-04-08T15:51:56.282+01:00  INFO 7312 --- [conge_db] [           main] tn.enis.conge.CongeeApplication          : Starting CongeeApplication v0.0.1-SNAPSHOT using Java 17.0.12 with PID 7312 (C:\Bureau\Bureau\microservices\conge\target\congee-0.0.1-SNAPSHOT.jar started by MSI in C:\Bureau\Bureau\project_test)
+2026-04-08T15:51:56.312+01:00  INFO 7312 --- [conge_db] [           main] tn.enis.conge.CongeeApplication          : No active profile set, falling back to 1 default profile: "default"
+2026-04-08T15:51:58.018+01:00  INFO 7312 --- [conge_db] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-08T15:51:58.193+01:00  INFO 7312 --- [conge_db] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 153 ms. Found 2 JPA repository interfaces.
+2026-04-08T15:52:00.813+01:00  INFO 7312 --- [conge_db] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
+2026-04-08T15:52:00.843+01:00  INFO 7312 --- [conge_db] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-08T15:52:00.845+01:00  INFO 7312 --- [conge_db] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+2026-04-08T15:52:00.973+01:00  INFO 7312 --- [conge_db] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-08T15:52:00.977+01:00  INFO 7312 --- [conge_db] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4532 ms
+2026-04-08T15:52:01.470+01:00  INFO 7312 --- [conge_db] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-08T15:52:02.078+01:00  INFO 7312 --- [conge_db] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-04-08T15:52:02.355+01:00  INFO 7312 --- [conge_db] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-08T15:52:03.190+01:00  INFO 7312 --- [conge_db] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-08T15:52:03.253+01:00  INFO 7312 --- [conge_db] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-08T15:52:03.668+01:00  INFO 7312 --- [conge_db] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1bfa3893
+2026-04-08T15:52:03.672+01:00  INFO 7312 --- [conge_db] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-08T15:52:03.859+01:00  WARN 7312 --- [conge_db] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-04-08T15:52:05.871+01:00  INFO 7312 --- [conge_db] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-08T15:52:06.075+01:00  INFO 7312 --- [conge_db] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+Hibernate: select u1_0.id,u1_0.cin,u1_0.department_id,u1_0.email,u1_0.first_name,u1_0.is_temporary_password,u1_0.last_name,u1_0.num_tel,u1_0.password,u1_0.user_role from users u1_0 where u1_0.email=? limit ?
+2026-04-08T15:52:09.622+01:00  WARN 7312 --- [conge_db] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-08T15:52:10.673+01:00  INFO 7312 --- [conge_db] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5da799, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2b0d6bf2, org.springframework.security.web.context.SecurityContextHolderFilter@376c5950, org.springframework.security.web.header.HeaderWriterFilter@3db145f7, org.springframework.web.filter.CorsFilter@a15e3c1, org.springframework.security.web.authentication.logout.LogoutFilter@31aee6d9, tn.enis.conge.configuration.JwtAuthenthificationFilter@e638553, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@7d2ddbf3, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4eee730c, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@46c92d27, org.springframework.security.web.session.SessionManagementFilter@6eeb15f9, org.springframework.security.web.access.ExceptionTranslationFilter@2b3ee95e, org.springframework.security.web.access.intercept.AuthorizationFilter@7859fc7]
+2026-04-08T15:52:11.678+01:00  INFO 7312 --- [conge_db] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path ''
+2026-04-08T15:52:11.714+01:00  INFO 7312 --- [conge_db] [           main] tn.enis.conge.CongeeApplication          : Started CongeeApplication in 16.196 seconds (process running for 16.924)

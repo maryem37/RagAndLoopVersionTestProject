@@ -8,11 +8,13 @@ Pipeline:
 """
 
 from typing import Literal, Optional
+import os
 from loguru import logger
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from graph.state import TestAutomationState, AgentStatus
+from agents.scenario_designer   import scenario_designer_agent_node  # ← Agent 0 (NEW)
 from agents.gherkin_generator import gherkin_generator_node
 from agents.gherkin_validator import gherkin_validator_node
 from agents.test_writer        import test_writer_node
@@ -27,7 +29,7 @@ class TestAutomationWorkflow:
         self.graph  = self._build_graph()
         logger.info("✅ Test Automation Workflow initialized")
         logger.info(
-            "[LIST] Pipeline: gherkin_generator -> gherkin_validator -> "
+            "[LIST] Pipeline: scenario_designer -> gherkin_generator -> gherkin_validator -> "
             "test_writer -> test_executor -> coverage_analyst"
         )
 
@@ -35,16 +37,18 @@ class TestAutomationWorkflow:
         workflow = StateGraph(TestAutomationState)
 
         # ── Nodes ------------------------------
+        workflow.add_node("scenario_designer",   scenario_designer_agent_node)  # ← Agent 0 (NEW)
         workflow.add_node("gherkin_generator",  gherkin_generator_node)
         workflow.add_node("gherkin_validator",  gherkin_validator_node)
         workflow.add_node("test_writer",        test_writer_node)
         workflow.add_node("test_executor",      test_executor_node)
-        workflow.add_node("coverage_analyst",   coverage_analyst_node)   # ← NEW
+        workflow.add_node("coverage_analyst",   coverage_analyst_node)   # ← Agent 6
 
         # ── Entry point ------------------------------
-        workflow.set_entry_point("gherkin_generator")
+        workflow.set_entry_point("scenario_designer")  # ← NOW STARTS WITH SCENARIO DESIGNER
 
         # ── Transitions ------------------------------
+        workflow.add_edge("scenario_designer", "gherkin_generator")  # ← NEW
         workflow.add_conditional_edges(
             "gherkin_generator",
             self._after_generation,
@@ -61,8 +65,8 @@ class TestAutomationWorkflow:
             {"execute": "test_executor", "end": END},
         )
         # Always analyse coverage after execution (even on partial failure)
-        workflow.add_edge("test_executor",    "coverage_analyst")   # ← NEW
-        workflow.add_edge("coverage_analyst", END)                  # ← NEW
+        workflow.add_edge("test_executor",    "coverage_analyst")   # ← Agent 5
+        workflow.add_edge("coverage_analyst", END)                  # ← Agent 6
 
         logger.info("[CHART] Workflow graph compiled successfully")
         return workflow.compile(checkpointer=self.memory)
@@ -89,6 +93,16 @@ class TestAutomationWorkflow:
         return "end"
 
     def _after_writing(self, state: TestAutomationState) -> Literal["execute", "end"]:
+        def _env_flag(name: str, default: bool = False) -> bool:
+            v = os.getenv(name)
+            if v is None:
+                return default
+            return v.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+        if _env_flag("SKIP_TEST_EXECUTION", False):
+            logger.warning("[SKIP] SKIP_TEST_EXECUTION=1 -> skipping test_executor + coverage_analyst")
+            return "end"
+
         last = state.agent_outputs[-1] if state.agent_outputs else None
         if last and last.status == AgentStatus.SUCCESS and state.test_files:
             logger.info("[OK] Test files generated -> execution")
@@ -141,6 +155,24 @@ class TestAutomationWorkflow:
             config={"configurable": {"thread_id": service_name}},
         )
         final_state = TestAutomationState(**result) if isinstance(result, dict) else result
+
+        # Treat a failed coverage quality gate as a workflow failure by default.
+        # Opt out by setting ALLOW_COVERAGE_QG_FAILURE=1 or FAIL_ON_COVERAGE_QG=0.
+        def _env_flag(name: str, default: bool = False) -> bool:
+            v = os.getenv(name)
+            if v is None:
+                return default
+            return v.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+        fail_on_coverage_qg = _env_flag("FAIL_ON_COVERAGE_QG", True) and not _env_flag(
+            "ALLOW_COVERAGE_QG_FAILURE", False
+        )
+        qg = final_state.get_coverage_quality_gate()
+        if fail_on_coverage_qg and qg is False:
+            violations = final_state.get_coverage_violations()
+            details = "; ".join(violations) if violations else "(no details)"
+            final_state.add_error(f"Coverage quality gate failed: {details}")
+
         final_state.workflow_status = "failed" if final_state.errors else "completed"
         self._log_summary(final_state)
         return final_state
@@ -158,7 +190,8 @@ class TestAutomationWorkflow:
         logger.info("\n[LIST] Agent Execution:")
         for output in state.agent_outputs:
             icon = "[OK]" if output.status == AgentStatus.SUCCESS else "[FAIL]"
-            logger.info(f"  {icon} {output.agent_name}  [{output.duration_ms:.0f}ms]")
+            duration_str = f"[{output.duration_ms:.0f}ms]" if output.duration_ms is not None else "[?ms]"
+            logger.info(f"  {icon} {output.agent_name}  {duration_str}")
             if output.agent_name == "coverage_analyst" and output.output_data:
                 d = output.output_data
                 logger.info(f"      Lines    : {d.get('line_coverage_%', 'N/A')}%")
@@ -218,6 +251,22 @@ class TestAutomationWorkflow:
             config={"configurable": {"thread_id": service_name}},
         )
         final_state = TestAutomationState(**result) if isinstance(result, dict) else result
+
+        def _env_flag(name: str, default: bool = False) -> bool:
+            v = os.getenv(name)
+            if v is None:
+                return default
+            return v.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+        fail_on_coverage_qg = _env_flag("FAIL_ON_COVERAGE_QG", True) and not _env_flag(
+            "ALLOW_COVERAGE_QG_FAILURE", False
+        )
+        qg = final_state.get_coverage_quality_gate()
+        if fail_on_coverage_qg and qg is False:
+            violations = final_state.get_coverage_violations()
+            details = "; ".join(violations) if violations else "(no details)"
+            final_state.add_error(f"Coverage quality gate failed: {details}")
+
         final_state.workflow_status = "failed" if final_state.errors else "completed"
         self._log_summary(final_state)
         return final_state
