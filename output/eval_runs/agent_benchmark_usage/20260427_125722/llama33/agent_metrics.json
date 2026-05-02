@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "error": "",
+  "model": {
+    "label": "llama33",
+    "name": "llama-3.3-70b-versatile"
+  },
+  "duration_ms": 1827,
+  "llm_usage": {
+    "calls": 1,
+    "prompt_tokens": 2600,
+    "completion_tokens": 402,
+    "total_tokens": 3002
+  },
+  "gherkin": {
+    "chars": 1982,
+    "features": 1,
+    "scenarios": 7,
+    "steps": 25,
+    "feature_file": "D:\\project_testRAG - Copie\\output\\features\\auth-leave_01_leave-request-management_20260427_125732.feature"
+  },
+  "gherkin_lint": {
+    "issues": 6,
+    "output": "\u001b[0;4mD:\\project_testRAG - Copie\\output\\features\\auth-leave_01_leave-request-management_20260427_125732.feature\u001b[24m\n  \u001b[38;5;243m34\u001b[0m    Wrong indentation for \"Examples\", expected indentation level of 2, but got 4    \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m35\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m36\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m37\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m38\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m39\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n\n\n"
+  }
+}

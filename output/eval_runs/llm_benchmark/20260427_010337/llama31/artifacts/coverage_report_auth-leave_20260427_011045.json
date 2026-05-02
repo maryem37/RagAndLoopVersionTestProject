@@ -1,0 +1,58 @@
+{
+  "summary": {
+    "service": "auth_leave",
+    "generated_at": "2026-04-27T01:10:45",
+    "data_source": "no-tests-executed",
+    "aggregate": {
+      "total_classes": 0,
+      "total_packages": 0,
+      "instructions": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 0,
+        "total": 0
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      }
+    },
+    "quality_gate": {
+      "passed": false,
+      "thresholds": {
+        "line_coverage_%": 50.0,
+        "branch_coverage_%": 25.0,
+        "method_coverage_%": 70.0
+      },
+      "violations": [
+        "line_coverage_%: 0.0% < threshold 50.0%",
+        "branch_coverage_%: 0.0% < threshold 25.0%",
+        "method_coverage_%: 0.0% < threshold 70.0%"
+      ]
+    },
+    "test_execution": {
+      "tests": 0,
+      "passed": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "state.execution_result"
+    }
+  },
+  "packages": []
+}

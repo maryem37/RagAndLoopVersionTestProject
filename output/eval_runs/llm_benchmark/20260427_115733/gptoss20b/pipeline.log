@@ -1,0 +1,11 @@
+Using JaCoCo tcpserver ports: auth=62057 leave=62058
+[1/5] Stopping existing services (ports 9000/9001)...
+  Freeing port 9000 (PID 26584)
+  Freeing port 9001 (PID 31092)
+Port 9000 is still in use. Close the owning process and rerun.
+Au caractère D:\project_testRAG - Copie\run_real_coverage.ps1:149 : 23
++ ... tillOpen) { throw "Port $p is still in use. Close the owning process  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Port 9000 is st...cess and rerun.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Port 9000 is still in use. Close the owning process and rerun.
+ 

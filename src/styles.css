@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #12304b;
+  --color-ink-900: #244866;
+  --color-ink-800: #3a6584;
+  --color-sky-500: #54bdf3;
+  --color-sky-400: #7fd2fb;
+  --color-sky-300: #b4e7ff;
+  --color-sky-200: #d9f3ff;
+  --color-snow: #f7fcff;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 28%),
+      radial-gradient(circle at top right, rgba(125, 211, 252, 0.5), transparent 34%),
+      linear-gradient(160deg, #eefaff 0%, #dff5ff 42%, #c7ebff 100%);
+    @apply min-h-screen text-slate-900 antialiased;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .dashboard-shell {
+    @apply relative;
+  }
+
+  .glass-panel {
+    @apply rounded-[2rem] border border-white/70 bg-white/68 shadow-[0_24px_80px_rgba(56,124,167,0.18)] backdrop-blur-xl;
+  }
+
+  .panel-pad {
+    @apply p-6;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.34em] text-sky-700;
+  }
+
+  .hero-title {
+    @apply text-4xl font-semibold tracking-tight text-slate-950;
+  }
+
+  .hero-copy {
+    @apply text-base leading-7 text-slate-700;
+  }
+
+  .section-title {
+    @apply text-2xl font-semibold text-slate-900;
+  }
+
+  .tag-chip {
+    @apply rounded-full border border-sky-200 bg-white/70 px-4 py-2 text-sm font-medium text-sky-900 shadow-sm;
+  }
+
+  .status-banner {
+    @apply rounded-2xl border px-5 py-4 shadow-sm;
+  }
+
+  .status-banner.info {
+    @apply border-sky-300 bg-sky-100/80 text-sky-900;
+  }
+
+  .status-banner.success {
+    @apply border-emerald-300 bg-emerald-100/80 text-emerald-900;
+  }
+
+  .status-banner.danger {
+    @apply border-red-300 bg-red-100/80 text-red-900;
+  }
+
+  .status-banner.neutral {
+    @apply border-slate-300 bg-white/85 text-slate-800;
+  }
+
+  .status-pill {
+    @apply rounded-full border px-4 py-2 text-sm font-semibold capitalize shadow-sm;
+  }
+
+  .status-pill.info {
+    @apply border-sky-300 bg-sky-100 text-sky-900;
+  }
+
+  .status-pill.success {
+    @apply border-emerald-300 bg-emerald-100 text-emerald-900;
+  }
+
+  .status-pill.danger {
+    @apply border-red-300 bg-red-100 text-red-900;
+  }
+
+  .status-pill.neutral {
+    @apply border-slate-300 bg-white/80 text-slate-800;
+  }
+
+  .soft-panel {
+    @apply rounded-2xl border border-sky-200/80 bg-white/72 px-4 py-3 text-slate-700;
+  }
+
+  .soft-code {
+    @apply block overflow-auto rounded-2xl border border-sky-200/80 bg-sky-50/80 px-4 py-3 text-sm text-sky-950;
+  }
+
+  .console-panel {
+    @apply rounded-[1.75rem] border border-sky-200/75 bg-white/76 shadow-inner shadow-sky-100/80;
+  }
+
+  .summary-card {
+    @apply rounded-3xl border border-sky-200/80 bg-white/74 p-4 shadow-sm;
+  }
+
+  .service-card {
+    @apply rounded-3xl border border-sky-200/80 bg-white/74 p-5 shadow-sm;
+  }
+
+  .workflow-stage-card {
+    @apply min-w-0 rounded-3xl border border-sky-200/80 bg-white/76 p-5 shadow-sm transition;
+    width: 100%;
+    height: 18rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .workflow-stage-header {
+    @apply flex items-start gap-4;
+    min-height: 6.75rem;
+  }
+
+  .workflow-stage-copy {
+    @apply min-w-0 flex-1;
+  }
+
+  .workflow-stage-title {
+    @apply mt-2 text-xl font-semibold text-slate-900;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .workflow-stage-label {
+    @apply mt-1 text-sm text-slate-600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .workflow-stage-description {
+    @apply mt-4 text-sm leading-6 text-slate-700;
+    min-height: 3.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .workflow-stage-footer {
+    @apply mt-5;
+    margin-top: auto;
+  }
+
+  .workflow-stage-card.active {
+    @apply border-sky-400 bg-sky-50/90 shadow-[0_18px_42px_rgba(84,189,243,0.22)];
+  }
+
+  .workflow-stage-card.completed {
+    @apply border-emerald-200 bg-emerald-50/75;
+  }
+
+  .workflow-stage-card.failed {
+    @apply border-red-300 bg-red-50/80;
+  }
+
+  .workflow-stage-dot {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-full border text-sm font-semibold shadow-sm;
+  }
+
+  .workflow-stage-dot.pending {
+    @apply border-slate-300 bg-white text-slate-500;
+  }
+
+  .workflow-stage-dot.active {
+    @apply border-sky-400 bg-sky-500 text-white;
+  }
+
+  .workflow-stage-dot.completed {
+    @apply border-emerald-300 bg-emerald-500 text-white;
+  }
+
+  .workflow-stage-dot.failed {
+    @apply border-red-300 bg-red-500 text-white;
+  }
+
+  .workflow-stage-badge {
+    @apply inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em];
+  }
+
+  .workflow-stage-badge.pending {
+    @apply border-slate-300 bg-white text-slate-600;
+  }
+
+  .workflow-stage-badge.active {
+    @apply border-sky-300 bg-sky-100 text-sky-900;
+  }
+
+  .workflow-stage-badge.completed {
+    @apply border-emerald-300 bg-emerald-100 text-emerald-900;
+  }
+
+  .workflow-stage-badge.failed {
+    @apply border-red-300 bg-red-100 text-red-900;
+  }
+
+  .workflow-chain {
+    @apply flex flex-col gap-3;
+    align-items: stretch;
+  }
+
+  .workflow-chain-node {
+    @apply flex flex-col gap-3;
+    align-items: stretch;
+  }
+
+  .workflow-chain-link {
+    @apply ml-5 h-8 w-1 rounded-full bg-slate-200;
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  .workflow-chain-link.pending {
+    @apply bg-slate-200;
+  }
+
+  .workflow-chain-link.active {
+    @apply bg-sky-400;
+  }
+
+  .workflow-chain-link.completed {
+    @apply bg-emerald-400;
+  }
+
+  .workflow-chain-link.failed {
+    @apply bg-red-400;
+  }
+
+  @media (min-width: 1280px) {
+    .workflow-chain {
+      @apply flex-row items-stretch overflow-x-auto pb-2;
+    }
+
+    .workflow-chain-node {
+      @apply flex-row gap-4;
+      min-width: 22rem;
+      align-items: stretch;
+    }
+
+    .workflow-stage-card {
+      width: 18rem;
+      height: 18rem;
+    }
+
+    .workflow-chain-link {
+      @apply ml-0 h-1 w-16 rounded-full;
+    }
+  }
+
+  .artifact-link {
+    @apply text-sky-700 transition hover:text-sky-900 hover:underline;
+  }
+
+  .field-input {
+    @apply w-full rounded-2xl border border-sky-200/90 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-300/60;
+  }
+
+  .primary-button {
+    @apply rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(84,189,243,0.34)] transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .secondary-button {
+    @apply rounded-full border border-sky-200 bg-white/78 px-5 py-3 text-sm font-semibold text-sky-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .danger-button {
+    @apply rounded-full border border-red-200 bg-white/78 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .metric-card {
+    @apply rounded-3xl border border-sky-200/80 bg-white/74 p-5 shadow-sm;
+  }
+}

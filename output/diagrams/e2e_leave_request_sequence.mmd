@@ -1,0 +1,61 @@
+sequenceDiagram
+    autonumber
+
+    actor Emp as Employee
+    actor TL as Team Leader
+
+    participant Auth as Auth Service
+    participant Leave as Leave Service
+    participant User as User API (Auth)
+    participant Bal as Balance API (Leave)
+    participant Audit as Audit Log
+    participant Notif as Notification Service
+
+    rect rgba(191, 223, 255, 0.35)
+    Note over Emp,Auth: Login (JWT)
+    Emp->>Auth: POST /api/auth/login (credentials)
+    Auth-->>Emp: 200 OK (JWT)
+    end
+
+    rect rgba(200, 150, 255, 0.22)
+    Note over Emp,Leave: Submit leave request
+    Emp->>Leave: POST /api/leave-requests/create (JWT, dates)
+
+    alt Missing/invalid JWT
+        Leave-->>Emp: 401 Unauthorized
+    else Overlapping dates
+        Leave-->>Emp: 409 Conflict (Overlapping leave detected)
+    else Valid request
+        Leave-->>Emp: 201 Created (requestId, status=PENDING)
+        Leave->>Audit: append (leave request created)
+    end
+    end
+
+    rect rgba(191, 223, 255, 0.35)
+    Note over TL,Auth: Team leader login (JWT)
+    TL->>Auth: POST /api/auth/login (credentials)
+    Auth-->>TL: 200 OK (JWT)
+    end
+
+    rect rgba(200, 150, 255, 0.22)
+    Note over TL,User: Role verification
+    TL->>User: GET /api/users/{teamLeaderId} (JWT)
+    User-->>TL: 200 OK (role=TEAM_LEADER)
+    end
+
+    rect rgba(225, 255, 225, 0.35)
+    Note over TL,Leave: Approve pending request
+    TL->>Leave: PUT /api/leave-requests/{requestId}/approve (JWT)
+
+    alt Role not TEAM_LEADER
+        Leave-->>TL: 403 Forbidden
+    else Request not PENDING
+        Leave-->>TL: 4xx Rejected
+    else Approval OK
+        Leave-->>TL: 200 OK (status=APPROVED)
+        Leave->>Bal: PUT /api/balances/{userId} (deduct days)
+        Bal-->>Leave: 200 OK (new balance)
+        Leave->>Audit: append (approved)
+        Leave-)Notif: send approval notification
+    end
+    end

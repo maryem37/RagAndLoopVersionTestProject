@@ -1,0 +1,40 @@
+Using JaCoCo tcpserver ports: auth=65232 leave=65233
+[1/5] Stopping existing services (ports 9000/9001)...
+[2/5] Starting services with JaCoCo agent...
+  JaCoCo includes filter: <all classes>
+  auth PID: 28368  leave PID: 33244
+  Waiting for ports 9000/9001...
+  auth is listening on :9000
+  leave is listening on :9001
+  Waiting for JaCoCo tcpserver ports...
+  auth-jacoco is listening on :65232
+  leave-jacoco is listening on :65233
+[3/5] Running pipeline...
+  Self-healing thresholds enabled:
+    ALLOW_TEST_FAILURES=0
+    MIN_TEST_PASS_RATE=100
+    MAX_TEST_FAILED_SCENARIOS=0
+    MAX_HEALING_ATTEMPTS=2
+=== STEP 1: Checking authenticated user balance (fallback userId=8) ===
+AuthBaseUrl : http://127.0.0.1:9000
+LeaveBaseUrl: http://127.0.0.1:9001
+Logging in: http://127.0.0.1:9000/api/auth/login
+Login succeeded.
+JWT acquired
+Fetching user info (optional)...
+[WARN] /me returned HTTP 403 -> using fallback userId=8
+[OK] Balance found for userId=8
+{"id":70,"annualBalance":18.0,"recoveryBalance":2.0,"userId":8}
+=== STEP 2: Running E2E pipeline ===
+  Seeding leave balances for userId=1 (to avoid known 500s)...
+AuthBaseUrl : http://127.0.0.1:9000
+LeaveBaseUrl: http://127.0.0.1:9001
+Logging in: http://127.0.0.1:9000/api/auth/login
+Login succeeded.
+JWT acquired
+Fetching user info (optional)...
+[WARN] /me returned HTTP 403 -> using fallback userId=8
+[INFO] Seeding balance for userId=1 (annual=21, recovery=0)...
+[OK] Seeded balance for userId=1
+{"id":9,"annualBalance":21.0,"recoveryBalance":0.0,"userId":1}
+INFO     | tools.service_registry                   | [LIST] Loaded 2 total services from matrix

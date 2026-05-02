@@ -1,0 +1,13 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2026-04-22T19:39:40.104+01:00  INFO 13020 --- [conge_db] [           main] tn.enis.conge.CongeeApplication          : Starting CongeeApplication v0.0.1-SNAPSHOT using Java 17.0.12 with PID 13020 (C:\Bureau\Bureau\microservices\conge\target\congee-0.0.1-SNAPSHOT.jar started by MSI in D:\project_testRAG - Copie)
+2026-04-22T19:39:40.120+01:00  INFO 13020 --- [conge_db] [           main] tn.enis.conge.CongeeApplication          : The following 1 profile is active: "dev"
+2026-04-22T19:39:40.123+01:00 DEBUG 13020 --- [conge_db] [           main] o.s.boot.SpringApplication               : Loading source class tn.enis.conge.CongeeApplication
+2026-04-22T19:39:42.235+01:00 DEBUG 13020 --- [conge_db] [           main] ConfigServletWebServerApplicationContext : Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@38018b62

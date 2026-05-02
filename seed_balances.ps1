@@ -4,7 +4,10 @@ param(
   [string]$LeaveBaseUrl = 'http://127.0.0.1:9001',
   [string]$Email,
   [string]$Password,
-  [string]$JWT
+  [string]$JWT,
+  [long[]]$UserIds,
+  [double]$Annual,
+  [double]$Recovery
 )
 
 Set-StrictMode -Version Latest
@@ -42,6 +45,11 @@ function Invoke-Http {
   }
 }
 
+function Format-InvariantNumber {
+  param([double]$Value)
+  return $Value.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+}
+
 Write-Host "AuthBaseUrl : $AuthBaseUrl"
 Write-Host "LeaveBaseUrl: $LeaveBaseUrl"
 
@@ -75,6 +83,11 @@ else {
 Write-Host "JWT acquired"
 
 $headers = @{ Authorization = "Bearer $jwt" }
+$shouldSeedValues = $PSBoundParameters.ContainsKey('Annual') -or $PSBoundParameters.ContainsKey('Recovery')
+
+if ($shouldSeedValues -and (-not $PSBoundParameters.ContainsKey('Annual') -or -not $PSBoundParameters.ContainsKey('Recovery'))) {
+  throw "When seeding explicit balances, provide both -Annual and -Recovery."
+}
 
 # ----------------------------
 # USER DETECTION (SAFE)
@@ -102,16 +115,49 @@ else {
   Write-Host ("[WARN] /me returned HTTP {0} -> using fallback userId=8" -f $me.StatusCode)
 }
 
-# ----------------------------
-# BALANCE CHECK
-# ----------------------------
-$getUrl = "$LeaveBaseUrl/api/balances/$uid"
-$get    = Invoke-Http -Method GET -Url $getUrl -Headers $headers
-
-if ($get.StatusCode -eq 200) {
-  Write-Host ("[OK] Balance found for userId={0}" -f $uid) -ForegroundColor Green
-  Write-Host $get.Content
+$targetUserIds = @()
+if ($UserIds -and $UserIds.Count -gt 0) {
+  $targetUserIds = @($UserIds)
 }
 else {
-  Write-Host ("[WARN] No balance found (HTTP {0})" -f $get.StatusCode) -ForegroundColor Yellow
+  $targetUserIds = @([long]$uid)
+}
+
+foreach ($targetUserId in $targetUserIds) {
+  $getUrl = "$LeaveBaseUrl/api/balances/$targetUserId"
+  $get    = Invoke-Http -Method GET -Url $getUrl -Headers $headers
+
+  if (-not $shouldSeedValues) {
+    if ($get.StatusCode -eq 200) {
+      Write-Host ("[OK] Balance found for userId={0}" -f $targetUserId) -ForegroundColor Green
+      Write-Host $get.Content
+    }
+    else {
+      Write-Host ("[WARN] No balance found for userId={0} (HTTP {1})" -f $targetUserId, $get.StatusCode) -ForegroundColor Yellow
+    }
+    continue
+  }
+
+  if ($get.StatusCode -ne 200) {
+    $initUrl = "$LeaveBaseUrl/api/balances/init/$targetUserId"
+    Write-Host ("[INFO] Initializing balance for userId={0}..." -f $targetUserId)
+    $init = Invoke-Http -Method POST -Url $initUrl -Headers $headers
+    if ($init.StatusCode -lt 200 -or $init.StatusCode -ge 300) {
+      throw ("Failed to initialize balance for userId={0}: HTTP {1} {2}" -f $targetUserId, $init.StatusCode, $init.Content)
+    }
+  }
+
+  $annualText = Format-InvariantNumber -Value $Annual
+  $recoveryText = Format-InvariantNumber -Value $Recovery
+  $putUrl = "{0}/api/balances/{1}?annual={2}&recovery={3}" -f $LeaveBaseUrl, $targetUserId, $annualText, $recoveryText
+  Write-Host ("[INFO] Seeding balance for userId={0} (annual={1}, recovery={2})..." -f $targetUserId, $annualText, $recoveryText)
+  $put = Invoke-Http -Method PUT -Url $putUrl -Headers $headers
+
+  if ($put.StatusCode -ge 200 -and $put.StatusCode -lt 300) {
+    Write-Host ("[OK] Seeded balance for userId={0}" -f $targetUserId) -ForegroundColor Green
+    Write-Host $put.Content
+  }
+  else {
+    throw ("Failed to seed balance for userId={0}: HTTP {1} {2}" -f $targetUserId, $put.StatusCode, $put.Content)
+  }
 }

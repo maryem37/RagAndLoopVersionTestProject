@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "error": "",
+  "model": {
+    "label": "gptoss20b",
+    "name": "openai/gpt-oss-20b"
+  },
+  "duration_ms": 3342,
+  "llm_usage": {
+    "calls": 1,
+    "prompt_tokens": 2750,
+    "completion_tokens": 2000,
+    "total_tokens": 4750
+  },
+  "gherkin": {
+    "chars": 0,
+    "features": 0,
+    "scenarios": 0,
+    "steps": 0,
+    "feature_file": ""
+  },
+  "gherkin_lint": {
+    "issues": null,
+    "output": ""
+  }
+}

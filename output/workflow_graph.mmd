@@ -5,21 +5,28 @@ config:
 ---
 graph TD;
 	__start__([<p>__start__</p>]):::first
+	scenario_designer(scenario_designer)
 	gherkin_generator(gherkin_generator)
 	gherkin_validator(gherkin_validator)
 	test_writer(test_writer)
 	test_executor(test_executor)
+	failure_analyst(failure_analyst)
 	coverage_analyst(coverage_analyst)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> gherkin_generator;
+	__start__ --> scenario_designer;
 	coverage_analyst --> __end__;
-	test_executor --> coverage_analyst;
+	scenario_designer --> gherkin_generator;
 	gherkin_generator -. &nbsp;validate&nbsp; .-> gherkin_validator;
 	gherkin_generator -. &nbsp;end&nbsp; .-> __end__;
 	gherkin_validator -. &nbsp;write_tests&nbsp; .-> test_writer;
+	gherkin_validator -. &nbsp;regenerate&nbsp; .-> gherkin_generator;
 	gherkin_validator -. &nbsp;end&nbsp; .-> __end__;
 	test_writer -. &nbsp;execute&nbsp; .-> test_executor;
 	test_writer -. &nbsp;end&nbsp; .-> __end__;
+	test_executor -. &nbsp;analyze_failures&nbsp; .-> failure_analyst;
+	test_executor -. &nbsp;coverage&nbsp; .-> coverage_analyst;
+	failure_analyst -. &nbsp;rewrite_tests&nbsp; .-> test_writer;
+	failure_analyst -. &nbsp;coverage&nbsp; .-> coverage_analyst;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc

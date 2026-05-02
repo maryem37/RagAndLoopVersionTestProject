@@ -1,0 +1,211 @@
+Using JaCoCo tcpserver ports: auth=51140 leave=51141
+[1/5] Stopping existing services (ports 9000/9001)...
+[2/5] Starting services with JaCoCo agent...
+  JaCoCo includes filter: <all classes>
+  auth PID: 22588  leave PID: 28840
+  Waiting for ports 9000/9001...
+  auth is listening on :9000
+  leave is listening on :9001
+  Waiting for JaCoCo tcpserver ports...
+  auth-jacoco is listening on :51140
+  leave-jacoco is listening on :51141
+[3/5] Running pipeline...
+  Self-healing thresholds enabled:
+    ALLOW_TEST_FAILURES=0
+    MIN_TEST_PASS_RATE=100
+    MAX_TEST_FAILED_SCENARIOS=0
+    MAX_HEALING_ATTEMPTS=2
+=== STEP 1: Checking authenticated user balance (fallback userId=8) ===
+AuthBaseUrl : http://127.0.0.1:9000
+LeaveBaseUrl: http://127.0.0.1:9001
+Logging in: http://127.0.0.1:9000/api/auth/login
+Login succeeded.
+JWT acquired
+Fetching user info (optional)...
+[WARN] /me returned HTTP 403 -> using fallback userId=8
+[OK] Balance found for userId=8
+{"id":70,"annualBalance":18.0,"recoveryBalance":2.0,"userId":8}
+=== STEP 2: Running E2E pipeline ===
+  Seeding leave balances for userId=1 (to avoid known 500s)...
+AuthBaseUrl : http://127.0.0.1:9000
+LeaveBaseUrl: http://127.0.0.1:9001
+Logging in: http://127.0.0.1:9000/api/auth/login
+Login succeeded.
+JWT acquired
+Fetching user info (optional)...
+[WARN] /me returned HTTP 403 -> using fallback userId=8
+[INFO] Seeding balance for userId=1 (annual=21, recovery=0)...
+[OK] Seeded balance for userId=1
+{"id":9,"annualBalance":21.0,"recoveryBalance":0.0,"userId":1}
+INFO     | tools.service_registry                   | [LIST] Loaded 2 total services from matrix
+INFO     | tools.service_registry                   | ✅ ServiceRegistry loaded with 2 enabled services
+INFO     | tools.service_registry                   | 
+================================================================================
+INFO     | tools.service_registry                   | [LIST] SERVICE REGISTRY SUMMARY
+INFO     | tools.service_registry                   | ================================================================================
+INFO     | tools.service_registry                   | 
+✅ Enabled Services: 2
+INFO     | tools.service_registry                   |   • auth                 port= 9000 db=mysql    deps=none
+INFO     | tools.service_registry                   |   • leave                port= 9001 db=mysql    deps=['auth']
+INFO     | tools.service_registry                   | 
+================================================================================
+
+INFO     | __main__                                 | Services to test: auth, leave
+INFO     | __main__                                 | Loaded Swagger spec for auth from file: examples\sample_swagger1.json
+INFO     | __main__                                 | Loaded Swagger spec for leave from file: examples\sample_swagger2.json
+INFO     | graph.workflow                           | [CHART] Workflow graph compiled successfully
+INFO     | graph.workflow                           | ✅ Test Automation Workflow initialized
+INFO     | graph.workflow                           | [LIST] Pipeline: scenario_designer -> gherkin_generator -> gherkin_validator -> test_writer -> test_executor -> failure_analyst? -> coverage_analyst?
+INFO     | __main__                                 | Coverage thresholds for this run: {'line_coverage_%': 50.0, 'branch_coverage_%': 25.0, 'method_coverage_%': 70.0}
+INFO     | __main__                                 | 
+================================================================================
+INFO     | __main__                                 | END-TO-END Testing Services: auth, leave
+INFO     | __main__                                 | ================================================================================
+
+INFO     | graph.workflow                           | ================================================================================
+INFO     | graph.workflow                           | [START] Starting Test Automation Workflow
+INFO     | graph.workflow                           |    Service: auth_leave
+INFO     | graph.workflow                           | ================================================================================
+INFO     | tools.service_registry                   | ✅ Configuration validation passed
+INFO     | agents.scenario_designer                 | Scenario Designer LLM ready - provider: groq model: openai/gpt-oss-20b
+INFO     | agents.scenario_designer                 | Scenario Designer Agent initialized
+INFO     | agents.scenario_designer                 | [SCENARIO DESIGNER] Starting scenario generation
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+INFO     | tools.rag_scenario_retriever             | RAG enrichment found 0 branch-targeting scenarios for auth
+INFO     | agents.scenario_designer                 | Generated 18 scenarios for auth using fallback
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\adapter_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\processor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\video_preprocessor_config.json'
+Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: 'C:\\Users\\MSI\\.cache\\huggingface\\hub\\models--sentence-transformers--all-MiniLM-L6-v2\\.no_exist\\c9745ed1d9f207416be6d2e6f8de32d1f16199bf\\preprocessor_config.json'
+INFO     | tools.rag_scenario_retriever             | RAG enrichment found 0 branch-targeting scenarios for leave
+INFO     | agents.scenario_designer                 | Generated 24 scenarios for leave using fallback
+INFO     | agents.scenario_designer                 | Scenario Designer produced 48 scenarios in 139810ms
+INFO     | agents.gherkin_generator                 | ✅ Gherkin Generator (Swagger-driven) initialized — provider: groq model: openai/gpt-oss-20b
+INFO     | agents.gherkin_generator                 | [START] Gherkin Generator (Swagger-driven) — project: auth_leave
+INFO     | agents.gherkin_generator                 | ✅ Using 48 test scenarios from ScenarioDesigner
+INFO     | agents.gherkin_generator                 |    🗑 Removed: auth-leave_01_leave-request-submission-and-approval_20260427_111655.feature
+SUCCESS  | agents.gherkin_generator                 | [SAVE] Saved .feature -> D:\project_testRAG - Copie\output\features\auth-leave_01_end-to-end-user-journeys_20260427_120347.feature
+SUCCESS  | agents.gherkin_generator                 | ✅ Generated 48 scenarios → Gherkin (2ms)
+INFO     | graph.workflow                           | [OK] Gherkin generation successful -> validation
+INFO     | agents.gherkin_validator                 |    Found gherkin-lint (local, Windows): node_modules\.bin\gherkin-lint.cmd
+INFO     | agents.gherkin_validator                 | ✅ Gherkin Validator initialized (gherkin-lint: enabled, provider: groq, model: openai/gpt-oss-20b)
+INFO     | agents.gherkin_validator                 |    Running gherkin-lint syntax validation...
+INFO     | agents.gherkin_validator                 |    gherkin-lint: 0 issues found
+INFO     | agents.gherkin_validator                 |    Semantic check: 0 issues found
+INFO     | agents.gherkin_validator                 |    Running LLM validation...
+INFO     | agents.gherkin_validator                 | [DEBUG] Validation Context:

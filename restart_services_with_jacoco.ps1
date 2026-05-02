@@ -6,8 +6,8 @@ $JAVA_HOME = "C:\Program Files\Java\jdk-17"
 $JAVA_EXE = "$JAVA_HOME\bin\java.exe"
 $CONGE_PATH = "C:\Bureau\Bureau\microservices\conge\target\classes"
 $DEMANDE_CONGE_PATH = "C:\Bureau\Bureau\microservices\DemandeConge\target\classes"
-$JACOCO_AGENT = "C:\Bureau\Bureau\project_test\jacocoagent.jar"
-$OUTPUT_DIR = "C:\Bureau\Bureau\project_test\output\jacoco"
+$JACOCO_AGENT = "D:\project_testRAG - Copie\jacocoagent.jar"
+$OUTPUT_DIR = "D:\project_testRAG - Copie\output\jacoco"
 $MAVEN_REPO = "$env:USERPROFILE\.m2\repository"
 
 # Create output directory if it doesn't exist
@@ -124,9 +124,9 @@ $CONGE_CLASSPATH = @(
     "$MAVEN_REPO\ch\qos\logback\logback-core\1.4.14\logback-core-1.4.14.jar"
 ) -join ";"
 
-# Step 4: Start Leave Service with JaCoCo
-Write-Host "Step 4: Starting Leave Service (conge) with JaCoCo on port 9000..."
-$CONGE_JACOCO_OPTS = "-javaagent:$JACOCO_AGENT=destfile=$OUTPUT_DIR\conge.exec,append=false"
+# Step 4: Start Leave Service with JaCoCo (tcpserver mode for live dump)
+Write-Host "Step 4: Starting Leave Service (conge) with JaCoCo tcpserver on port 9000..."
+$CONGE_JACOCO_OPTS = '-javaagent:{0}=output=tcpserver,port=36320,address=127.0.0.1,dumponexit=true,destfile={1}\conge.exec' -f $JACOCO_AGENT,$OUTPUT_DIR
 $CONGE_CMD = @(
     "`"$JAVA_EXE`"",
     "$CONGE_JACOCO_OPTS",
@@ -258,7 +258,7 @@ $AUTH_CLASSPATH = @(
     "$MAVEN_REPO\org\apache\commons\commons-lang3\3.13.0\commons-lang3-3.13.0.jar"
 ) -join ";"
 
-$AUTH_JACOCO_OPTS = "-javaagent:$JACOCO_AGENT=destfile=$OUTPUT_DIR\auth.exec,append=false"
+$AUTH_JACOCO_OPTS = '-javaagent:{0}=output=tcpserver,port=36321,address=127.0.0.1,dumponexit=true,destfile={1}\auth.exec' -f $JACOCO_AGENT,$OUTPUT_DIR
 Write-Host "  Command arguments prepared"
 Write-Host "  (Starting in background...)"
 $AUTH_PROCESS = Start-Process -FilePath "$JAVA_EXE" -ArgumentList @(

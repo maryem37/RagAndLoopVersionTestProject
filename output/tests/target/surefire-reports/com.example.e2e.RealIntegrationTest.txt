@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.e2e.RealIntegrationTest
 -------------------------------------------------------------------------------
-Tests run: 48, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.506 s -- in com.example.e2e.RealIntegrationTest
+Tests run: 48, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.914 s -- in com.example.e2e.RealIntegrationTest

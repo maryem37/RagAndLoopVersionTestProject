@@ -1,0 +1,99 @@
+{
+  "run_id": "20260427_125722",
+  "agent": "gherkin_generator",
+  "provider": "groq",
+  "models": [
+    {
+      "label": "llama31",
+      "model_name": "llama-3.1-8b-instant"
+    },
+    {
+      "label": "llama33",
+      "model_name": "llama-3.3-70b-versatile"
+    },
+    {
+      "label": "gptoss20b",
+      "model_name": "openai/gpt-oss-20b"
+    }
+  ],
+  "results": [
+    {
+      "ok": true,
+      "error": "",
+      "model": {
+        "label": "llama31",
+        "name": "llama-3.1-8b-instant"
+      },
+      "duration_ms": 1530,
+      "llm_usage": {
+        "calls": 1,
+        "prompt_tokens": 2600,
+        "completion_tokens": 394,
+        "total_tokens": 2994
+      },
+      "gherkin": {
+        "chars": 1711,
+        "features": 1,
+        "scenarios": 6,
+        "steps": 18,
+        "feature_file": "D:\\project_testRAG - Copie\\output\\features\\auth-leave_01_employee-submits-a-leave-request-and-tra_20260427_125728.feature"
+      },
+      "gherkin_lint": {
+        "issues": 5,
+        "output": "\u001b[0;4mD:\\project_testRAG - Copie\\output\\features\\auth-leave_01_employee-submits-a-leave-request-and-tra_20260427_125728.feature\u001b[24m\n  \u001b[38;5;243m21\u001b[0m    Wrong indentation for \"Examples\", expected indentation level of 2, but got 4    \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m22\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m23\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m24\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m25\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n\n\n"
+      }
+    },
+    {
+      "ok": true,
+      "error": "",
+      "model": {
+        "label": "llama33",
+        "name": "llama-3.3-70b-versatile"
+      },
+      "duration_ms": 1827,
+      "llm_usage": {
+        "calls": 1,
+        "prompt_tokens": 2600,
+        "completion_tokens": 402,
+        "total_tokens": 3002
+      },
+      "gherkin": {
+        "chars": 1982,
+        "features": 1,
+        "scenarios": 7,
+        "steps": 25,
+        "feature_file": "D:\\project_testRAG - Copie\\output\\features\\auth-leave_01_leave-request-management_20260427_125732.feature"
+      },
+      "gherkin_lint": {
+        "issues": 6,
+        "output": "\u001b[0;4mD:\\project_testRAG - Copie\\output\\features\\auth-leave_01_leave-request-management_20260427_125732.feature\u001b[24m\n  \u001b[38;5;243m34\u001b[0m    Wrong indentation for \"Examples\", expected indentation level of 2, but got 4    \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m35\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m36\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m37\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m38\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m39\u001b[0m    Wrong indentation for \"example\", expected indentation level of 4, but got 6     \u001b[38;5;243mindentation\u001b[0m\n\n\n"
+      }
+    },
+    {
+      "ok": true,
+      "error": "",
+      "model": {
+        "label": "gptoss20b",
+        "name": "openai/gpt-oss-20b"
+      },
+      "duration_ms": 3342,
+      "llm_usage": {
+        "calls": 1,
+        "prompt_tokens": 2750,
+        "completion_tokens": 2000,
+        "total_tokens": 4750
+      },
+      "gherkin": {
+        "chars": 0,
+        "features": 0,
+        "scenarios": 0,
+        "steps": 0,
+        "feature_file": ""
+      },
+      "gherkin_lint": {
+        "issues": null,
+        "output": ""
+      }
+    }
+  ]
+}

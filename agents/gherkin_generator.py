@@ -42,11 +42,11 @@ import os
 from typing import Any, Dict, List, Optional, Set
 
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from loguru import logger
 
 from config.settings import get_settings
 from graph.state import AgentOutput, AgentStatus, TestAutomationState
+from tools.chat_model_factory import create_chat_model
 
 
 # ------------------------------
@@ -390,17 +390,18 @@ class GherkinGeneratorAgent:
 
     def __init__(self) -> None:
         self.settings = get_settings()
-        llm = HuggingFaceEndpoint(
-            repo_id=self.settings.huggingface.gherkin_generator.model_name,
-            huggingfacehub_api_token=self.settings.huggingface.api_token,
-            task="text-generation",
-            temperature=self.settings.huggingface.gherkin_generator.temperature,
-            max_new_tokens=2000,
+        self.llm = create_chat_model(
+            provider=self.settings.llm.provider,
+            api_key=self.settings.llm.api_key,
+            base_url=self.settings.llm.base_url,
+            model_name=self.settings.llm.gherkin_generator.model_name,
+            temperature=self.settings.llm.gherkin_generator.temperature,
+            max_completion_tokens=self.settings.llm.gherkin_generator.max_completion_tokens,
         )
-        self.llm = ChatHuggingFace(llm=llm)
         logger.info(
             f"✅ Gherkin Generator (Swagger-driven) initialized — "
-            f"model: {self.settings.huggingface.gherkin_generator.model_name}"
+            f"provider: {self.settings.llm.provider} "
+            f"model: {self.settings.llm.gherkin_generator.model_name}"
         )
 
     # ------------------------------
@@ -410,20 +411,21 @@ class GherkinGeneratorAgent:
     def _maybe_get_rag_context(self, story_block: str) -> str:
         """Return an optional retrieved-context block for the prompt.
 
-        Enabled only when:
-          - env var RAG_ENABLE is truthy
+        Enabled when:
+          - env var RAG_ENABLE is not explicitly disabled
           - a persisted Chroma DB exists (default: chroma_db/)
 
         This must be best-effort and must NEVER fail the pipeline.
         """
 
-        enable = os.getenv("RAG_ENABLE", "0").strip().lower() in {"1", "true", "yes", "y"}
-        if not enable:
+        rag_enable = os.getenv("RAG_ENABLE", "auto").strip().lower()
+        if rag_enable in {"0", "false", "no", "n", "off", "disabled"}:
             return ""
 
         persist_dir = Path(os.getenv("RAG_PERSIST_DIR", "chroma_db")).resolve()
         if not persist_dir.exists():
-            logger.info(f"[RAG] Enabled but persist dir not found: {persist_dir}")
+            if rag_enable in {"1", "true", "yes", "y", "on"}:
+                logger.info(f"[RAG] Enabled but persist dir not found: {persist_dir}")
             return ""
 
         collection = os.getenv("RAG_COLLECTION", "tier3_rag")

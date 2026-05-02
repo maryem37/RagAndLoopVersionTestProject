@@ -21,7 +21,6 @@ import subprocess
 from pathlib import Path
 from typing import List
 from loguru import logger
-from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 
 from graph.state import (
     TestAutomationState,
@@ -34,6 +33,7 @@ from graph.state import (
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from config.settings import get_settings
+from tools.chat_model_factory import create_chat_model
 
 
 class GherkinValidatorAgent:
@@ -41,15 +41,14 @@ class GherkinValidatorAgent:
     def __init__(self):
         self.settings = get_settings()
 
-        # FIX 1: task + max_new_tokens must be explicit on HuggingFaceEndpoint
-        llm = HuggingFaceEndpoint(
-            repo_id=self.settings.huggingface.gherkin_validator.model_name,
-            huggingfacehub_api_token=self.settings.huggingface.api_token,
-            task="text-generation",
-            temperature=self.settings.huggingface.gherkin_validator.temperature,
-            max_new_tokens=1024,
+        self.llm = create_chat_model(
+            provider=self.settings.llm.provider,
+            api_key=self.settings.llm.api_key,
+            base_url=self.settings.llm.base_url,
+            model_name=self.settings.llm.gherkin_validator.model_name,
+            temperature=self.settings.llm.gherkin_validator.temperature,
+            max_completion_tokens=self.settings.llm.gherkin_validator.max_completion_tokens,
         )
-        self.llm = ChatHuggingFace(llm=llm)
 
         self.output_parser    = PydanticOutputParser(pydantic_object=LLMValidationOutput)
         self.gherkin_lint_cmd = self._find_gherkin_lint()
@@ -58,7 +57,8 @@ class GherkinValidatorAgent:
         logger.info(
             f"✅ Gherkin Validator initialized "
             f"(gherkin-lint: {lint_status}, "
-            f"model: {self.settings.huggingface.gherkin_validator.model_name})"
+            f"provider: {self.settings.llm.provider}, "
+            f"model: {self.settings.llm.gherkin_validator.model_name})"
         )
 
     # ------------------------------
@@ -158,6 +158,27 @@ class GherkinValidatorAgent:
             if validation_result.is_valid:
                 logger.success(f"✅ Validation PASSED - Coverage: {llm_result.coverage_score}%")
             else:
+                critical_issues = [
+                    issue for issue in validation_result.issues
+                    if issue.level == "error"
+                ]
+                if critical_issues:
+                    state.gherkin_validation_retries.append(
+                        {
+                            "attempt": len(state.gherkin_validation_retries) + 1,
+                            "errors": len(critical_issues),
+                            "issues": [
+                                {
+                                    "level": issue.level,
+                                    "message": issue.message,
+                                    "line_number": issue.line_number,
+                                    "scenario": issue.scenario,
+                                    "suggestion": issue.suggestion,
+                                }
+                                for issue in critical_issues
+                            ],
+                        }
+                    )
                 logger.warning(f"[WARN]️ Validation FAILED - Coverage: {llm_result.coverage_score}%")
 
             for missing in llm_result.missing_scenarios:

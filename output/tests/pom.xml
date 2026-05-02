@@ -247,6 +247,26 @@
                     <!-- Default location used by jacoco:report -->
                     <dataFile>${project.build.directory}/jacoco.exec</dataFile>
                     <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+                    <excludes>
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/dtos/**</exclude>
+                        <exclude>**/*Dto.class</exclude>
+                        <exclude>**/*Dto$*.class</exclude>
+                        <exclude>**/*DTO.class</exclude>
+                        <exclude>**/*DTO$*.class</exclude>
+                        <exclude>**/entity/**</exclude>
+                        <exclude>**/entities/**</exclude>
+                        <exclude>**/*Entity.class</exclude>
+                        <exclude>**/*Entity$*.class</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/configuration/**</exclude>
+                        <exclude>**/*Config.class</exclude>
+                        <exclude>**/*Config$*.class</exclude>
+                        <exclude>**/*Configuration.class</exclude>
+                        <exclude>**/*Configuration$*.class</exclude>
+                        <exclude>**/*Application.class</exclude>
+                        <exclude>**/*Application$*.class</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

@@ -1,0 +1,36 @@
+{
+  "benchmark_id": "20260427_021250",
+  "generated_at": "2026-04-27T09:10:32",
+  "entries": [
+    {
+      "label": "llama33",
+      "model_name": "llama-3.3-70b-versatile",
+      "run_id": "20260427_021250_llama33",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\llama33\\artifacts\\metrics_20260427_021250_llama33.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\llama33\\artifacts\\coverage_report_auth-leave_20260427_021530.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\llama33\\pipeline.log"
+    },
+    {
+      "label": "llama31",
+      "model_name": "llama-3.1-8b-instant",
+      "run_id": "20260427_021250_llama31",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\llama31\\artifacts\\metrics_20260427_021250_llama31.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\llama31\\artifacts\\coverage_report_auth-leave_20260427_085855.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\llama31\\pipeline.log"
+    },
+    {
+      "label": "gptoss120b",
+      "model_name": "openai/gpt-oss-120b",
+      "run_id": "20260427_021250_gptoss120b",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\gptoss120b\\artifacts\\metrics_20260427_021250_gptoss120b.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\gptoss120b\\artifacts\\coverage_report_auth-leave_20260427_090439.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_021250\\gptoss120b\\pipeline.log"
+    }
+  ]
+}

@@ -18,6 +18,7 @@ class Service:
         self.name = name
         self.enabled = config.get('enabled', True)
         self.port = config.get('port')
+        self.base_url = config.get('base_url')
         self.db = config.get('db', {})
         self.java_package = config.get('java_package')
         self.test_runner_class = config.get('test_runner_class')
@@ -31,6 +32,8 @@ class Service:
     
     def get_base_url(self) -> str:
         """Get service base URL"""
+        if self.base_url:
+            return str(self.base_url)
         return f"http://127.0.0.1:{self.port}"
     
     def __repr__(self):
@@ -133,6 +136,8 @@ class ServiceRegistry:
             'name': service.name,
             'port': service.port,
             'base_url': service.get_base_url(),
+            'swagger_spec': service.swagger_spec,
+            'swagger_url': service.swagger_url,
             'db': service.db,
             'java_package': service.java_package,
             'test_runner_class': service.test_runner_class,

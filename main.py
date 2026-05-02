@@ -24,6 +24,8 @@ def _cmd_ingest(args: argparse.Namespace) -> int:
     stats = ingest_to_chroma(
         user_stories_dir=args.user_stories_dir,
         e2egit_csv_path=args.e2egit_csv,
+        givenwhenthen_json_path=args.givenwhenthen_json,
+        max_records=args.max_records,
         persist_dir=args.persist_dir,
         collection=args.collection,
         embedding_model=args.model,
@@ -98,7 +100,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     # --- RAG commands ---
-    ex = sub.add_parser("extract-e2egit", help="Generate gui_java_junit.csv from E2EGit.db")
+    ex = sub.add_parser("extract-e2egit", help="Legacy helper: generate gui_java_junit.csv from E2EGit.db")
     ex.add_argument(
         "--db",
         type=Path,
@@ -115,16 +117,30 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--limit", type=int, default=None, help="Optional LIMIT (debug)")
     ex.set_defaults(func=_cmd_extract_e2egit)
 
-    ing = sub.add_parser("ingest", help="Build chroma_db/ from corpora")
+    ing = sub.add_parser("ingest", help="Build chroma_db/ from the local corpora")
     ing.add_argument(
         "--user-stories-dir",
         type=Path,
-        default=Path("corpus/tier3_zenodo/z13880060_user_stories/raw"),
+        default=None,
+        help="Optional legacy folder of .txt user stories",
     )
     ing.add_argument(
         "--e2egit-csv",
         type=Path,
-        default=Path("corpus/tier3_zenodo/z14234731_e2egit/gui_java_junit.csv"),
+        default=None,
+        help="Optional legacy CSV corpus",
+    )
+    ing.add_argument(
+        "--givenwhenthen-json",
+        type=Path,
+        default=Path("data/raw/GivenWhenThen.json"),
+        help="Primary JSON corpus for RAG",
+    )
+    ing.add_argument(
+        "--max-records",
+        type=int,
+        default=None,
+        help="Optional limit for GivenWhenThen records, useful for smaller test ingests",
     )
     ing.add_argument("--persist-dir", type=Path, default=Path("chroma_db"))
     ing.add_argument("--collection", type=str, default="tier3_rag")

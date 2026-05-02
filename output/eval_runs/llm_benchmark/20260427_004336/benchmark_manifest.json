@@ -1,0 +1,36 @@
+{
+  "benchmark_id": "20260427_004336",
+  "generated_at": "2026-04-27T00:51:17",
+  "entries": [
+    {
+      "label": "llama33",
+      "model_name": "llama-3.3-70b-versatile",
+      "run_id": "20260427_004336_llama33",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\llama33\\artifacts\\metrics_20260427_004336_llama33.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\llama33\\artifacts\\coverage_report_auth-leave_20260427_004609.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\llama33\\pipeline.log"
+    },
+    {
+      "label": "mixtral",
+      "model_name": "mixtral-8x7b-32768",
+      "run_id": "20260427_004336_mixtral",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\mixtral\\artifacts\\metrics_20260427_004336_mixtral.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\mixtral\\artifacts\\coverage_report_auth-leave_20260427_004844.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\mixtral\\pipeline.log"
+    },
+    {
+      "label": "qwen",
+      "model_name": "qwen/qwen-2.5-coder-32b-instruct",
+      "run_id": "20260427_004336_qwen",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\qwen\\artifacts\\metrics_20260427_004336_qwen.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\qwen\\artifacts\\coverage_report_auth-leave_20260427_005113.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_004336\\qwen\\pipeline.log"
+    }
+  ]
+}

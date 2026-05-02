@@ -1,0 +1,16 @@
+{
+  "benchmark_id": "20260427_115733",
+  "generated_at": "2026-04-27T11:57:59",
+  "entries": [
+    {
+      "label": "gptoss20b",
+      "model_name": "openai/gpt-oss-20b",
+      "run_id": "20260427_115733_gptoss20b",
+      "pipeline_returncode": 1,
+      "eval_returncode": 0,
+      "metrics_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_115733\\gptoss20b\\artifacts\\metrics_20260427_115733_gptoss20b.json",
+      "coverage_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_115733\\gptoss20b\\artifacts\\coverage_report_auth-leave_20260427_102027.json",
+      "log_path": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_115733\\gptoss20b\\pipeline.log"
+    }
+  ]
+}

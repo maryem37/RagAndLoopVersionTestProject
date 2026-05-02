@@ -1,0 +1,271 @@
+```java
+@Given("Valid credentials")
+public void validCredentials() {
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("email", System.getenv("TEST_USER_EMAIL") != null ? System.getenv("TEST_USER_EMAIL") : "admin@test.com");
+    requestBody.put("password", System.getenv("TEST_USER_PASSWORD") != null ? System.getenv("TEST_USER_PASSWORD") : "admin123");
+}
+
+@When("POST /api/auth/login")
+public void postApiAuthLogin() {
+    response = given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+            .when()
+            .post(BASE_URL + "/api/auth/login");
+    jwtToken = response.jsonPath().getString("jwt");
+}
+
+@Then("200 OK with JWT token")
+public void then200OKWithJWTToken() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    assertNotNull(jwtToken);
+}
+
+@Given("Preconditions for the critical business flow are satisfied")
+public void preconditionsForCriticalBusinessFlowAreSatisfied() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("PUT /api/admin/departments/{id} executed for critical coverage")
+public void putApiAdminDepartmentsIdExecutedForCriticalCoverage(int id) {
+    response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .body(requestBody)
+            .when()
+            .put(BASE_URL + "/api/admin/departments/" + id);
+}
+
+@Then("Returns the expected response and respects the documented business rules")
+public void thenReturnsTheExpectedResponseAndRespectsTheDocumentedBusinessRules() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response and business rules should be added here.
+}
+
+@Given("Valid leave request data")
+public void validLeaveRequestData() {
+    requestBody = new HashMap<>();
+    // Populate the requestBody with valid leave request data.
+}
+
+@When("POST /api/leave-requests/create")
+public void postApiLeaveRequestsCreate() {
+    response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .body(requestBody)
+            .when()
+            .post(BASE_URL + "/api/leave-requests/create");
+}
+
+@Then("Leave request is created successfully")
+public void thenLeaveRequestIsCreatedSuccessfully() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Pending leave request")
+public void pendingLeaveRequest() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("PUT /api/leave-requests/{id}/approve")
+public void putApiLeaveRequestsIdApprove(int id) {
+    response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .when()
+            .put(BASE_URL + "/api/leave-requests/" + id + "/approve");
+}
+
+@Then("Leave request is approved")
+public void thenLeaveRequestIsApproved() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@When("PUT /api/leave-requests/{id}/reject")
+public void putApiLeaveRequestsIdReject(int id) {
+    response = given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer " + jwtToken)
+            .when()
+            .put(BASE_URL + "/api/leave-requests/" + id + "/reject");
+}
+
+@Then("Leave request is rejected")
+public void thenLeaveRequestIsRejected() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("No JWT token")
+public void noJwtToken() {
+    jwtToken = null;
+}
+
+@When("GET /api/admin/departments/{id}")
+public void getApiAdminDepartmentsId(int id) {
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/admin/departments/" + id);
+}
+
+@Then("401 Unauthorized")
+public void then401Unauthorized() {
+    int code = response.getStatusCode();
+    assertTrue(code == 401);
+}
+
+@Given("Non-existent or unauthorized user")
+public void nonExistentOrUnauthorizedUser() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("GET /api/balances/{userId} executed - GET /api/leave-requests/{id}")
+public void getApiBalancesUserIdExecutedGetApiLeaveRequestsId(int userId, int id) {
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/balances/" + userId);
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/leave-requests/" + id);
+}
+
+@Then("Access is denied")
+public void thenAccessIsDenied() {
+    int code = response.getStatusCode();
+    assertTrue(code == 401 || code == 403);
+}
+
+@Given("Valid department ID")
+public void validDepartmentId() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@Then("200 OK with department details")
+public void then200OKWithDepartmentDetails() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Valid user ID")
+public void validUserId() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("GET /api/users/{id}")
+public void getApiUsersId(int id) {
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/users/" + id);
+}
+
+@Then("200 OK with user details")
+public void then200OKWithUserDetails() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Existing leave request")
+public void existingLeaveRequest() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("GET /api/leave-requests/search executed - GET /api/leave-requests/{id}")
+public void getApiLeaveRequestsSearchExecutedGetApiLeaveRequestsId(int id) {
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/leave-requests/search");
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/leave-requests/" + id);
+}
+
+@Then("Leave request details are returned")
+public void thenLeaveRequestDetailsAreReturned() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Search criteria")
+public void searchCriteria() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("GET /api/leave-requests/search")
+public void getApiLeaveRequestsSearch() {
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/leave-requests/search");
+}
+
+@Then("Leave requests are returned based on search criteria")
+public void thenLeaveRequestsAreReturnedBasedOnSearchCriteria() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Existing user")
+public void existingUser() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("GET /api/balances/{userId}")
+public void getApiBalancesUserId(int userId) {
+    response = given()
+            .when()
+            .get(BASE_URL + "/api/balances/" + userId);
+}
+
+@Then("User balance is returned")
+public void thenUserBalanceIsReturned() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Existing user and new balance data")
+public void existingUserAndNewBalanceData() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It should be implemented based on the actual requirements.
+}
+
+@When("PUT /api/balances/{userId}")
+public void putApiBalancesUserId(int userId) {
+    response = given()
+            .contentType(ContentType.JSON)
+            .body(requestBody)
+            .when()
+            .put(BASE_URL + "/api/balances/" + userId);
+}
+
+@Then("User balance is updated")
+public void thenUserBalanceIsUpdated() {
+    int code = response.getStatusCode();
+    assertTrue(code == 200);
+    // Additional assertions based on the expected response should be added here.
+}
+
+@Given("Invalid credentials")
+public void invalidCredentials() {
+    // This step is not clearly defined in the provided Swagger spec, 
+    // so it's left empty for now. It

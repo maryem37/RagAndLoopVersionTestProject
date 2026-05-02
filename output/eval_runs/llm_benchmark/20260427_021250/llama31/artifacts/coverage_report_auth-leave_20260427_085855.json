@@ -1,0 +1,1676 @@
+{
+  "summary": {
+    "service": "auth_leave",
+    "generated_at": "2026-04-27T08:58:55",
+    "data_source": "jacoco-xml-stale",
+    "aggregate": {
+      "total_classes": 34,
+      "total_packages": 18,
+      "instructions": {
+        "covered": 0,
+        "missed": 3170,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 700,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 320,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 294,
+        "total": 294
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 133,
+        "rate_%": 0.0
+      }
+    },
+    "quality_gate": {
+      "passed": false,
+      "thresholds": {
+        "line_coverage_%": 50.0,
+        "branch_coverage_%": 25.0,
+        "method_coverage_%": 70.0
+      },
+      "violations": [
+        "line_coverage_%: 0.0% < threshold 50.0%",
+        "branch_coverage_%: 0.0% < threshold 25.0%",
+        "method_coverage_%: 0.0% < threshold 70.0%"
+      ]
+    },
+    "test_execution": {
+      "tests": 42,
+      "passed": 37,
+      "failures": 5,
+      "errors": 0,
+      "skipped": 0,
+      "source": "state.execution_result"
+    },
+    "warnings": [
+      "JaCoCo XML is older than the current test run. Showing last-known coverage; start services with JaCoCo tcpserver to generate fresh coverage for this run."
+    ]
+  },
+  "packages": [
+    {
+      "package": "tn.enis.DemandeConge.client",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 0,
+        "total": 0
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "RegistrationClient",
+          "package": "tn.enis.DemandeConge.client",
+          "source_file": "RegistrationClient.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.controller",
+      "class_count": 3,
+      "instructions": {
+        "covered": 0,
+        "missed": 177,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 44,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 4,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 20,
+        "total": 20
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 18,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 3,
+      "classes": [
+        {
+          "class": "BalanceController",
+          "package": "tn.enis.DemandeConge.controller",
+          "source_file": "BalanceController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 33,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 6,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 5,
+            "total": 5
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 5,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "LeaveRequestController",
+          "package": "tn.enis.DemandeConge.controller",
+          "source_file": "LeaveRequestController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 107,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 31,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 4,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 9,
+            "total": 9
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 7,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "PublicHolidayController",
+          "package": "tn.enis.DemandeConge.controller",
+          "source_file": "PublicHolidayController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 37,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 7,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 6,
+            "total": 6
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 6,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.enums",
+      "class_count": 3,
+      "instructions": {
+        "covered": 0,
+        "missed": 87,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 16,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 3,
+        "total": 3
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 3,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 3,
+      "classes": [
+        {
+          "class": "LeaveType",
+          "package": "tn.enis.DemandeConge.enums",
+          "source_file": "LeaveType.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 27,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 5,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 1,
+            "total": 1
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 1,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "PeriodType",
+          "package": "tn.enis.DemandeConge.enums",
+          "source_file": "PeriodType.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 27,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 5,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 1,
+            "total": 1
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 1,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "RequestState",
+          "package": "tn.enis.DemandeConge.enums",
+          "source_file": "RequestState.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 33,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 6,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 1,
+            "total": 1
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 1,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.exceptions",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 9,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 2,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 2,
+        "total": 2
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 2,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "GlobalExceptionHandler",
+          "package": "tn.enis.DemandeConge.exceptions",
+          "source_file": "GlobalExceptionHandler.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 9,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 2,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 2,
+            "total": 2
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 2,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.repository",
+      "class_count": 3,
+      "instructions": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 0,
+        "total": 0
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 3,
+      "classes": [
+        {
+          "class": "BalanceRepository",
+          "package": "tn.enis.DemandeConge.repository",
+          "source_file": "BalanceRepository.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "LeaveRequestRepository",
+          "package": "tn.enis.DemandeConge.repository",
+          "source_file": "LeaveRequestRepository.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "PublicHolidayRepository",
+          "package": "tn.enis.DemandeConge.repository",
+          "source_file": "PublicHolidayRepository.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.service.LeaveRequest",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 1422,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 307,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 206,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 139,
+        "total": 139
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 35,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "LeaveRequestService",
+          "package": "tn.enis.DemandeConge.service.LeaveRequest",
+          "source_file": "LeaveRequestService.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "LeaveRequestServiceImpl",
+          "package": "tn.enis.DemandeConge.service.LeaveRequest",
+          "source_file": "LeaveRequestServiceImpl.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 1422,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 307,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 206,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 139,
+            "total": 139
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 35,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.service.balance",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 139,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 29,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 10,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 13,
+        "total": 13
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 8,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "BalanceService",
+          "package": "tn.enis.DemandeConge.service.balance",
+          "source_file": "BalanceService.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "BalanceServiceImpl",
+          "package": "tn.enis.DemandeConge.service.balance",
+          "source_file": "BalanceServiceImpl.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 139,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 29,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 10,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 13,
+            "total": 13
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 8,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.service.publicHoliday",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 109,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 21,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 12,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 14,
+        "total": 14
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 8,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "PublicHolidayService",
+          "package": "tn.enis.DemandeConge.service.publicHoliday",
+          "source_file": "PublicHolidayService.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "PublicHolidayServiceImpl",
+          "package": "tn.enis.DemandeConge.service.publicHoliday",
+          "source_file": "PublicHolidayServiceImpl.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 109,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 21,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 12,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 14,
+            "total": 14
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 8,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.service.user",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 20,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 4,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 2,
+        "total": 2
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 2,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "UserServiceEmployer",
+          "package": "tn.enis.DemandeConge.service.user",
+          "source_file": "UserServiceEmployer.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 20,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 4,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 2,
+            "total": 2
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 2,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.DemandeConge.utils",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 95,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 28,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 20,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 18,
+        "total": 18
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 8,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "Preconditions",
+          "package": "tn.enis.DemandeConge.utils",
+          "source_file": "Preconditions.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 95,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 28,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 20,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 18,
+            "total": 18
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 8,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.controller",
+      "class_count": 4,
+      "instructions": {
+        "covered": 0,
+        "missed": 432,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 89,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 32,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 33,
+        "total": 33
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 17,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 4,
+      "classes": [
+        {
+          "class": "AdminController",
+          "package": "tn.enis.conge.controller",
+          "source_file": "AdminController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 27,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 6,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 2,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 3,
+            "total": 3
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 2,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "AuthController",
+          "package": "tn.enis.conge.controller",
+          "source_file": "AuthController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 202,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 45,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 10,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 10,
+            "total": 10
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 5,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "DepartmentController",
+          "package": "tn.enis.conge.controller",
+          "source_file": "DepartmentController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 43,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 9,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 6,
+            "total": 6
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 6,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "UserController",
+          "package": "tn.enis.conge.controller",
+          "source_file": "UserController.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 160,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 29,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 20,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 14,
+            "total": 14
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 4,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.email",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 73,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 24,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 4,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 5,
+        "total": 5
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 3,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "EmailService",
+          "package": "tn.enis.conge.email",
+          "source_file": "EmailService.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 73,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 24,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 4,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 5,
+            "total": 5
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 3,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.enums",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 21,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 4,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 1,
+        "total": 1
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 1,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "UserRole",
+          "package": "tn.enis.conge.enums",
+          "source_file": "UserRole.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 21,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 4,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 1,
+            "total": 1
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 1,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.repository",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 0,
+        "total": 0
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "DepartmentRepository",
+          "package": "tn.enis.conge.repository",
+          "source_file": "DepartmentRepository.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "UserRepository",
+          "package": "tn.enis.conge.repository",
+          "source_file": "UserRepository.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.services.auth",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 391,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 90,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 22,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 19,
+        "total": 19
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 8,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "AuthConge",
+          "package": "tn.enis.conge.services.auth",
+          "source_file": "AuthConge.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "AuthCongeImpl",
+          "package": "tn.enis.conge.services.auth",
+          "source_file": "AuthCongeImpl.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 391,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 90,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 22,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 19,
+            "total": 19
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 8,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.services.depart",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 80,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 16,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 6,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 10,
+        "total": 10
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 7,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "DepartmentService",
+          "package": "tn.enis.conge.services.depart",
+          "source_file": "DepartmentService.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "DepartmentServiceImpl",
+          "package": "tn.enis.conge.services.depart",
+          "source_file": "DepartmentServiceImpl.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 80,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 16,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 6,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 10,
+            "total": 10
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 7,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.services.jwt",
+      "class_count": 2,
+      "instructions": {
+        "covered": 0,
+        "missed": 19,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 3,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 0,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 3,
+        "total": 3
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 3,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 2,
+      "classes": [
+        {
+          "class": "UserService",
+          "package": "tn.enis.conge.services.jwt",
+          "source_file": "UserService.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 0,
+            "total": 0
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          }
+        },
+        {
+          "class": "UserServiceImpl",
+          "package": "tn.enis.conge.services.jwt",
+          "source_file": "UserServiceImpl.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 19,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 3,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 0,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 3,
+            "total": 3
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 3,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "package": "tn.enis.conge.utils",
+      "class_count": 1,
+      "instructions": {
+        "covered": 0,
+        "missed": 96,
+        "rate_%": 0.0
+      },
+      "lines": {
+        "covered": 0,
+        "missed": 23,
+        "rate_%": 0.0
+      },
+      "branches": {
+        "covered": 0,
+        "missed": 4,
+        "rate_%": 0.0
+      },
+      "complexity": {
+        "covered": 0,
+        "missed": 12,
+        "total": 12
+      },
+      "methods": {
+        "covered": 0,
+        "missed": 10,
+        "rate_%": 0.0
+      },
+      "classes_covered": 0,
+      "classes_missed": 1,
+      "classes": [
+        {
+          "class": "JWTutil",
+          "package": "tn.enis.conge.utils",
+          "source_file": "JWTutil.java",
+          "instructions": {
+            "covered": 0,
+            "missed": 96,
+            "rate_%": 0.0
+          },
+          "lines": {
+            "covered": 0,
+            "missed": 23,
+            "rate_%": 0.0
+          },
+          "branches": {
+            "covered": 0,
+            "missed": 4,
+            "rate_%": 0.0
+          },
+          "complexity": {
+            "covered": 0,
+            "missed": 12,
+            "total": 12
+          },
+          "methods": {
+            "covered": 0,
+            "missed": 10,
+            "rate_%": 0.0
+          }
+        }
+      ]
+    }
+  ]
+}

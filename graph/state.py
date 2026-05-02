@@ -156,6 +156,13 @@ class TestAutomationState(BaseModel):
     validation_passed: bool                      = False
     validation_errors: List[str]                 = Field(default_factory=list)
     validation_result: Optional[ValidationResult] = None
+    gherkin_validation_retries: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description=(
+            "History of Gherkin validation failures that were routed back to "
+            "GherkinGeneratorAgent for regeneration."
+        ),
+    )
 
     # ── Agent 4 — Test Writing ------------------------------
     test_code:  Dict[str, Any] = Field(
@@ -196,6 +203,14 @@ class TestAutomationState(BaseModel):
     test_execution_result: Optional[Dict] = None
     test_passed:           bool           = False
     failed_tests:          List[str]      = Field(default_factory=list)
+    failure_analysis:      Optional[Dict] = Field(
+        default=None,
+        description=(
+            "Latest structured failure analysis written by FailureAnalystAgent. "
+            "Typical keys: retry_recommended, retry_target, failure_category, "
+            "top_failed_steps, top_http_codes, cucumber_report."
+        ),
+    )
 
     # ── Agent 6 — Coverage Analysis ------------------------------
     #
@@ -259,6 +274,21 @@ class TestAutomationState(BaseModel):
     )
 
     # ── Agent 7 — Self-Healing ------------------------------
+    coverage_feedback:    Optional[Dict] = Field(
+        default=None,
+        description=(
+            "Latest structured coverage feedback written by CoverageAnalystAgent. "
+            "Typical keys: retry_recommended, reason, current_metrics, "
+            "threshold_violations, weak_packages, weak_classes."
+        ),
+    )
+    coverage_improvement_attempts: List[Dict] = Field(
+        default_factory=list,
+        description=(
+            "History of coverage-guided improvement passes. Each item captures "
+            "the metrics and retry recommendation from one coverage analysis pass."
+        ),
+    )
     healing_attempts: List[Dict] = Field(default_factory=list)
     healed_tests:     List[str]  = Field(default_factory=list)
 
@@ -406,6 +436,7 @@ class TestAutomationState(BaseModel):
             "gherkin_files":         len(self.gherkin_files),
             # ── Validation ------------------------------
             "validation_passed":     self.validation_passed,
+            "gherkin_validation_retries": len(self.gherkin_validation_retries),
             # ── Test code ------------------------------
             "test_files_generated":  len(self.test_files),
             "swagger_specs_count":   len(self.swagger_specs),
@@ -416,8 +447,12 @@ class TestAutomationState(BaseModel):
             "tests_passed":          (self.execution_result or {}).get("passed",   0),
             "tests_failed":          (self.execution_result or {}).get("failed",   0),
             "tests_pass_rate_%":     (self.execution_result or {}).get("pass_rate", 0.0),
+            "healing_attempts":      len(self.healing_attempts),
+            "failure_analysis":      self.failure_analysis or {},
             # ── Coverage ------------------------------
             "coverage_analysed":     self.coverage_report is not None,
+            "coverage_improvement_attempts": len(self.coverage_improvement_attempts),
+            "coverage_feedback":     self.coverage_feedback or {},
             "coverage_line_%":       self.get_coverage_line_rate(),
             "coverage_quality_gate": self.get_coverage_quality_gate(),
             "coverage_violations":   self.get_coverage_violations(),
@@ -436,6 +471,8 @@ class WorkflowConfig(BaseModel):
     enable_self_healing:      bool  = True
     max_healing_attempts:     int   = 3
     enable_coverage_analysis: bool  = True
+    enable_coverage_improvement: bool = True
+    max_coverage_improvement_attempts: int = 1
     min_coverage_threshold:   float = 80.0
 
 

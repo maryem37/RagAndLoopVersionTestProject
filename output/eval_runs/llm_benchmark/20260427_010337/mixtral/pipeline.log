@@ -1,0 +1,177 @@
+INFO     | tools.service_registry                   | [LIST] Loaded 2 total services from matrix
+INFO     | tools.service_registry                   | ✅ ServiceRegistry loaded with 2 enabled services
+INFO     | tools.service_registry                   | 
+================================================================================
+INFO     | tools.service_registry                   | [LIST] SERVICE REGISTRY SUMMARY
+INFO     | tools.service_registry                   | ================================================================================
+INFO     | tools.service_registry                   | 
+✅ Enabled Services: 2
+INFO     | tools.service_registry                   |   • auth                 port= 9000 db=mysql    deps=none
+INFO     | tools.service_registry                   |   • leave                port= 9001 db=mysql    deps=['auth']
+INFO     | tools.service_registry                   | 
+================================================================================
+
+INFO     | __main__                                 | Services to test: auth, leave
+INFO     | __main__                                 | Loaded Swagger spec for auth from file: examples\sample_swagger1.json
+INFO     | __main__                                 | Loaded Swagger spec for leave from file: examples\sample_swagger2.json
+INFO     | graph.workflow                           | [CHART] Workflow graph compiled successfully
+INFO     | graph.workflow                           | ✅ Test Automation Workflow initialized
+INFO     | graph.workflow                           | [LIST] Pipeline: scenario_designer -> gherkin_generator -> gherkin_validator -> test_writer -> test_executor -> failure_analyst? -> coverage_analyst?
+INFO     | __main__                                 | Coverage thresholds for this run: {'line_coverage_%': 50.0, 'branch_coverage_%': 25.0, 'method_coverage_%': 70.0}
+INFO     | __main__                                 | 
+================================================================================
+INFO     | __main__                                 | END-TO-END Testing Services: auth, leave
+INFO     | __main__                                 | ================================================================================
+
+INFO     | graph.workflow                           | ================================================================================
+INFO     | graph.workflow                           | [START] Starting Test Automation Workflow
+INFO     | graph.workflow                           |    Service: auth_leave
+INFO     | graph.workflow                           | ================================================================================
+INFO     | tools.service_registry                   | ✅ Configuration validation passed
+INFO     | agents.scenario_designer                 | Scenario Designer LLM ready - provider: groq model: mixtral-8x7b-32768
+INFO     | agents.scenario_designer                 | Scenario Designer Agent initialized
+INFO     | agents.scenario_designer                 | [SCENARIO DESIGNER] Starting scenario generation
+WARNING  | agents.scenario_designer                 | Scenario Designer LLM call failed: 400 Client Error: Bad Request for url: https://api.groq.com/openai/v1/chat/completions
+INFO     | tools.rag_scenario_retriever             | RAG enrichment found 0 branch-targeting scenarios for auth
+INFO     | agents.scenario_designer                 | Generated 18 scenarios for auth using fallback
+WARNING  | agents.scenario_designer                 | Scenario Designer LLM call failed: 400 Client Error: Bad Request for url: https://api.groq.com/openai/v1/chat/completions
+INFO     | tools.rag_scenario_retriever             | RAG enrichment found 0 branch-targeting scenarios for leave
+INFO     | agents.scenario_designer                 | Generated 24 scenarios for leave using fallback
+WARNING  | agents.scenario_designer                 | Scenario Designer LLM call failed: 400 Client Error: Bad Request for url: https://api.groq.com/openai/v1/chat/completions
+INFO     | agents.scenario_designer                 | Scenario Designer produced 48 scenarios in 128991ms
+INFO     | agents.gherkin_generator                 | ✅ Gherkin Generator (Swagger-driven) initialized — provider: groq model: mixtral-8x7b-32768
+INFO     | agents.gherkin_generator                 | [START] Gherkin Generator (Swagger-driven) — project: auth_leave
+INFO     | agents.gherkin_generator                 | ✅ Using 48 test scenarios from ScenarioDesigner
+INFO     | agents.gherkin_generator                 |    🗑 Removed: auth-leave_01_end-to-end-user-journeys_20260427_010550.feature
+SUCCESS  | agents.gherkin_generator                 | [SAVE] Saved .feature -> D:\project_testRAG - Copie\output\features\auth-leave_01_end-to-end-user-journeys_20260427_010815.feature
+SUCCESS  | agents.gherkin_generator                 | ✅ Generated 48 scenarios → Gherkin (10ms)
+INFO     | graph.workflow                           | [OK] Gherkin generation successful -> validation
+INFO     | agents.gherkin_validator                 |    Found gherkin-lint (local, Windows): node_modules\.bin\gherkin-lint.cmd
+INFO     | agents.gherkin_validator                 | ✅ Gherkin Validator initialized (gherkin-lint: enabled, provider: groq, model: mixtral-8x7b-32768)
+INFO     | agents.gherkin_validator                 |    Running gherkin-lint syntax validation...
+INFO     | agents.gherkin_validator                 |    gherkin-lint: 0 issues found
+INFO     | agents.gherkin_validator                 |    Semantic check: 0 issues found
+INFO     | agents.gherkin_validator                 |    Running LLM validation...
+INFO     | agents.gherkin_validator                 | [DEBUG] Validation Context:
+INFO     | agents.gherkin_validator                 |    Scenarios in Gherkin: 48
+INFO     | agents.gherkin_validator                 |    Acceptance Criteria found: 0
+INFO     | agents.gherkin_validator                 |    Business Rules found: 0
+INFO     | agents.gherkin_validator                 |    Error Messages expected: 0
+WARNING  | agents.gherkin_validator                 |    ⚠️  Skipping LLM validation (using heuristic to avoid timeout)
+INFO     | agents.gherkin_validator                 | Heuristic validation: 48 scenarios vs 1 requirements = 100% coverage
+SUCCESS  | agents.gherkin_validator                 | ✅ Validation PASSED - Coverage: 100.0%
+INFO     | graph.workflow                           | [OK] Validation passed -> test writing
+INFO     | agents.test_writer                       | [OK] TestWriter (Deterministic) initialized — provider: groq model: mixtral-8x7b-32768
+INFO     | agents.test_writer                       | =================================================================
+INFO     | agents.test_writer                       | TestWriter (Consolidated E2E) starting
+INFO     | agents.test_writer                       | =================================================================
+INFO     | agents.test_writer                       |    Services: ['auth', 'leave']
+INFO     | agents.test_writer                       |    Running in CONSOLIDATED E2E mode...
+INFO     | agents.test_writer                       |    Building consolidated E2E steps from all services...
+INFO     | agents.test_writer                       |    [auth] using: auth-leave_01_end-to-end-user-journeys_20260427_010815.feature
+WARNING  | agents.test_writer                       |    [leave] fallback to full gherkin_content
+INFO     | agents.test_writer                       |    Using deterministic generation for ConsolidatedE2E steps
+INFO     | agents.test_writer                       |    [ConsolidatedE2E] generating 89 unique steps deterministically from Gherkin + Swagger
+WARNING  | agents.test_writer                       |    javac hint for ConsolidatedE2ESteps: 10 error(s). First: ConsolidatedE2ESteps.java:8: error: package org.junit.jupiter.api does not exist
+WARNING  | agents.test_writer                       |    javac hint for ConsolidatedE2ETestRunner: 9 error(s). First: ConsolidatedE2ETestRunner.java:4: error: package org.junit.platform.suite.api does not exist
+SUCCESS  | agents.test_writer                       |    src\test\java\com\example\e2e\steps\ConsolidatedE2ESteps.java
+SUCCESS  | agents.test_writer                       |    src\test\java\com\example\e2e\ConsolidatedE2ETestRunner.java
+INFO     | agents.test_writer                       |    pom.xml already in place
+INFO     | agents.test_writer                       |    JaCoCo plugin already present with exclusions — skipping injection
+SUCCESS  | agents.test_writer                       |    Generated 1 consolidated E2E test file for 2 services
+SUCCESS  | agents.test_writer                       | TestWriter finished in 2164 ms
+INFO     | graph.workflow                           | [OK] Test files generated -> execution
+INFO     | agents.test_executor                     | ✅ Test Executor initialized  [java=[OK]] [maven=[OK]]
+INFO     | agents.test_executor                     | [START] Test Executor starting for: auth_leave
+WARNING  | agents.test_executor                     | [WARN] TEST_JWT_TOKEN is expired; ignoring it and falling back to auto-login. (exp=2026-04-09T11:11:01+00:00 UTC, now=2026-04-27T00:08:17+00:00 UTC)
+INFO     | agents.test_executor                     |    TEST_JWT_TOKEN is set but will be ignored (expired/invalid); generated steps will fall back to auto-login.
+ERROR    | agents.test_executor                     |    [ERROR] Pre-flight: Backend service 'auth' is not running (port 9000). Start it before running contract tests.
+ERROR    | agents.test_executor                     |    [ERROR] Pre-flight: Backend service 'leave' is not running (port 9001). Start it before running contract tests.
+WARNING  | graph.workflow                           | [STOP] Execution failure will not be retried (failed=0, attempts_used=0, max_attempts=3)
+INFO     | agents.coverage_analyst                  | ✅ Coverage Analyst Agent initialized (JaCoCo / Surefire / heuristic)
+INFO     | agents.coverage_analyst                  | [START] Coverage Analyst starting — service: auth_leave
+INFO     | agents.coverage_analyst                  |    Found JaCoCo XML: D:\project_testRAG - Copie\output\jacoco\report\jacoco.xml
+INFO     | agents.coverage_analyst                  |    Found JaCoCo CSV: D:\project_testRAG - Copie\output\jacoco\report\jacoco.csv
+WARNING  | agents.coverage_analyst                  |    ⚠️  JaCoCo XML is stale (age: 3181s) — ignoring
+WARNING  | agents.coverage_analyst                  |    ⚠️  JaCoCo CSV is stale (age: 2869288s) — ignoring
+WARNING  | agents.coverage_analyst                  |    ⚠️  NO TESTS EXECUTED and no recent JaCoCo report — returning 0% coverage
+INFO     | agents.coverage_analyst                  | 
+────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  | [CHART] COVERAGE REPORT — auth_leave
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  |   Data source      : no-tests-executed
+INFO     | agents.coverage_analyst                  |   Generated at     : 2026-04-27T01:08:19
+WARNING  | agents.coverage_analyst                  |   ⚠️  NO TESTS WERE EXECUTED IN THIS RUN
+WARNING  | agents.coverage_analyst                  |   ⚠️  Coverage metrics below are ZERO (not stale data)
+INFO     | agents.coverage_analyst                  |   Packages         : 0
+INFO     | agents.coverage_analyst                  |   Classes          : 0
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+WARNING  | agents.coverage_analyst                  |   No class-level coverage data available.
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  |   Tests total      : 0
+INFO     | agents.coverage_analyst                  |   Tests passed     : 0
+INFO     | agents.coverage_analyst                  |   Tests failed     : 0
+INFO     | agents.coverage_analyst                  |   Tests skipped    : 0
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+WARNING  | agents.coverage_analyst                  |   [ERROR] Quality gate   : FAILED
+WARNING  | agents.coverage_analyst                  |        -> line_coverage_%: 0.0% < threshold 50.0%
+WARNING  | agents.coverage_analyst                  |        -> branch_coverage_%: 0.0% < threshold 25.0%
+WARNING  | agents.coverage_analyst                  |        -> method_coverage_%: 0.0% < threshold 70.0%
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+
+SUCCESS  | agents.coverage_analyst                  |    📄 YAML report -> D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_010819.yaml
+SUCCESS  | agents.coverage_analyst                  |    📄 JSON report -> D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_010819.json
+SUCCESS  | agents.coverage_analyst                  | ✅ Coverage Analyst finished in 45 ms  [line=0.0%  branch=0.0%  method=0.0%]
+INFO     | graph.workflow                           | [STOP] Coverage analysis ended coverage loop (retry_recommended=False, attempts_used=1, max_attempts=2)
+INFO     | graph.workflow                           | 
+================================================================================
+INFO     | graph.workflow                           | [CHART] WORKFLOW EXECUTION SUMMARY
+INFO     | graph.workflow                           | ================================================================================
+INFO     | graph.workflow                           | Workflow ID : auth_leave_20260427_010606_75f9c40f
+INFO     | graph.workflow                           | Service     : auth_leave
+INFO     | graph.workflow                           | Status      : FAILED
+INFO     | graph.workflow                           | 
+[LIST] Agent Execution:
+INFO     | graph.workflow                           |   [OK] scenario_designer  [128991ms]
+INFO     | graph.workflow                           |   [OK] gherkin_generator  [10ms]
+INFO     | graph.workflow                           |   [OK] gherkin_validator  [70ms]
+INFO     | graph.workflow                           |   [OK] test_writer  [2164ms]
+INFO     | graph.workflow                           |   [FAIL] test_executor  [2027ms]
+INFO     | graph.workflow                           |   [OK] coverage_analyst  [45ms]
+INFO     | graph.workflow                           |       Lines    : 0.0%
+INFO     | graph.workflow                           |       Branches : 0.0%
+INFO     | graph.workflow                           |       Methods  : 0.0%
+INFO     | graph.workflow                           |       QG       : FAILED [ERROR]
+INFO     | graph.workflow                           |       YAML     : D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_010819.yaml
+INFO     | graph.workflow                           |       JSON     : D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_010819.json
+INFO     | graph.workflow                           | 
+[FILE] Artifacts:
+INFO     | graph.workflow                           |   Gherkin files : 1
+INFO     | graph.workflow                           |   Test files    : 4
+INFO     | graph.workflow                           |   Coverage files: 2
+INFO     | graph.workflow                           |   Healing tries : 0
+INFO     | graph.workflow                           |   Coverage tries: 1
+INFO     | graph.workflow                           |     - D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_010819.yaml
+INFO     | graph.workflow                           |     - D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_010819.json
+ERROR    | graph.workflow                           |   [ERROR] Test execution pre-flight failed: Backend service 'auth' is not running (port 9000). Start it before running contract tests.
+ERROR    | graph.workflow                           |   [ERROR] Test execution pre-flight failed: Backend service 'leave' is not running (port 9001). Start it before running contract tests.
+ERROR    | graph.workflow                           |   [ERROR] Coverage quality gate failed: line_coverage_%: 0.0% < threshold 50.0%; branch_coverage_%: 0.0% < threshold 25.0%; method_coverage_%: 0.0% < threshold 70.0%
+INFO     | graph.workflow                           | ================================================================================
+
+
+================================================================================
+  TEST AUTOMATION PIPELINE (CONSOLIDATED E2E)
+================================================================================
+
+
+================================================================================
+  CONSOLIDATED E2E PIPELINE COMPLETED
+================================================================================
+
+[FAILED] auth_leave                     | Status: failed
+   Generated 1 consolidated feature file(s)
+   Generated 4 test file(s)
+   Coverage: 0.0%
+
+[FAILED] End-to-end consolidated tests failed.
+

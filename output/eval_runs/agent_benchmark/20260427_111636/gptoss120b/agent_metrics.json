@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "error": "",
+  "model": {
+    "label": "gptoss120b",
+    "name": "openai/gpt-oss-120b"
+  },
+  "duration_ms": 3875,
+  "gherkin": {
+    "chars": 545,
+    "features": 1,
+    "scenarios": 2,
+    "steps": 5,
+    "feature_file": "D:\\project_testRAG - Copie\\output\\features\\auth-leave_01_leave-request-submission-and-approval_20260427_111655.feature"
+  },
+  "gherkin_lint": {
+    "issues": null,
+    "output": "\u001b[0;4mD:\\project_testRAG - Copie\\output\\features\\auth-leave_01_leave-request-submission-and-approval_20260427_111655.feature\u001b[24m\n  \u001b[38;5;243m4 \u001b[0m    Wrong indentation for \"Scenario\", expected indentation level of 2, but got 0    \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m5 \u001b[0m    Wrong indentation for \"given\", expected indentation level of 4, but got 2       \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m6 \u001b[0m    Wrong indentation for \"when\", expected indentation level of 4, but got 2        \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m7 \u001b[0m    Wrong indentation for \"then\", expected indentation level of 4, but got 2        \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m9 \u001b[0m    Wrong indentation for \"Scenario\", expected indentation level of 2, but got 0    \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m10\u001b[0m    Wrong indentation for \"when\", expected indentation level of 4, but got 2        \u001b[38;5;243mindentation\u001b[0m\n  \u001b[38;5;243m11\u001b[0m    Wrong indentation for \"then\", expected indentation level of 4, but got 2        \u001b[38;5;243mindentation\u001b[0m\n\n\n"
+  }
+}

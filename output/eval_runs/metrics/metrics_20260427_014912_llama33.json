@@ -1,0 +1,376 @@
+{
+  "run_id": "20260427_014912_llama33",
+  "generated_at": "2026-04-27T01:49:24",
+  "inputs": {
+    "features_dirs": [
+      "output\\features",
+      "output\\tests\\src\\test\\resources\\features"
+    ],
+    "req_yaml": "business_requirements.yaml",
+    "cucumber_json": "output\\tests\\target\\cucumber-reports\\e2e\\cucumber.json",
+    "surefire_dir": "output\\tests\\target\\surefire-reports",
+    "maven_log": "output\\tests\\test_full_report.txt",
+    "run_log": "D:\\project_testRAG - Copie\\output\\eval_runs\\llm_benchmark\\20260427_014912\\llama33\\pipeline.log",
+    "run_anchor_ts": 1777250952.0499265
+  },
+  "counts": {
+    "feature_files": 4,
+    "generated_scenarios": 203,
+    "reference_scenarios": 45
+  },
+  "SV": 100.0,
+  "SC": 100.0,
+  "TC": null,
+  "ESR": null,
+  "TPR": null,
+  "RSR": null,
+  "GT_seconds": null,
+  "details": {
+    "sv": {
+      "invalid_scenarios": [],
+      "invalid_count": 0,
+      "lint_issues": [],
+      "used": true,
+      "cmd": [
+        "node_modules\\.bin\\gherkin-lint.cmd"
+      ]
+    },
+    "sc": {
+      "covered": 45,
+      "total": 45,
+      "threshold": 0.62,
+      "matches": [
+        {
+          "reference": "Create valid user with all required fields",
+          "origin": "auth:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.785,
+          "best_match": "[AUT-001] Create valid user with all required fields (happy_path)"
+        },
+        {
+          "reference": "Fetch existing user by ID",
+          "origin": "auth:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.6849,
+          "best_match": "[AUT-002] Fetch existing user by ID (happy_path)"
+        },
+        {
+          "reference": "Update user details",
+          "origin": "auth:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.623,
+          "best_match": "[AUT-003] Update user details (happy_path)"
+        },
+        {
+          "reference": "List all users in department",
+          "origin": "auth:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7089,
+          "best_match": "[AUT-004] List all users in department (happy_path)"
+        },
+        {
+          "reference": "Assign user to valid department",
+          "origin": "auth:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7294,
+          "best_match": "[AUT-005] Assign user to valid department (happy_path)"
+        },
+        {
+          "reference": "Create user with missing email",
+          "origin": "auth:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7143,
+          "best_match": "[AUT-006E] Create user with missing email (error_case)"
+        },
+        {
+          "reference": "Create user with duplicate email",
+          "origin": "auth:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7273,
+          "best_match": "[AUT-007E] Create user with duplicate email (error_case)"
+        },
+        {
+          "reference": "Fetch non-existent user (404)",
+          "origin": "auth:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7073,
+          "best_match": "[AUT-008E] Fetch non-existent user (404) (error_case)"
+        },
+        {
+          "reference": "Update user with invalid role",
+          "origin": "auth:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7073,
+          "best_match": "[AUT-009E] Update user with invalid role (error_case)"
+        },
+        {
+          "reference": "Assign user to non-existent department",
+          "origin": "auth:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.76,
+          "best_match": "[AUT-010E] Assign user to non-existent department (error_case)"
+        },
+        {
+          "reference": "User ID at boundary (0, 1, 9999999)",
+          "origin": "auth:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.7527,
+          "best_match": "[AUT-011X] User ID at boundary (0, 1, 9999999) (edge_case)"
+        },
+        {
+          "reference": "Department with no users",
+          "origin": "auth:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.6761,
+          "best_match": "[AUT-012X] Department with no users (edge_case)"
+        },
+        {
+          "reference": "User with special characters in name",
+          "origin": "auth:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.7579,
+          "best_match": "[AUT-013X] User with special characters in name (edge_case)"
+        },
+        {
+          "reference": "Empty department name",
+          "origin": "auth:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.6462,
+          "best_match": "[AUT-014X] Empty department name (edge_case)"
+        },
+        {
+          "reference": "Access user endpoint without JWT token (401)",
+          "origin": "auth:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8,
+          "best_match": "[AUT-015S] Access user endpoint without JWT token (401) (security)"
+        },
+        {
+          "reference": "Access user endpoint with expired token (401)",
+          "origin": "auth:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8036,
+          "best_match": "[AUT-016S] Access user endpoint with expired token (401) (security)"
+        },
+        {
+          "reference": "Non-admin user trying to delete another user (403)",
+          "origin": "auth:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8197,
+          "best_match": "[AUT-017S] Non-admin user trying to delete another user (403) (security)"
+        },
+        {
+          "reference": "Team leader trying to access other department (403)",
+          "origin": "auth:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8226,
+          "best_match": "[AUT-018S] Team leader trying to access other department (403) (security)"
+        },
+        {
+          "reference": "Create valid leave request with future dates",
+          "origin": "leave:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7928,
+          "best_match": "[LEA-001] Create valid leave request with future dates (happy_path)"
+        },
+        {
+          "reference": "Retrieve created leave request",
+          "origin": "leave:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7229,
+          "best_match": "[LEA-002] Retrieve created leave request (happy_path)"
+        },
+        {
+          "reference": "Approve pending leave request as Team Leader",
+          "origin": "leave:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7928,
+          "best_match": "[LEA-003] Approve pending leave request as Team Leader (happy_path)"
+        },
+        {
+          "reference": "Reject pending leave request as Employer",
+          "origin": "leave:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7767,
+          "best_match": "[LEA-004] Reject pending leave request as Employer (happy_path)"
+        },
+        {
+          "reference": "List all leave requests for user",
+          "origin": "leave:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7356,
+          "best_match": "[LEA-005] List all leave requests for user (happy_path)"
+        },
+        {
+          "reference": "Search leave requests by date range",
+          "origin": "leave:HAPPY_PATH",
+          "covered": true,
+          "best_score": 0.7527,
+          "best_match": "[LEA-006] Search leave requests by date range (happy_path)"
+        },
+        {
+          "reference": "Create leave with past dates (rejected)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7647,
+          "best_match": "[LEA-007E] Create leave with past dates (rejected) (error_case)"
+        },
+        {
+          "reference": "Create leave with fromDate > toDate (rejected)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7931,
+          "best_match": "[LEA-008E] Create leave with fromDate > toDate (rejected) (error_case)"
+        },
+        {
+          "reference": "Create overlapping leave request (rejected)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7818,
+          "best_match": "[LEA-009E] Create overlapping leave request (rejected) (error_case)"
+        },
+        {
+          "reference": "Request more than 30 days per year (rejected)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7895,
+          "best_match": "[LEA-010E] Request more than 30 days per year (rejected) (error_case)"
+        },
+        {
+          "reference": "Request more than 5 consecutive days (rejected)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7966,
+          "best_match": "[LEA-011E] Request more than 5 consecutive days (rejected) (error_case)"
+        },
+        {
+          "reference": "Create leave without authentication (401)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7736,
+          "best_match": "[LEA-012E] Create leave without authentication (401) (error_case)"
+        },
+        {
+          "reference": "Approve leave that's not PENDING (rejected)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7818,
+          "best_match": "[LEA-013E] Approve leave that's not PENDING (rejected) (error_case)"
+        },
+        {
+          "reference": "Try to approve as non-Team Leader (403)",
+          "origin": "leave:ERROR_CASES",
+          "covered": true,
+          "best_score": 0.7647,
+          "best_match": "[LEA-014E] Try to approve as non-Team Leader (403) (error_case)"
+        },
+        {
+          "reference": "Same start and end date (0 days leave)",
+          "origin": "leave:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.7677,
+          "best_match": "[LEA-015X] Same start and end date (0 days leave) (edge_case)"
+        },
+        {
+          "reference": "Leave spanning weekends",
+          "origin": "leave:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.6667,
+          "best_match": "[LEA-016X] Leave spanning weekends (edge_case)"
+        },
+        {
+          "reference": "Leave on public holidays",
+          "origin": "leave:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.6761,
+          "best_match": "[LEA-017X] Leave on public holidays (edge_case)"
+        },
+        {
+          "reference": "User with zero leave balance remaining",
+          "origin": "leave:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.7677,
+          "best_match": "[LEA-018X] User with zero leave balance remaining (edge_case)"
+        },
+        {
+          "reference": "Multiple approvals for same request",
+          "origin": "leave:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.7527,
+          "best_match": "[LEA-019X] Multiple approvals for same request (edge_case)"
+        },
+        {
+          "reference": "Reject already approved leave (rejected)",
+          "origin": "leave:EDGE_CASES",
+          "covered": true,
+          "best_score": 0.7767,
+          "best_match": "[LEA-020X] Reject already approved leave (rejected) (edge_case)"
+        },
+        {
+          "reference": "Access leave endpoint without JWT token (401)",
+          "origin": "leave:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8036,
+          "best_match": "[LEA-021S] Access leave endpoint without JWT token (401) (security)"
+        },
+        {
+          "reference": "Access other user's leave request without permission (403)",
+          "origin": "leave:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8406,
+          "best_match": "[LEA-022S] Access other user's leave request without permission (403) (security)"
+        },
+        {
+          "reference": "Team leader approving leave outside their department (403)",
+          "origin": "leave:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.8406,
+          "best_match": "[LEA-023S] Team leader approving leave outside their department (403) (security)"
+        },
+        {
+          "reference": "Non-Employer role trying to reject leave (403)",
+          "origin": "leave:SECURITY_CASES",
+          "covered": true,
+          "best_score": 0.807,
+          "best_match": "[LEA-024S] Non-Employer role trying to reject leave (403) (security)"
+        },
+        {
+          "reference": "User Authentication → Leave Request Flow",
+          "origin": "integration",
+          "covered": true,
+          "best_score": 0.7692,
+          "best_match": "[E2E-001] User Authentication → Leave Request Flow (integration)"
+        },
+        {
+          "reference": "Overlapping Leave Rejection",
+          "origin": "integration",
+          "covered": true,
+          "best_score": 0.6923,
+          "best_match": "[E2E-002] Overlapping Leave Rejection (integration)"
+        },
+        {
+          "reference": "Role-Based Approval Workflow",
+          "origin": "integration",
+          "covered": true,
+          "best_score": 0.7,
+          "best_match": "[E2E-003] Role-Based Approval Workflow (integration)"
+        }
+      ]
+    },
+    "tc": {
+      "surefire": {
+        "present": false,
+        "files": 0,
+        "recent_files": 0,
+        "stale_files": 0
+      }
+    },
+    "execution": null,
+    "workflow": {
+      "workflow_status": null,
+      "healing_tries": null,
+      "preflight_failed": false,
+      "no_tests_executed": false
+    }
+  }
+}

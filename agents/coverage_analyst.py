@@ -44,6 +44,7 @@ from loguru import logger
 
 from config.settings import get_settings
 from graph.state import AgentOutput, AgentStatus, TestAutomationState
+from tools.jacoco_filtering import is_low_signal_jacoco_class
 
 
 # ------------------------------
@@ -411,6 +412,7 @@ def _parse_jacoco_xml(xml_path: Path) -> Optional[CoverageReport]:
     # Infer service name from report name attribute
     service_name = root.attrib.get("name", xml_path.parent.parent.name)
     report = CoverageReport(service_name=service_name, source="jacoco-xml")
+    skipped_classes = 0
 
     for pkg_elem in root.iter("package"):
         pkg_name = pkg_elem.attrib.get("name", "").replace("/", ".")
@@ -419,6 +421,9 @@ def _parse_jacoco_xml(xml_path: Path) -> Optional[CoverageReport]:
         for cls_elem in pkg_elem.iter("class"):
             raw_name     = cls_elem.attrib.get("name", "")
             source_file  = cls_elem.attrib.get("sourcefilename", "")
+            if is_low_signal_jacoco_class(raw_name, package_name=pkg_name, source_file=source_file):
+                skipped_classes += 1
+                continue
             # Strip package path prefix from class name
             simple_name  = raw_name.split("/")[-1] if "/" in raw_name else raw_name
 
@@ -452,6 +457,8 @@ def _parse_jacoco_xml(xml_path: Path) -> Optional[CoverageReport]:
         f"   JaCoCo XML parsed: {report.total_classes} classes "
         f"across {len(report.packages)} packages"
     )
+    if skipped_classes:
+        logger.info(f"   JaCoCo XML exclusions applied: skipped {skipped_classes} low-signal classes")
     return report if report.packages else None
 
 
@@ -489,6 +496,7 @@ def _parse_jacoco_csv(csv_path: Path) -> Optional[CoverageReport]:
     service_name = csv_path.parent.parent.name
     report  = CoverageReport(service_name=service_name, source="jacoco-csv")
     pkg_map: Dict[str, PackageCoverage] = {}
+    skipped_rows = 0
 
     for raw in lines[1:]:
         if not raw.strip():
@@ -499,6 +507,9 @@ def _parse_jacoco_csv(csv_path: Path) -> Optional[CoverageReport]:
 
         pkg_name  = row[header.index("PACKAGE")].strip().replace("/", ".") if "PACKAGE" in header else "unknown"
         cls_name  = row[header.index("CLASS")].strip()  if "CLASS"   in header else "unknown"
+        if is_low_signal_jacoco_class(cls_name, package_name=pkg_name):
+            skipped_rows += 1
+            continue
 
         cls = ClassCoverage(
             class_name     = cls_name,
@@ -524,6 +535,8 @@ def _parse_jacoco_csv(csv_path: Path) -> Optional[CoverageReport]:
         f"   JaCoCo CSV parsed: {report.total_classes} classes "
         f"across {len(report.packages)} packages"
     )
+    if skipped_rows:
+        logger.info(f"   JaCoCo CSV exclusions applied: skipped {skipped_rows} low-signal classes")
     return report if report.packages else None
 
 
@@ -935,6 +948,207 @@ class CoverageAnalystAgent:
             thresholds.update(custom)
         return thresholds
 
+    def _max_coverage_improvement_attempts(self, state: TestAutomationState) -> int:
+        cfg = getattr(state, "config", {}) or {}
+        raw = cfg.get(
+            "max_coverage_improvement_attempts",
+            os.getenv("MAX_COVERAGE_IMPROVEMENT_ATTEMPTS", "1"),
+        )
+        try:
+            value = int(raw)
+        except Exception:
+            value = 1
+        return max(0, value)
+
+    def _select_weak_packages(self, report: CoverageReport, limit: int = 5) -> List[Dict[str, Any]]:
+        packages = list(report.packages)
+        business_first = [
+            pkg for pkg in packages
+            if not self._is_low_signal_package_name(getattr(pkg, "name", ""))
+        ]
+        ranked = sorted(
+            business_first or packages,
+            key=lambda pkg: (
+                pkg.line_rate + pkg.branch_rate + pkg.method_rate,
+                pkg.name,
+            ),
+        )
+        items: List[Dict[str, Any]] = []
+        for pkg in ranked[:limit]:
+            items.append(
+                {
+                    "package": pkg.name,
+                    "line_coverage_%": pkg.line_rate,
+                    "branch_coverage_%": pkg.branch_rate,
+                    "method_coverage_%": pkg.method_rate,
+                    "classes_covered": pkg.class_covered,
+                    "classes_missed": pkg.class_missed,
+                }
+            )
+        return items
+
+    def _is_low_signal_package_name(self, package_name: str) -> bool:
+        package_lower = str(package_name or "").lower()
+        low_signal_tokens = (
+            ".dto",
+            ".entity",
+            ".model",
+            ".configuration",
+            ".config",
+            ".mapper",
+            ".repository",
+        )
+        return any(token in package_lower for token in low_signal_tokens)
+
+    def _is_low_signal_class(self, cls: Any) -> bool:
+        package_lower = str(getattr(cls, "package", "") or "").lower()
+        class_lower = str(getattr(cls, "class_name", "") or "").lower()
+        source_lower = str(getattr(cls, "source_file", "") or "").lower()
+        low_signal_tokens = (
+            ".dto",
+            ".entity",
+            ".model",
+            ".configuration",
+            ".config",
+            ".mapper",
+            ".repository",
+        )
+        if any(token in package_lower for token in low_signal_tokens):
+            return True
+        if class_lower.endswith("application") or source_lower.endswith("application.java"):
+            return True
+        return False
+
+    def _class_priority(self, cls: Any) -> int:
+        package_lower = str(getattr(cls, "package", "") or "").lower()
+        class_lower = str(getattr(cls, "class_name", "") or "").lower()
+        if ".controller" in package_lower or class_lower.endswith("controller"):
+            return 0
+        if ".service" in package_lower or class_lower.endswith("service"):
+            return 1
+        if ".security" in package_lower or ".validator" in package_lower or class_lower.endswith("validator"):
+            return 2
+        return 3
+
+    def _select_weak_classes(self, report: CoverageReport, limit: int = 8) -> List[Dict[str, Any]]:
+        classes = []
+        for pkg in report.packages:
+            classes.extend(getattr(pkg, "classes", []))
+        business_classes = [cls for cls in classes if not self._is_low_signal_class(cls)]
+        ranked = sorted(
+            business_classes or classes,
+            key=lambda cls: (
+                self._class_priority(cls),
+                cls.line_rate + cls.branch_rate + cls.method_rate,
+                -(getattr(cls, "branch_missed", 0) or 0),
+                cls.package,
+                cls.class_name,
+            ),
+        )
+        items: List[Dict[str, Any]] = []
+        for cls in ranked[:limit]:
+            items.append(
+                {
+                    "class": cls.class_name,
+                    "package": cls.package,
+                    "source_file": cls.source_file,
+                    "line_coverage_%": cls.line_rate,
+                    "branch_coverage_%": cls.branch_rate,
+                    "method_coverage_%": cls.method_rate,
+                }
+            )
+        return items
+
+    def _build_coverage_feedback(
+        self,
+        report: CoverageReport,
+        state: TestAutomationState,
+        thresholds: Dict[str, float],
+    ) -> Dict[str, Any]:
+        attempt_number = len(getattr(state, "coverage_improvement_attempts", []) or []) + 1
+        max_attempts = self._max_coverage_improvement_attempts(state)
+        current_metrics = {
+            "line_coverage_%": float(report.line_rate),
+            "branch_coverage_%": float(report.branch_rate),
+            "method_coverage_%": float(report.method_rate),
+        }
+        previous_feedback = (
+            state.coverage_improvement_attempts[-1]
+            if getattr(state, "coverage_improvement_attempts", None)
+            else None
+        )
+        previous_metrics = (
+            dict(previous_feedback.get("current_metrics", {}))
+            if isinstance(previous_feedback, dict)
+            else None
+        )
+        metric_deltas: Dict[str, float] = {}
+        materially_improved: Optional[bool] = None
+        if previous_metrics:
+            for key, current_value in current_metrics.items():
+                previous_value = float(previous_metrics.get(key, 0.0) or 0.0)
+                metric_deltas[key] = round(current_value - previous_value, 2)
+            materially_improved = any(delta > 0.1 for delta in metric_deltas.values())
+
+        test_summary = report.test_summary or {}
+        tests_total = int(test_summary.get("tests", 0) or 0)
+        tests_failed = int(test_summary.get("failures", 0) or 0) + int(
+            test_summary.get("errors", 0) or 0
+        )
+
+        weak_packages = self._select_weak_packages(report)
+        weak_classes = self._select_weak_classes(report)
+
+        retry_recommended = False
+        reason = "Coverage quality gate passed."
+        allow_retry_with_failures = any(
+            os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "y", "on"}
+            for name in ("ALLOW_COVERAGE_RETRY_WITH_FAILURES", "COVERAGE_LOOP_IGNORE_TEST_FAILURES")
+        )
+        if tests_total == 0:
+            reason = "No tests executed, so coverage expansion would have nothing to measure."
+        elif tests_failed > 0 and not allow_retry_with_failures:
+            reason = "Coverage expansion skipped because tests are still failing; stabilize the suite first."
+        elif report.quality_gate_passed:
+            reason = "Coverage quality gate passed."
+        elif attempt_number > max_attempts:
+            reason = "Reached the configured maximum number of coverage improvement attempts."
+        elif previous_metrics and materially_improved is False:
+            reason = "Coverage did not improve after the previous coverage-guided pass."
+        elif not weak_packages and not weak_classes:
+            reason = "Coverage is below threshold, but no package/class gaps were identified for targeted expansion."
+        else:
+            retry_recommended = True
+            if tests_failed > 0 and allow_retry_with_failures:
+                reason = (
+                    "Coverage is below threshold (retry allowed despite test failures via coverage-retry-with-failures flag); "
+                    "generate additional scenarios for weak packages, weak classes, and uncovered endpoints."
+                )
+            else:
+                reason = (
+                    "Coverage is below threshold; generate additional scenarios for weak packages, "
+                    "weak classes, and uncovered endpoints."
+                )
+
+
+        return {
+            "attempt_number": attempt_number,
+            "max_attempts": max_attempts,
+            "retry_recommended": retry_recommended,
+            "reason": reason,
+            "current_metrics": current_metrics,
+            "previous_metrics": previous_metrics,
+            "metric_deltas": metric_deltas,
+            "materially_improved": materially_improved,
+            "thresholds": dict(thresholds),
+            "threshold_violations": list(report.threshold_violations),
+            "weak_packages": weak_packages,
+            "weak_classes": weak_classes,
+            "data_source": report.source,
+            "tests_total": tests_total,
+            "tests_failed": tests_failed,
+        }
+
     # ------------------------------
     # Console logging
     # ------------------------------
@@ -1023,12 +1237,25 @@ class CoverageAnalystAgent:
             state.coverage_report = report.to_dict()
             state.coverage_files  = [str(yaml_path).strip(), str(json_path).strip()]
             state.coverage_percentage = float(report.line_rate)
+            coverage_feedback = self._build_coverage_feedback(report, state, thresholds)
+            state.coverage_feedback = coverage_feedback
+            state.coverage_improvement_attempts.append(coverage_feedback)
 
             duration_ms = (time.time() - start) * 1000
 
             # Propagate threshold violations as state warnings
             for violation in report.threshold_violations:
                 state.add_warning(f"Coverage threshold violation: {violation}")
+            if coverage_feedback["retry_recommended"]:
+                state.add_warning(
+                    "Coverage analysis recommends another generation pass: "
+                    f"{coverage_feedback['reason']}"
+                )
+            else:
+                state.add_warning(
+                    "Coverage analysis ended the coverage loop: "
+                    f"{coverage_feedback['reason']}"
+                )
 
             state.add_agent_output(AgentOutput(
                 agent_name="coverage_analyst",
@@ -1043,6 +1270,10 @@ class CoverageAnalystAgent:
                     "method_coverage_%":    report.method_rate,
                     "quality_gate_passed":  report.quality_gate_passed,
                     "threshold_violations": report.threshold_violations,
+                    "coverage_retry_recommended": coverage_feedback["retry_recommended"],
+                    "coverage_retry_reason": coverage_feedback["reason"],
+                    "coverage_attempt_number": coverage_feedback["attempt_number"],
+                    "coverage_max_attempts": coverage_feedback["max_attempts"],
                     "yaml_report":          str(yaml_path),
                     "json_report":          str(json_path),
                 },

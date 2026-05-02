@@ -4,7 +4,10 @@ graph/workflow.py
 LangGraph Workflow — Multi-Agent Test Automation Pipeline
 
 Pipeline:
-  gherkin_generator -> gherkin_validator -> test_writer -> test_executor -> coverage_analyst -> END
+  scenario_designer -> gherkin_generator -> gherkin_validator -> test_writer
+  gherkin_validator -> gherkin_generator (bounded validation retry)
+  -> test_executor -> failure_analyst? -> test_writer (bounded retry)
+  -> coverage_analyst? -> scenario_designer (bounded coverage retry) -> END
 """
 
 from typing import Literal, Optional
@@ -19,6 +22,7 @@ from agents.gherkin_generator import gherkin_generator_node
 from agents.gherkin_validator import gherkin_validator_node
 from agents.test_writer        import test_writer_node
 from agents.test_executor      import test_executor_node
+from agents.failure_analyst    import failure_analyst_node
 from agents.coverage_analyst   import coverage_analyst_node   # ← Agent 6
 
 
@@ -30,7 +34,8 @@ class TestAutomationWorkflow:
         logger.info("✅ Test Automation Workflow initialized")
         logger.info(
             "[LIST] Pipeline: scenario_designer -> gherkin_generator -> gherkin_validator -> "
-            "test_writer -> test_executor -> coverage_analyst"
+            "test_writer -> test_executor -> failure_analyst? -> coverage_analyst? "
+            "(validation failures loop back to gherkin_generator)"
         )
 
     def _build_graph(self) -> StateGraph:
@@ -42,6 +47,7 @@ class TestAutomationWorkflow:
         workflow.add_node("gherkin_validator",  gherkin_validator_node)
         workflow.add_node("test_writer",        test_writer_node)
         workflow.add_node("test_executor",      test_executor_node)
+        workflow.add_node("failure_analyst",    failure_analyst_node)
         workflow.add_node("coverage_analyst",   coverage_analyst_node)   # ← Agent 6
 
         # ── Entry point ------------------------------
@@ -57,21 +63,91 @@ class TestAutomationWorkflow:
         workflow.add_conditional_edges(
             "gherkin_validator",
             self._after_validation,
-            {"write_tests": "test_writer", "end": END},
+            {
+                "write_tests": "test_writer",
+                "regenerate": "gherkin_generator",
+                "end": END,
+            },
         )
         workflow.add_conditional_edges(
             "test_writer",
             self._after_writing,
             {"execute": "test_executor", "end": END},
         )
-        # Always analyse coverage after execution (even on partial failure)
-        workflow.add_edge("test_executor",    "coverage_analyst")   # ← Agent 5
-        workflow.add_edge("coverage_analyst", END)                  # ← Agent 6
+        workflow.add_conditional_edges(
+            "test_executor",
+            self._after_execution,
+            {"analyze_failures": "failure_analyst", "coverage": "coverage_analyst"},
+        )
+        workflow.add_conditional_edges(
+            "failure_analyst",
+            self._after_failure_analysis,
+            {"rewrite_tests": "test_writer", "coverage": "coverage_analyst"},
+        )
+        workflow.add_conditional_edges(
+            "coverage_analyst",
+            self._after_coverage_analysis,
+            {"improve_coverage": "scenario_designer", "end": END},
+        )
 
         logger.info("[CHART] Workflow graph compiled successfully")
         return workflow.compile(checkpointer=self.memory)
 
     # ── Routing conditions ------------------------------
+
+    def _max_healing_attempts(self, state: TestAutomationState) -> int:
+        cfg = getattr(state, "config", {}) or {}
+        raw = cfg.get("max_healing_attempts", os.getenv("MAX_HEALING_ATTEMPTS", "3"))
+        try:
+            value = int(raw)
+        except Exception:
+            value = 3
+        return max(0, value)
+
+    def _max_coverage_improvement_attempts(self, state: TestAutomationState) -> int:
+        cfg = getattr(state, "config", {}) or {}
+        raw = cfg.get(
+            "max_coverage_improvement_attempts",
+            os.getenv("MAX_COVERAGE_IMPROVEMENT_ATTEMPTS", "1"),
+        )
+        try:
+            value = int(raw)
+        except Exception:
+            value = 1
+        return max(0, value)
+
+    def _max_gherkin_validation_retries(self, state: TestAutomationState) -> int:
+        cfg = getattr(state, "config", {}) or {}
+        raw = cfg.get(
+            "max_gherkin_validation_retries",
+            os.getenv("MAX_GHERKIN_VALIDATION_RETRIES", "2"),
+        )
+        try:
+            value = int(raw)
+        except Exception:
+            value = 2
+        return max(0, value)
+
+    def _coverage_improvement_enabled(self, state: TestAutomationState) -> bool:
+        cfg = getattr(state, "config", {}) or {}
+        if "enable_coverage_improvement" in cfg:
+            return bool(cfg.get("enable_coverage_improvement"))
+        raw = os.getenv("ENABLE_COVERAGE_IMPROVEMENT")
+        if raw is None:
+            return True
+        return raw.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    def _clear_retryable_execution_errors(self, state: TestAutomationState) -> None:
+        retryable_prefixes = (
+            "Maven test execution failed",
+            "Test threshold not met",
+            "No tests were executed",
+            "Test execution pre-flight failed",
+        )
+        state.errors = [
+            err for err in state.errors
+            if not any(str(err).startswith(prefix) for prefix in retryable_prefixes)
+        ]
 
     def _after_generation(self, state: TestAutomationState) -> Literal["validate", "end"]:
         last = state.agent_outputs[-1] if state.agent_outputs else None
@@ -81,13 +157,26 @@ class TestAutomationWorkflow:
         logger.warning("[FAIL] Gherkin generation failed -> end")
         return "end"
 
-    def _after_validation(self, state: TestAutomationState) -> Literal["write_tests", "end"]:
+    def _after_validation(self, state: TestAutomationState) -> Literal["write_tests", "regenerate", "end"]:
         if state.validation_result:
             errors = sum(1 for i in state.validation_result.issues if i.level == "error")
             if state.validation_result.is_valid or errors == 0:
                 logger.info("[OK] Validation passed -> test writing")
                 return "write_tests"
-            logger.error("[FAIL] Critical validation errors -> end")
+
+            attempts_used = len(getattr(state, "gherkin_validation_retries", []) or [])
+            max_attempts = self._max_gherkin_validation_retries(state)
+            if attempts_used <= max_attempts:
+                logger.warning(
+                    f"[RETRY] Critical validation errors -> gherkin_generator "
+                    f"(attempt {attempts_used}/{max_attempts})"
+                )
+                return "regenerate"
+
+            logger.error(
+                f"[FAIL] Critical validation errors -> end "
+                f"(attempts_used={attempts_used}, max_attempts={max_attempts})"
+            )
             return "end"
         logger.warning("[FAIL] No validation result -> end")
         return "end"
@@ -108,6 +197,93 @@ class TestAutomationWorkflow:
             logger.info("[OK] Test files generated -> execution")
             return "execute"
         logger.warning("[FAIL] Test writing failed -> end")
+        return "end"
+
+    def _after_execution(self, state: TestAutomationState) -> Literal["analyze_failures", "coverage"]:
+        execution = state.execution_result or {}
+        if bool(execution.get("success", False)):
+            self._clear_retryable_execution_errors(state)
+            logger.info("[OK] Test execution passed threshold -> coverage")
+            return "coverage"
+
+        failed = int(execution.get("failed", 0) or 0)
+        attempts_used = len(state.healing_attempts)
+        max_attempts = self._max_healing_attempts(state)
+
+        if failed > 0 and attempts_used < max_attempts:
+            self._clear_retryable_execution_errors(state)
+            logger.warning(
+                f"[RETRY] Test execution failed -> failure analysis "
+                f"(attempt {attempts_used + 1}/{max_attempts})"
+            )
+            return "analyze_failures"
+
+        logger.warning(
+            f"[STOP] Execution failure will not be retried "
+            f"(failed={failed}, attempts_used={attempts_used}, max_attempts={max_attempts})"
+        )
+        return "coverage"
+
+    def _after_failure_analysis(self, state: TestAutomationState) -> Literal["rewrite_tests", "coverage"]:
+        analysis = getattr(state, "failure_analysis", None) or {}
+        retry_recommended = bool(analysis.get("retry_recommended", False))
+        retry_target = str(analysis.get("retry_target", "none"))
+        attempts_used = len(state.healing_attempts)
+        max_attempts = self._max_healing_attempts(state)
+
+        if retry_recommended and retry_target == "test_writer" and attempts_used <= max_attempts:
+            logger.info(
+                f"[REPAIR] Failure analysis routed to test_writer "
+                f"(attempt {attempts_used}/{max_attempts})"
+            )
+            return "rewrite_tests"
+
+        logger.warning(
+            f"[STOP] Failure analysis ended retry loop "
+            f"(retry_recommended={retry_recommended}, target={retry_target})"
+        )
+        return "coverage"
+
+    def _after_coverage_analysis(self, state: TestAutomationState) -> Literal["improve_coverage", "end"]:
+        if not self._coverage_improvement_enabled(state):
+            logger.info("[STOP] Coverage improvement loop disabled -> end")
+            return "end"
+
+        execution = state.execution_result or {}
+        failed = int(execution.get("failed", 0) or 0)
+        allow_retry_with_failures = any(
+            os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "y", "on"}
+            for name in ("ALLOW_COVERAGE_RETRY_WITH_FAILURES", "COVERAGE_LOOP_IGNORE_TEST_FAILURES")
+        )
+        if failed > 0 and not allow_retry_with_failures:
+            logger.warning(
+                f"[STOP] Coverage loop skipped because tests are still failing (failed={failed})"
+            )
+            return "end"
+        if failed > 0 and allow_retry_with_failures:
+            logger.warning(
+                f"[COVERAGE RETRY] Tests have failures (failed={failed}) but "
+                f"coverage retry with failures is enabled — proceeding to coverage analysis"
+            )
+
+        feedback = getattr(state, "coverage_feedback", None) or {}
+
+        retry_recommended = bool(feedback.get("retry_recommended", False))
+        attempts_used = len(getattr(state, "coverage_improvement_attempts", []) or [])
+        max_attempts = self._max_coverage_improvement_attempts(state)
+
+        if retry_recommended and attempts_used <= max_attempts:
+            logger.info(
+                f"[COVERAGE RETRY] Coverage analysis routed to scenario_designer "
+                f"(attempt {attempts_used}/{max_attempts})"
+            )
+            return "improve_coverage"
+
+        logger.info(
+            "[STOP] Coverage analysis ended coverage loop "
+            f"(retry_recommended={retry_recommended}, attempts_used={attempts_used}, "
+            f"max_attempts={max_attempts})"
+        )
         return "end"
 
     # ── Main run ------------------------------
@@ -202,12 +378,23 @@ class TestAutomationWorkflow:
                     logger.info(f"      YAML     : {d['yaml_report']}")
                 if d.get("json_report"):
                     logger.info(f"      JSON     : {d['json_report']}")
+            if output.agent_name == "failure_analyst" and output.output_data:
+                d = output.output_data
+                logger.info(f"      Category : {d.get('failure_category', 'N/A')}")
+                logger.info(f"      Retry    : {d.get('retry_recommended', 'N/A')}")
+                logger.info(f"      Target   : {d.get('retry_target', 'N/A')}")
 
         logger.info("\n[FILE] Artifacts:")
         logger.info(f"  Gherkin files : {len(state.gherkin_files)}")
         logger.info(f"  Test files    : {len(state.test_files)}")
         coverage_files = getattr(state, "coverage_files", [])
         logger.info(f"  Coverage files: {len(coverage_files)}")
+        logger.info(f"  Healing tries : {len(state.healing_attempts)}")
+        logger.info(
+            f"  Validation retries: "
+            f"{len(getattr(state, 'gherkin_validation_retries', []) or [])}"
+        )
+        logger.info(f"  Coverage tries: {len(getattr(state, 'coverage_improvement_attempts', []) or [])}")
         for f in coverage_files:
             logger.info(f"    - {f}")
 

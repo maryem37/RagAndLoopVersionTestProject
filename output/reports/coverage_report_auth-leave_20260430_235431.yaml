@@ -1,0 +1,1274 @@
+summary:
+  service: auth_leave
+  generated_at: '2026-04-30T23:54:31'
+  data_source: jacoco-xml
+  aggregate:
+    total_classes: 34
+    total_packages: 18
+    instructions:
+      covered: 1541
+      missed: 1641
+      rate_%: 48.43
+    lines:
+      covered: 354
+      missed: 349
+      rate_%: 50.36
+    branches:
+      covered: 81
+      missed: 239
+      rate_%: 25.31
+    complexity:
+      covered: 107
+      missed: 187
+      total: 294
+    methods:
+      covered: 96
+      missed: 37
+      rate_%: 72.18
+  quality_gate:
+    passed: true
+    thresholds:
+      line_coverage_%: 50.0
+      branch_coverage_%: 25.0
+      method_coverage_%: 70.0
+    violations: []
+  test_execution:
+    tests: 48
+    passed: 48
+    failures: 0
+    errors: 0
+    skipped: 0
+    source: state.execution_result
+packages:
+- package: tn.enis.DemandeConge.client
+  class_count: 1
+  instructions:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  lines:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 0
+    missed: 0
+    total: 0
+  methods:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  classes_covered: 0
+  classes_missed: 1
+  classes:
+  - class: RegistrationClient
+    package: tn.enis.DemandeConge.client
+    source_file: RegistrationClient.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+- package: tn.enis.DemandeConge.controller
+  class_count: 3
+  instructions:
+    covered: 106
+    missed: 71
+    rate_%: 59.89
+  lines:
+    covered: 29
+    missed: 15
+    rate_%: 65.91
+  branches:
+    covered: 1
+    missed: 3
+    rate_%: 25.0
+  complexity:
+    covered: 12
+    missed: 8
+    total: 20
+  methods:
+    covered: 12
+    missed: 6
+    rate_%: 66.67
+  classes_covered: 3
+  classes_missed: 0
+  classes:
+  - class: BalanceController
+    package: tn.enis.DemandeConge.controller
+    source_file: BalanceController.java
+    instructions:
+      covered: 20
+      missed: 13
+      rate_%: 60.61
+    lines:
+      covered: 3
+      missed: 3
+      rate_%: 50.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 3
+      missed: 2
+      total: 5
+    methods:
+      covered: 3
+      missed: 2
+      rate_%: 60.0
+  - class: LeaveRequestController
+    package: tn.enis.DemandeConge.controller
+    source_file: LeaveRequestController.java
+    instructions:
+      covered: 75
+      missed: 32
+      rate_%: 70.09
+    lines:
+      covered: 24
+      missed: 7
+      rate_%: 77.42
+    branches:
+      covered: 1
+      missed: 3
+      rate_%: 25.0
+    complexity:
+      covered: 7
+      missed: 2
+      total: 9
+    methods:
+      covered: 7
+      missed: 0
+      rate_%: 100.0
+  - class: PublicHolidayController
+    package: tn.enis.DemandeConge.controller
+    source_file: PublicHolidayController.java
+    instructions:
+      covered: 11
+      missed: 26
+      rate_%: 29.73
+    lines:
+      covered: 2
+      missed: 5
+      rate_%: 28.57
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 2
+      missed: 4
+      total: 6
+    methods:
+      covered: 2
+      missed: 4
+      rate_%: 33.33
+- package: tn.enis.DemandeConge.enums
+  class_count: 3
+  instructions:
+    covered: 87
+    missed: 0
+    rate_%: 100.0
+  lines:
+    covered: 16
+    missed: 0
+    rate_%: 100.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 3
+    missed: 0
+    total: 3
+  methods:
+    covered: 3
+    missed: 0
+    rate_%: 100.0
+  classes_covered: 3
+  classes_missed: 0
+  classes:
+  - class: LeaveType
+    package: tn.enis.DemandeConge.enums
+    source_file: LeaveType.java
+    instructions:
+      covered: 27
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 5
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 1
+      missed: 0
+      total: 1
+    methods:
+      covered: 1
+      missed: 0
+      rate_%: 100.0
+  - class: PeriodType
+    package: tn.enis.DemandeConge.enums
+    source_file: PeriodType.java
+    instructions:
+      covered: 27
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 5
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 1
+      missed: 0
+      total: 1
+    methods:
+      covered: 1
+      missed: 0
+      rate_%: 100.0
+  - class: RequestState
+    package: tn.enis.DemandeConge.enums
+    source_file: RequestState.java
+    instructions:
+      covered: 33
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 6
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 1
+      missed: 0
+      total: 1
+    methods:
+      covered: 1
+      missed: 0
+      rate_%: 100.0
+- package: tn.enis.DemandeConge.exceptions
+  class_count: 1
+  instructions:
+    covered: 9
+    missed: 0
+    rate_%: 100.0
+  lines:
+    covered: 2
+    missed: 0
+    rate_%: 100.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 2
+    missed: 0
+    total: 2
+  methods:
+    covered: 2
+    missed: 0
+    rate_%: 100.0
+  classes_covered: 1
+  classes_missed: 0
+  classes:
+  - class: GlobalExceptionHandler
+    package: tn.enis.DemandeConge.exceptions
+    source_file: GlobalExceptionHandler.java
+    instructions:
+      covered: 9
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 2
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 2
+      missed: 0
+      total: 2
+    methods:
+      covered: 2
+      missed: 0
+      rate_%: 100.0
+- package: tn.enis.DemandeConge.repository
+  class_count: 3
+  instructions:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  lines:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 0
+    missed: 0
+    total: 0
+  methods:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  classes_covered: 0
+  classes_missed: 3
+  classes:
+  - class: BalanceRepository
+    package: tn.enis.DemandeConge.repository
+    source_file: BalanceRepository.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: LeaveRequestRepository
+    package: tn.enis.DemandeConge.repository
+    source_file: LeaveRequestRepository.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: PublicHolidayRepository
+    package: tn.enis.DemandeConge.repository
+    source_file: PublicHolidayRepository.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+- package: tn.enis.DemandeConge.service.LeaveRequest
+  class_count: 2
+  instructions:
+    covered: 599
+    missed: 821
+    rate_%: 42.18
+  lines:
+    covered: 141
+    missed: 166
+    rate_%: 45.93
+  branches:
+    covered: 49
+    missed: 157
+    rate_%: 23.79
+  complexity:
+    covered: 31
+    missed: 108
+    total: 139
+  methods:
+    covered: 26
+    missed: 9
+    rate_%: 74.29
+  classes_covered: 1
+  classes_missed: 1
+  classes:
+  - class: LeaveRequestService
+    package: tn.enis.DemandeConge.service.LeaveRequest
+    source_file: LeaveRequestService.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: LeaveRequestServiceImpl
+    package: tn.enis.DemandeConge.service.LeaveRequest
+    source_file: LeaveRequestServiceImpl.java
+    instructions:
+      covered: 599
+      missed: 821
+      rate_%: 42.18
+    lines:
+      covered: 141
+      missed: 166
+      rate_%: 45.93
+    branches:
+      covered: 49
+      missed: 157
+      rate_%: 23.79
+    complexity:
+      covered: 31
+      missed: 108
+      total: 139
+    methods:
+      covered: 26
+      missed: 9
+      rate_%: 74.29
+- package: tn.enis.DemandeConge.service.balance
+  class_count: 2
+  instructions:
+    covered: 47
+    missed: 92
+    rate_%: 33.81
+  lines:
+    covered: 9
+    missed: 20
+    rate_%: 31.03
+  branches:
+    covered: 1
+    missed: 9
+    rate_%: 10.0
+  complexity:
+    covered: 5
+    missed: 8
+    total: 13
+  methods:
+    covered: 5
+    missed: 3
+    rate_%: 62.5
+  classes_covered: 1
+  classes_missed: 1
+  classes:
+  - class: BalanceService
+    package: tn.enis.DemandeConge.service.balance
+    source_file: BalanceService.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: BalanceServiceImpl
+    package: tn.enis.DemandeConge.service.balance
+    source_file: BalanceServiceImpl.java
+    instructions:
+      covered: 47
+      missed: 92
+      rate_%: 33.81
+    lines:
+      covered: 9
+      missed: 20
+      rate_%: 31.03
+    branches:
+      covered: 1
+      missed: 9
+      rate_%: 10.0
+    complexity:
+      covered: 5
+      missed: 8
+      total: 13
+    methods:
+      covered: 5
+      missed: 3
+      rate_%: 62.5
+- package: tn.enis.DemandeConge.service.publicHoliday
+  class_count: 2
+  instructions:
+    covered: 22
+    missed: 87
+    rate_%: 20.18
+  lines:
+    covered: 4
+    missed: 17
+    rate_%: 19.05
+  branches:
+    covered: 0
+    missed: 12
+    rate_%: 0.0
+  complexity:
+    covered: 4
+    missed: 10
+    total: 14
+  methods:
+    covered: 4
+    missed: 4
+    rate_%: 50.0
+  classes_covered: 1
+  classes_missed: 1
+  classes:
+  - class: PublicHolidayService
+    package: tn.enis.DemandeConge.service.publicHoliday
+    source_file: PublicHolidayService.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: PublicHolidayServiceImpl
+    package: tn.enis.DemandeConge.service.publicHoliday
+    source_file: PublicHolidayServiceImpl.java
+    instructions:
+      covered: 22
+      missed: 87
+      rate_%: 20.18
+    lines:
+      covered: 4
+      missed: 17
+      rate_%: 19.05
+    branches:
+      covered: 0
+      missed: 12
+      rate_%: 0.0
+    complexity:
+      covered: 4
+      missed: 10
+      total: 14
+    methods:
+      covered: 4
+      missed: 4
+      rate_%: 50.0
+- package: tn.enis.DemandeConge.service.user
+  class_count: 1
+  instructions:
+    covered: 8
+    missed: 12
+    rate_%: 40.0
+  lines:
+    covered: 2
+    missed: 2
+    rate_%: 50.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 1
+    missed: 1
+    total: 2
+  methods:
+    covered: 1
+    missed: 1
+    rate_%: 50.0
+  classes_covered: 1
+  classes_missed: 0
+  classes:
+  - class: UserServiceEmployer
+    package: tn.enis.DemandeConge.service.user
+    source_file: UserServiceEmployer.java
+    instructions:
+      covered: 8
+      missed: 12
+      rate_%: 40.0
+    lines:
+      covered: 2
+      missed: 2
+      rate_%: 50.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 1
+      missed: 1
+      total: 2
+    methods:
+      covered: 1
+      missed: 1
+      rate_%: 50.0
+- package: tn.enis.DemandeConge.utils
+  class_count: 1
+  instructions:
+    covered: 45
+    missed: 50
+    rate_%: 47.37
+  lines:
+    covered: 16
+    missed: 12
+    rate_%: 57.14
+  branches:
+    covered: 9
+    missed: 11
+    rate_%: 45.0
+  complexity:
+    covered: 8
+    missed: 10
+    total: 18
+  methods:
+    covered: 6
+    missed: 2
+    rate_%: 75.0
+  classes_covered: 1
+  classes_missed: 0
+  classes:
+  - class: Preconditions
+    package: tn.enis.DemandeConge.utils
+    source_file: Preconditions.java
+    instructions:
+      covered: 45
+      missed: 50
+      rate_%: 47.37
+    lines:
+      covered: 16
+      missed: 12
+      rate_%: 57.14
+    branches:
+      covered: 9
+      missed: 11
+      rate_%: 45.0
+    complexity:
+      covered: 8
+      missed: 10
+      total: 18
+    methods:
+      covered: 6
+      missed: 2
+      rate_%: 75.0
+- package: tn.enis.conge.controller
+  class_count: 4
+  instructions:
+    covered: 289
+    missed: 157
+    rate_%: 64.8
+  lines:
+    covered: 61
+    missed: 31
+    rate_%: 66.3
+  branches:
+    covered: 13
+    missed: 19
+    rate_%: 40.62
+  complexity:
+    covered: 16
+    missed: 17
+    total: 33
+  methods:
+    covered: 13
+    missed: 4
+    rate_%: 76.47
+  classes_covered: 4
+  classes_missed: 0
+  classes:
+  - class: AdminController
+    package: tn.enis.conge.controller
+    source_file: AdminController.java
+    instructions:
+      covered: 27
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 6
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 2
+      missed: 0
+      rate_%: 100.0
+    complexity:
+      covered: 3
+      missed: 0
+      total: 3
+    methods:
+      covered: 2
+      missed: 0
+      rate_%: 100.0
+  - class: AuthController
+    package: tn.enis.conge.controller
+    source_file: AuthController.java
+    instructions:
+      covered: 92
+      missed: 124
+      rate_%: 42.59
+    lines:
+      covered: 21
+      missed: 27
+      rate_%: 43.75
+    branches:
+      covered: 1
+      missed: 9
+      rate_%: 10.0
+    complexity:
+      covered: 2
+      missed: 8
+      total: 10
+    methods:
+      covered: 2
+      missed: 3
+      rate_%: 40.0
+  - class: DepartmentController
+    package: tn.enis.conge.controller
+    source_file: DepartmentController.java
+    instructions:
+      covered: 36
+      missed: 7
+      rate_%: 83.72
+    lines:
+      covered: 7
+      missed: 2
+      rate_%: 77.78
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 5
+      missed: 1
+      total: 6
+    methods:
+      covered: 5
+      missed: 1
+      rate_%: 83.33
+  - class: UserController
+    package: tn.enis.conge.controller
+    source_file: UserController.java
+    instructions:
+      covered: 134
+      missed: 26
+      rate_%: 83.75
+    lines:
+      covered: 27
+      missed: 2
+      rate_%: 93.1
+    branches:
+      covered: 10
+      missed: 10
+      rate_%: 50.0
+    complexity:
+      covered: 6
+      missed: 8
+      total: 14
+    methods:
+      covered: 4
+      missed: 0
+      rate_%: 100.0
+- package: tn.enis.conge.email
+  class_count: 1
+  instructions:
+    covered: 6
+    missed: 67
+    rate_%: 8.22
+  lines:
+    covered: 3
+    missed: 21
+    rate_%: 12.5
+  branches:
+    covered: 0
+    missed: 4
+    rate_%: 0.0
+  complexity:
+    covered: 1
+    missed: 4
+    total: 5
+  methods:
+    covered: 1
+    missed: 2
+    rate_%: 33.33
+  classes_covered: 1
+  classes_missed: 0
+  classes:
+  - class: EmailService
+    package: tn.enis.conge.email
+    source_file: EmailService.java
+    instructions:
+      covered: 6
+      missed: 67
+      rate_%: 8.22
+    lines:
+      covered: 3
+      missed: 21
+      rate_%: 12.5
+    branches:
+      covered: 0
+      missed: 4
+      rate_%: 0.0
+    complexity:
+      covered: 1
+      missed: 4
+      total: 5
+    methods:
+      covered: 1
+      missed: 2
+      rate_%: 33.33
+- package: tn.enis.conge.enums
+  class_count: 1
+  instructions:
+    covered: 21
+    missed: 0
+    rate_%: 100.0
+  lines:
+    covered: 4
+    missed: 0
+    rate_%: 100.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 1
+    missed: 0
+    total: 1
+  methods:
+    covered: 1
+    missed: 0
+    rate_%: 100.0
+  classes_covered: 1
+  classes_missed: 0
+  classes:
+  - class: UserRole
+    package: tn.enis.conge.enums
+    source_file: UserRole.java
+    instructions:
+      covered: 21
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 4
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 1
+      missed: 0
+      total: 1
+    methods:
+      covered: 1
+      missed: 0
+      rate_%: 100.0
+- package: tn.enis.conge.repository
+  class_count: 2
+  instructions:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  lines:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 0
+    missed: 0
+    total: 0
+  methods:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  classes_covered: 0
+  classes_missed: 2
+  classes:
+  - class: DepartmentRepository
+    package: tn.enis.conge.repository
+    source_file: DepartmentRepository.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: UserRepository
+    package: tn.enis.conge.repository
+    source_file: UserRepository.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+- package: tn.enis.conge.services.auth
+  class_count: 2
+  instructions:
+    covered: 143
+    missed: 248
+    rate_%: 36.57
+  lines:
+    covered: 32
+    missed: 58
+    rate_%: 35.56
+  branches:
+    covered: 5
+    missed: 17
+    rate_%: 22.73
+  complexity:
+    covered: 5
+    missed: 14
+    total: 19
+  methods:
+    covered: 4
+    missed: 4
+    rate_%: 50.0
+  classes_covered: 1
+  classes_missed: 1
+  classes:
+  - class: AuthConge
+    package: tn.enis.conge.services.auth
+    source_file: AuthConge.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: AuthCongeImpl
+    package: tn.enis.conge.services.auth
+    source_file: AuthCongeImpl.java
+    instructions:
+      covered: 143
+      missed: 248
+      rate_%: 36.57
+    lines:
+      covered: 32
+      missed: 58
+      rate_%: 35.56
+    branches:
+      covered: 5
+      missed: 17
+      rate_%: 22.73
+    complexity:
+      covered: 5
+      missed: 14
+      total: 19
+    methods:
+      covered: 4
+      missed: 4
+      rate_%: 50.0
+- package: tn.enis.conge.services.depart
+  class_count: 2
+  instructions:
+    covered: 45
+    missed: 35
+    rate_%: 56.25
+  lines:
+    covered: 9
+    missed: 7
+    rate_%: 56.25
+  branches:
+    covered: 1
+    missed: 5
+    rate_%: 16.67
+  complexity:
+    covered: 5
+    missed: 5
+    total: 10
+  methods:
+    covered: 5
+    missed: 2
+    rate_%: 71.43
+  classes_covered: 1
+  classes_missed: 1
+  classes:
+  - class: DepartmentService
+    package: tn.enis.conge.services.depart
+    source_file: DepartmentService.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: DepartmentServiceImpl
+    package: tn.enis.conge.services.depart
+    source_file: DepartmentServiceImpl.java
+    instructions:
+      covered: 45
+      missed: 35
+      rate_%: 56.25
+    lines:
+      covered: 9
+      missed: 7
+      rate_%: 56.25
+    branches:
+      covered: 1
+      missed: 5
+      rate_%: 16.67
+    complexity:
+      covered: 5
+      missed: 5
+      total: 10
+    methods:
+      covered: 5
+      missed: 2
+      rate_%: 71.43
+- package: tn.enis.conge.services.jwt
+  class_count: 2
+  instructions:
+    covered: 19
+    missed: 0
+    rate_%: 100.0
+  lines:
+    covered: 3
+    missed: 0
+    rate_%: 100.0
+  branches:
+    covered: 0
+    missed: 0
+    rate_%: 0.0
+  complexity:
+    covered: 3
+    missed: 0
+    total: 3
+  methods:
+    covered: 3
+    missed: 0
+    rate_%: 100.0
+  classes_covered: 1
+  classes_missed: 1
+  classes:
+  - class: UserService
+    package: tn.enis.conge.services.jwt
+    source_file: UserService.java
+    instructions:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    lines:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 0
+      missed: 0
+      total: 0
+    methods:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+  - class: UserServiceImpl
+    package: tn.enis.conge.services.jwt
+    source_file: UserServiceImpl.java
+    instructions:
+      covered: 19
+      missed: 0
+      rate_%: 100.0
+    lines:
+      covered: 3
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 0
+      missed: 0
+      rate_%: 0.0
+    complexity:
+      covered: 3
+      missed: 0
+      total: 3
+    methods:
+      covered: 3
+      missed: 0
+      rate_%: 100.0
+- package: tn.enis.conge.utils
+  class_count: 1
+  instructions:
+    covered: 95
+    missed: 1
+    rate_%: 98.96
+  lines:
+    covered: 23
+    missed: 0
+    rate_%: 100.0
+  branches:
+    covered: 2
+    missed: 2
+    rate_%: 50.0
+  complexity:
+    covered: 10
+    missed: 2
+    total: 12
+  methods:
+    covered: 10
+    missed: 0
+    rate_%: 100.0
+  classes_covered: 1
+  classes_missed: 0
+  classes:
+  - class: JWTutil
+    package: tn.enis.conge.utils
+    source_file: JWTutil.java
+    instructions:
+      covered: 95
+      missed: 1
+      rate_%: 98.96
+    lines:
+      covered: 23
+      missed: 0
+      rate_%: 100.0
+    branches:
+      covered: 2
+      missed: 2
+      rate_%: 50.0
+    complexity:
+      covered: 10
+      missed: 2
+      total: 12
+    methods:
+      covered: 10
+      missed: 0
+      rate_%: 100.0

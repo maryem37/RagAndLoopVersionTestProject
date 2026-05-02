@@ -23,12 +23,14 @@ import socket
 import zipfile
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import List, Optional
+import locale
+from typing import Dict, List, Optional
 from loguru import logger
 from dotenv import load_dotenv
 
 from graph.state import TestAutomationState, AgentOutput, AgentStatus
 from config.settings import get_settings
+from tools.jacoco_filtering import is_low_signal_jacoco_class
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -300,10 +302,24 @@ class TestExecutorAgent:
                 enabled = registry.get_enabled_services()
                 host = "127.0.0.1"
 
+                # Retry briefly to avoid flaky failures when services are still
+                # initializing or temporarily restarting.
+                try:
+                    total_timeout_s = float(os.getenv("BACKEND_PORT_CHECK_TIMEOUT_S", "15"))
+                except Exception:
+                    total_timeout_s = 15.0
+                total_timeout_s = max(1.0, min(180.0, total_timeout_s))
+
                 for svc in enabled:
                     if not getattr(svc, "port", None):
                         continue
-                    if not self._tcp_port_open(host, int(svc.port), timeout_s=1.0):
+                    port = int(svc.port)
+                    if not self._wait_for_tcp_port_open(host, port, total_timeout_s=total_timeout_s):
+                        diag = self._netstat_port_lines(port)
+                        if diag:
+                            logger.warning(
+                                f"   [WARN] netstat for port {port} (trimmed):\n" + "\n".join(diag)
+                            )
                         issues.append(
                             f"Backend service '{svc.name}' is not running (port {svc.port}). "
                             f"Start it before running contract tests."
@@ -361,19 +377,31 @@ class TestExecutorAgent:
         jwt_token = self._get_jwt_token()
         mvn = f'"{self._mvn_cmd}"' if " " in str(self._mvn_cmd) else str(self._mvn_cmd)
 
+        def _maven_prop(name: str, value: object) -> str:
+            raw = str(value)
+            # Maven property values that contain spaces must be quoted as a single
+            # token, otherwise cmd.exe/shell=True splits them and Maven sees a
+            # stray lifecycle phase like "-".
+            if any(ch.isspace() for ch in raw):
+                raw = f'"{raw}"'
+            return f"-D{name}={raw}"
+
         parts = [
             mvn,
             "clean",
             # Run the test phase only. Real backend coverage is collected separately
             # (via JaCoCo tcpserver dump) and converted into jacoco.xml under output/jacoco/report/.
             "test",
-            f"-Dmaven.repo.local={self.settings.paths.output_dir / '.m2' / 'repository'}",
-            f"-Dservice.name={service_name}",
-            "-DskipTests=false",
+            _maven_prop("maven.repo.local", self.settings.paths.output_dir / ".m2" / "repository"),
+            _maven_prop("service.name", service_name),
+            _maven_prop("skipTests", "false"),
         ]
 
+        if os.environ.get("ALLOW_TEST_FAILURES", "").strip().lower() in {"1", "true", "yes", "y"}:
+            parts.append(_maven_prop("maven.test.failure.ignore", "true"))
+
         if jwt_token:
-            parts.append(f"-DTEST_JWT_TOKEN={jwt_token}")
+            parts.append(_maven_prop("TEST_JWT_TOKEN", jwt_token))
 
         # Build dynamic URLs for all enabled services
         enabled_services = registry.get_enabled_services()
@@ -382,7 +410,7 @@ class TestExecutorAgent:
         for service in enabled_services:
             base_url = _force_ipv4(service.get_base_url())
             env_var_name = f"{service.name.upper()}_BASE_URL"
-            parts.append(f"-D{env_var_name}={base_url}")
+            parts.append(_maven_prop(env_var_name, base_url))
             logger.debug(f"   Set {env_var_name}={base_url}")
 
         return " ".join(parts)
@@ -408,6 +436,52 @@ class TestExecutorAgent:
         except OSError:
             return False
 
+    def _wait_for_tcp_port_open(
+        self,
+        host: str,
+        port: int,
+        total_timeout_s: float = 15.0,
+        per_try_timeout_s: float = 1.0,
+        sleep_s: float = 1.0,
+    ) -> bool:
+        deadline = time.time() + max(0.0, total_timeout_s)
+        while time.time() < deadline:
+            if self._tcp_port_open(host, port, timeout_s=per_try_timeout_s):
+                return True
+            time.sleep(max(0.1, sleep_s))
+        return self._tcp_port_open(host, port, timeout_s=per_try_timeout_s)
+
+    def _netstat_port_lines(self, port: int, max_lines: int = 10) -> List[str]:
+        """Return a trimmed set of netstat lines for a given port (Windows-friendly)."""
+        try:
+            preferred_encoding = locale.getpreferredencoding(False) or "utf-8"
+            proc = subprocess.run(
+                ["netstat", "-ano"],
+                capture_output=True,
+                text=True,
+                encoding=preferred_encoding,
+                errors="replace",
+                timeout=5,
+                shell=False,
+            )
+            if proc.returncode != 0:
+                return []
+            needle = f":{port} "
+            lines = [ln.rstrip() for ln in (proc.stdout or "").splitlines() if needle in ln]
+            return lines[: max(1, max_lines)]
+        except Exception:
+            return []
+
+    def _is_local_port_listening(self, port: int) -> bool:
+        """Check if a local port is LISTENING without connecting to it."""
+        lines = self._netstat_port_lines(port, max_lines=200)
+        for ln in lines:
+            up = ln.upper()
+            # netstat state strings may be localized (e.g., French: "ECOUTE" / "ÉCOUTE")
+            if "LISTEN" in up or "ECOUTE" in up or "ÉCOUTE" in up:
+                return True
+        return False
+
     def _extract_boot_inf_classes(self, jar_path: Path, out_dir: Path) -> int:
         """Extract BOOT-INF/classes/**.class from a Spring Boot fat JAR into out_dir."""
         if out_dir.exists():
@@ -430,17 +504,115 @@ class TestExecutorAgent:
                 count += 1
         return count
 
+    def _prune_jacoco_excluded_classes(self, classes_dir: Path) -> int:
+        """Remove low-signal classes so JaCoCo gates reflect business logic."""
+        if not classes_dir.exists():
+            return 0
+
+        removed = 0
+        for class_file in classes_dir.rglob("*.class"):
+            rel_path = class_file.relative_to(classes_dir).as_posix()
+            if not is_low_signal_jacoco_class(rel_path):
+                continue
+            try:
+                class_file.unlink()
+                removed += 1
+            except OSError as exc:
+                logger.warning(f"   [WARN] Could not exclude JaCoCo class {class_file}: {exc}")
+
+        for path in sorted(classes_dir.rglob("*"), reverse=True):
+            if not path.is_dir():
+                continue
+            try:
+                path.rmdir()
+            except OSError:
+                pass
+
+        return removed
+
     def _run_java(self, args: List[str], cwd: Optional[Path] = None, timeout_s: int = 120) -> subprocess.CompletedProcess:
         java = self._java_cmd or "java"
         cmd = [java] + args
+        preferred_encoding = locale.getpreferredencoding(False) or "utf-8"
         return subprocess.run(
             cmd,
             cwd=str(cwd) if cwd else None,
             capture_output=True,
             text=True,
+            encoding=preferred_encoding,
+            errors="replace",
             timeout=timeout_s,
             shell=False,
         )
+
+    def _discover_jacoco_ports(self) -> Dict[str, int]:
+        """Scan running Java processes to find JaCoCo tcpserver ports.
+
+        Parses command lines like:
+          -javaagent:...jacocoagent.jar=output=tcpserver,port=64685,...
+        Returns a dict mapping service name (auth/leave) to port number.
+        """
+        import re
+        ports: Dict[str, int] = {}
+        try:
+            preferred_encoding = locale.getpreferredencoding(False) or "utf-8"
+            # Use WMIC to get command lines of all java.exe processes
+            result = subprocess.run(
+                ["wmic", "process", "where", "name='java.exe'", "get", "ProcessId,CommandLine", "/format:csv"],
+                capture_output=True,
+                text=True,
+                encoding=preferred_encoding,
+                errors="replace",
+                timeout=15,
+                shell=False,
+            )
+            if result.returncode != 0:
+                logger.warning(f"   [WARN] WMIC failed: {result.stderr[:200]}")
+                return ports
+
+            # Pattern to extract port from -javaagent:...jacocoagent.jar=...port=NNNN...
+            # Example: -javaagent:D:\...\jacocoagent.jar=output=tcpserver,port=64685,address=127.0.0.1
+            jacoco_re = re.compile(r"-javaagent:[^\s]*jacocoagent\.jar=[^\s]*?port=(\d+)")
+            # Service detection patterns
+            service_patterns = [
+                (r"DemandeConge", "auth"),
+                (r"conge[\W]", "leave"),
+                (r"CongeeApplication", "leave"),
+            ]
+
+            for line in result.stdout.splitlines():
+                line = line.strip()
+                if not line or line.startswith("Node,"):
+                    continue
+                # CSV format: Node,CommandLine,ProcessId
+                parts = line.split(",")
+                if len(parts) < 3:
+                    continue
+                cmdline = ",".join(parts[1:-1])  # CommandLine may contain commas
+                pid = parts[-1].strip()
+
+                port_match = jacoco_re.search(cmdline)
+                if not port_match:
+                    continue
+                port = int(port_match.group(1))
+
+                # Determine which service this is
+                service_name = None
+                for pattern, svc in service_patterns:
+                    if re.search(pattern, cmdline, re.IGNORECASE):
+                        service_name = svc
+                        break
+
+                if service_name and service_name not in ports:
+                    ports[service_name] = port
+                    logger.info(f"   [OK] Discovered JaCoCo tcpserver for {service_name} on port {port} (PID {pid})")
+                elif service_name and service_name in ports:
+                    logger.warning(f"   [WARN] Duplicate JaCoCo process for {service_name} on port {port} (PID {pid}); using first port {ports[service_name]}")
+
+        except Exception as exc:
+            logger.warning(f"   [WARN] Could not discover JaCoCo ports: {exc}")
+
+        return ports
 
     def _collect_backend_jacoco_report(self) -> Optional[Path]:
         """Attempt to dump coverage from running services (tcpserver) and generate jacoco.xml.
@@ -454,7 +626,10 @@ class TestExecutorAgent:
             logger.warning("   [WARN] jacococli.jar not found — cannot dump real backend coverage")
             return None
 
-        # Default tcpserver ports used in docs/scripts, but allow overrides.
+        # Discover actual JaCoCo ports from running Java processes
+        discovered_ports = self._discover_jacoco_ports()
+        
+        # Fallback to env vars / defaults if discovery failed
         host = "127.0.0.1"
         env_auth = os.getenv("JACOCO_PORT_AUTH")
         env_leave = os.getenv("JACOCO_PORT_LEAVE")
@@ -468,14 +643,27 @@ class TestExecutorAgent:
             leave_port = 36321
 
         ports = {
-            "auth": auth_port,
-            "leave": leave_port,
+            "auth": discovered_ports.get("auth", auth_port),
+            "leave": discovered_ports.get("leave", leave_port),
         }
 
-        if not all(self._tcp_port_open(host, p) for p in ports.values()):
+        # IMPORTANT: do NOT probe JaCoCo tcpserver ports with a raw TCP connect.
+        # That can cause JaCoCo to log SocketExceptions and, in some setups,
+        # destabilize coverage collection.
+        if not all(self._is_local_port_listening(p) for p in ports.values()):
+            diag_auth = self._netstat_port_lines(ports["auth"], max_lines=8)
+            diag_leave = self._netstat_port_lines(ports["leave"], max_lines=8)
+            if diag_auth:
+                logger.warning(
+                    "   [WARN] netstat for auth JaCoCo port (trimmed):\n" + "\n".join(diag_auth)
+                )
+            if diag_leave:
+                logger.warning(
+                    "   [WARN] netstat for leave JaCoCo port (trimmed):\n" + "\n".join(diag_leave)
+                )
             logger.warning(
                 "   [WARN] JaCoCo tcpserver ports are not open "
-                f"(auth={auth_port}, leave={leave_port}). "
+                f"(auth={ports['auth']}, leave={ports['leave']}). "
                 "Start services with JaCoCo tcpserver (see run_with_coverage.ps1), then rerun."
             )
             return None
@@ -536,6 +724,13 @@ class TestExecutorAgent:
             logger.warning(f"   [WARN] Could not extract classes from service jars: {exc}")
             return None
 
+        conge_pruned = self._prune_jacoco_excluded_classes(conge_classes)
+        demande_pruned = self._prune_jacoco_excluded_classes(demande_classes)
+        logger.info(
+            "   [OK] Applied JaCoCo exclusions before report generation: "
+            f"conge_removed={conge_pruned} demande_removed={demande_pruned}"
+        )
+
         jacoco_xml = report_dir / "jacoco.xml"
         jacoco_html = report_dir / "html"
         proc = self._run_java(
@@ -577,12 +772,15 @@ class TestExecutorAgent:
                 cmd,
                 cwd=str(tests_dir),
                 capture_output=True,
-                text=True,
+                text=False,
                 timeout=300,
                 shell=True,
                 env={**os.environ, "TEST_JWT_TOKEN": self._get_jwt_token()},
             )
-            result.raw_output = proc.stdout + proc.stderr
+            preferred_encoding = locale.getpreferredencoding(False) or "utf-8"
+            stdout_text = (proc.stdout or b"").decode(preferred_encoding, errors="replace")
+            stderr_text = (proc.stderr or b"").decode(preferred_encoding, errors="replace")
+            result.raw_output = stdout_text + stderr_text
             result.success    = proc.returncode == 0
             if result.raw_output:
                 # Log full output for debugging
@@ -606,33 +804,59 @@ class TestExecutorAgent:
         result.duration_ms = (time.time() - start) * 1000
         return result
 
+    def _contains_backend_packages(self, jacoco_xml: Path) -> bool:
+        """Check if a JaCoCo XML report contains backend service packages.
+
+        The test harness's own report only covers test classes (com.example.e2e.*).
+        Real backend reports contain service packages (tn.enis.*, com.enis.*).
+        """
+        try:
+            text = jacoco_xml.read_text(encoding="utf-8")
+            # Backend package signatures — adjust if your services use different roots
+            backend_signatures = ("tn.enis.", "com.enis.", "tn/enis/", "com/enis/")
+            return any(sig in text for sig in backend_signatures)
+        except Exception:
+            return False
+
     def _backup_jacoco_reports(self, tests_dir: Path) -> None:
         """
         Copy JaCoCo XML/CSV reports from target/site/jacoco/ to output/jacoco/report/
         so they survive Maven's next clean phase. Allows coverage_analyst to find them.
-        Stores in 'report' subdirectory so it's found BEFORE Maven's test project XML.
+
+        CRITICAL: Only copy if the source actually contains backend service classes.
+        The test harness's own jacoco.xml only covers test runners/steps and would
+        overwrite real backend coverage with 0% metrics.
         """
         source_xml = tests_dir / "target" / "site" / "jacoco" / "jacoco.xml"
         source_csv = tests_dir / "target" / "site" / "jacoco" / "jacoco.csv"
-        
+
         backup_dir = tests_dir.parent / "jacoco" / "report"  # output/jacoco/report/
         backup_dir.mkdir(parents=True, exist_ok=True)
-        
+
         try:
             if source_xml.exists():
-                dest_xml = backup_dir / "jacoco.xml"
-                if (not dest_xml.exists()) or (source_xml.stat().st_mtime > dest_xml.stat().st_mtime):
-                    shutil.copy2(source_xml, dest_xml)
-                    logger.info(f"   [OK] Backed up JaCoCo XML: {dest_xml}")
+                if not self._contains_backend_packages(source_xml):
+                    logger.info(
+                        "   [SKIP] Test-harness JaCoCo XML contains no backend packages; "
+                        "not overwriting real backend coverage report."
+                    )
                 else:
-                    logger.info("   [OK] Kept existing JaCoCo XML (newer already present)")
+                    dest_xml = backup_dir / "jacoco.xml"
+                    if (not dest_xml.exists()) or (source_xml.stat().st_mtime > dest_xml.stat().st_mtime):
+                        shutil.copy2(source_xml, dest_xml)
+                        logger.info(f"   [OK] Backed up JaCoCo XML with backend coverage: {dest_xml}")
+                    else:
+                        logger.info("   [OK] Kept existing JaCoCo XML (newer already present)")
             if source_csv.exists():
-                dest_csv = backup_dir / "jacoco.csv"
-                if (not dest_csv.exists()) or (source_csv.stat().st_mtime > dest_csv.stat().st_mtime):
-                    shutil.copy2(source_csv, dest_csv)
-                    logger.info(f"   [OK] Backed up JaCoCo CSV: {dest_csv}")
-                else:
-                    logger.info("   [OK] Kept existing JaCoCo CSV (newer already present)")
+                # CSV doesn't have package names inline, so only copy if XML was also valid
+                dest_xml = backup_dir / "jacoco.xml"
+                if dest_xml.exists() and self._contains_backend_packages(dest_xml):
+                    dest_csv = backup_dir / "jacoco.csv"
+                    if (not dest_csv.exists()) or (source_csv.stat().st_mtime > dest_csv.stat().st_mtime):
+                        shutil.copy2(source_csv, dest_csv)
+                        logger.info(f"   [OK] Backed up JaCoCo CSV: {dest_csv}")
+                    else:
+                        logger.info("   [OK] Kept existing JaCoCo CSV (newer already present)")
         except Exception as exc:
             logger.warning(f"   [WARN] Could not backup JaCoCo reports: {exc}")
 

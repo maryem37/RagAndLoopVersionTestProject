@@ -1,71 +1,54 @@
-# Services Matrix Configuration
-# Leave Management System — 2 microservices
-
 services:
   auth:
     enabled: true
     port: 9000
-    base_url: "http://localhost:9000"
-    swagger_spec: "examples/sample_swagger1.json"
-    swagger_url: "http://localhost:9000/v3/api-docs"
+    base_url: http://localhost:9000
+    swagger_spec: ''
+    swagger_url: http://localhost:9000/v3/api-docs
     db:
-      type: "mysql"
+      type: mysql
       port: 3306
-    java_package: "com.example.auth"
-    test_runner_class: "com.example.auth.AuthTestRunner"
-    pom_location: "output/tests"
-    steps_class: "AuthSteps"
-    role: "authentication"
+    java_package: com.example.auth
+    test_runner_class: com.example.auth.AuthTestRunner
+    pom_location: output/tests
+    steps_class: AuthSteps
+    role: authentication
     dependencies: []
-
+    test_data: {}
   leave:
     enabled: true
     port: 9001
-    base_url: "http://localhost:9001"
-    swagger_spec: "examples/sample_swagger2.json"
-    swagger_url: "http://localhost:9001/v3/api-docs"
+    base_url: http://localhost:9001
+    swagger_spec: ''
+    swagger_url: http://localhost:9001/v3/api-docs
     db:
-      type: "mysql"
+      type: mysql
       port: 3306
-    java_package: "com.example.leave"
-    test_runner_class: "com.example.leave.LeaveTestRunner"
-    pom_location: "output/tests"
-    steps_class: "LeaveSteps"
-    role: "business_logic"
-    dependencies: ["auth"]
+    java_package: com.example.leave
+    test_runner_class: com.example.leave.LeaveTestRunner
+    pom_location: output/tests
+    steps_class: LeaveSteps
+    role: business_logic
+    dependencies: []
     test_data:
-      # Pre-inserted records required for approve/reject/cancel tests
-      # These must exist in your MySQL database before running tests
-      pending_request_id: 2       # state = Pending
-      in_progress_request_id: 3   # state = In Progress
-      refused_request_id: 4       # state = Refused
-      approved_request_id: 1      # state = Approved/Granted
-      canceled_request_id: 5      # state = Canceled
-      test_user_id: 8             # userId used in API calls
-
-  # payment:
-  #   enabled: false
-  #   port: 9002
-  #   ...
-
-  # notification:
-  #   enabled: false
-  #   port: 9003
-  #   ...
-
-# Global settings
+      pending_request_id: 2
+      in_progress_request_id: 3
+      refused_request_id: 4
+      approved_request_id: 1
+      canceled_request_id: 5
+      test_user_id: 8
 global:
-  test_framework: "maven"
+  test_framework: maven
   timeout_seconds: 300
-  max_parallel_services: 1      # Run sequentially — auth must finish before leave
-  output_base_path: "output"
+  max_parallel_services: 1
+  output_base_path: output
   jwt:
-    login_url: "http://localhost:9000/api/auth/login"
+    login_url: http://localhost:9000/api/auth/login
     credentials:
-      email: "jane.smith@example.com"
-      password: "Secure@567"
-    env_var: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLnNtaXRoQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc0NTU3MjUzLCJleHAiOjE3NzQ2NDM2NTN9.r-T9mQxyjTBs46RV0OKQl0F1fHIViJKI4XoRq0mVpQU"
-    expiry_minutes: 1440  # 24 hours
+      email: mariem.kbaier@enis.tn
+      password: mariem123
+    env_var: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLnNtaXRoQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc0NTU3MjUzLCJleHAiOjE3NzQ2NDM2NTN9.r-T9mQxyjTBs46RV0OKQl0F1fHIViJKI4XoRq0mVpQU
+    expiry_minutes: 1440
   maven:
-    executable: "C:/Users/MSI/Downloads/apache-maven-3.9.10-bin/apache-maven-3.9.10/bin/mvn.cmd"
+    executable: C:/Users/MSI/Downloads/apache-maven-3.9.10-bin/apache-maven-3.9.10/bin/mvn.cmd
     java_version: 17

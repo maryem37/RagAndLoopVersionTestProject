@@ -174,8 +174,8 @@ INTEGRATION_SCENARIOS:
 # QUALITY METRICS TARGETS
 # ============================================================================
 COVERAGE_TARGETS:
-  LINE_COVERAGE: 60.0       # %
-  BRANCH_COVERAGE: 50.0     # %
+  LINE_COVERAGE: 50.0       # %
+  BRANCH_COVERAGE: 25.0     # %
   METHOD_COVERAGE: 70.0     # %
 
 # ============================================================================

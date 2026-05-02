@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "D:\project_testRAG - Copie\tools\plot_llm_comparison.py", line 346, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\project_testRAG - Copie\tools\plot_llm_comparison.py", line 337, in main
+    plot_coverage_comparison(coverage_out, entries)
+  File "D:\project_testRAG - Copie\tools\plot_llm_comparison.py", line 158, in plot_coverage_comparison
+    import matplotlib
+ModuleNotFoundError: No module named 'matplotlib'

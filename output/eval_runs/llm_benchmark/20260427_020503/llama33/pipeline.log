@@ -1,0 +1,258 @@
+Using JaCoCo tcpserver ports: auth=63010 leave=63011
+[1/5] Stopping existing services (ports 9000/9001)...
+[2/5] Starting services with JaCoCo agent...
+  JaCoCo includes filter: <all classes>
+  auth PID: 32356  leave PID: 29224
+  Waiting for ports 9000/9001...
+  auth is listening on :9000
+  leave is listening on :9001
+  Waiting for JaCoCo tcpserver ports...
+  auth-jacoco is listening on :63010
+  leave-jacoco is listening on :63011
+[3/5] Running pipeline...
+  Self-healing thresholds enabled:
+    ALLOW_TEST_FAILURES=0
+    MIN_TEST_PASS_RATE=100
+    MAX_TEST_FAILED_SCENARIOS=0
+    MAX_HEALING_ATTEMPTS=0
+=== STEP 1: Checking authenticated user balance (fallback userId=8) ===
+AuthBaseUrl : http://127.0.0.1:9000
+LeaveBaseUrl: http://127.0.0.1:9001
+Logging in: http://127.0.0.1:9000/api/auth/login
+Login succeeded.
+JWT acquired
+Fetching user info (optional)...
+[WARN] /me returned HTTP 403 -> using fallback userId=8
+[OK] Balance found for userId=8
+{"id":70,"annualBalance":18.0,"recoveryBalance":2.0,"userId":8}
+=== STEP 2: Running E2E pipeline ===
+  Seeding leave balances for userId=1 (to avoid known 500s)...
+AuthBaseUrl : http://127.0.0.1:9000
+LeaveBaseUrl: http://127.0.0.1:9001
+Logging in: http://127.0.0.1:9000/api/auth/login
+Login succeeded.
+JWT acquired
+Fetching user info (optional)...
+[WARN] /me returned HTTP 403 -> using fallback userId=8
+[INFO] Seeding balance for userId=1 (annual=21, recovery=0)...
+[OK] Seeded balance for userId=1
+{"id":9,"annualBalance":21.0,"recoveryBalance":0.0,"userId":1}
+INFO     | tools.service_registry                   | [LIST] Loaded 2 total services from matrix
+INFO     | tools.service_registry                   | ✅ ServiceRegistry loaded with 2 enabled services
+INFO     | tools.service_registry                   | 
+================================================================================
+INFO     | tools.service_registry                   | [LIST] SERVICE REGISTRY SUMMARY
+INFO     | tools.service_registry                   | ================================================================================
+INFO     | tools.service_registry                   | 
+✅ Enabled Services: 2
+INFO     | tools.service_registry                   |   • auth                 port= 9000 db=mysql    deps=none
+INFO     | tools.service_registry                   |   • leave                port= 9001 db=mysql    deps=['auth']
+INFO     | tools.service_registry                   | 
+================================================================================
+
+INFO     | __main__                                 | Services to test: auth, leave
+INFO     | __main__                                 | Loaded Swagger spec for auth from file: examples\sample_swagger1.json
+INFO     | __main__                                 | Loaded Swagger spec for leave from file: examples\sample_swagger2.json
+INFO     | graph.workflow                           | [CHART] Workflow graph compiled successfully
+INFO     | graph.workflow                           | ✅ Test Automation Workflow initialized
+INFO     | graph.workflow                           | [LIST] Pipeline: scenario_designer -> gherkin_generator -> gherkin_validator -> test_writer -> test_executor -> failure_analyst? -> coverage_analyst?
+INFO     | __main__                                 | Coverage thresholds for this run: {'line_coverage_%': 50.0, 'branch_coverage_%': 25.0, 'method_coverage_%': 70.0}
+INFO     | __main__                                 | 
+================================================================================
+INFO     | __main__                                 | END-TO-END Testing Services: auth, leave
+INFO     | __main__                                 | ================================================================================
+
+INFO     | graph.workflow                           | ================================================================================
+INFO     | graph.workflow                           | [START] Starting Test Automation Workflow
+INFO     | graph.workflow                           |    Service: auth_leave
+INFO     | graph.workflow                           | ================================================================================
+INFO     | tools.service_registry                   | ✅ Configuration validation passed
+INFO     | agents.scenario_designer                 | Scenario Designer LLM ready - provider: groq model: llama-3.3-70b-versatile
+INFO     | agents.scenario_designer                 | Scenario Designer Agent initialized
+INFO     | agents.scenario_designer                 | [SCENARIO DESIGNER] Starting scenario generation
+INFO     | tools.rag_scenario_retriever             | RAG enrichment found 0 branch-targeting scenarios for auth
+INFO     | agents.scenario_designer                 | Generated 9 scenarios for auth using llm
+WARNING  | agents.scenario_designer                 | Scenario Designer LLM call failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+INFO     | tools.rag_scenario_retriever             | RAG enrichment found 0 branch-targeting scenarios for leave
+INFO     | agents.scenario_designer                 | Generated 24 scenarios for leave using fallback
+WARNING  | agents.scenario_designer                 | Scenario Designer LLM call failed: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+INFO     | agents.scenario_designer                 | Scenario Designer produced 39 scenarios in 110194ms
+INFO     | agents.gherkin_generator                 | ✅ Gherkin Generator (Swagger-driven) initialized — provider: groq model: llama-3.3-70b-versatile
+INFO     | agents.gherkin_generator                 | [START] Gherkin Generator (Swagger-driven) — project: auth_leave
+INFO     | agents.gherkin_generator                 | ✅ Using 39 test scenarios from ScenarioDesigner
+INFO     | agents.gherkin_generator                 |    🗑 Removed: auth-leave_01_end-to-end-user-journeys_20260427_015233.feature
+SUCCESS  | agents.gherkin_generator                 | [SAVE] Saved .feature -> D:\project_testRAG - Copie\output\features\auth-leave_01_end-to-end-user-journeys_20260427_020726.feature
+SUCCESS  | agents.gherkin_generator                 | ✅ Generated 39 scenarios → Gherkin (2ms)
+INFO     | graph.workflow                           | [OK] Gherkin generation successful -> validation
+INFO     | agents.gherkin_validator                 |    Found gherkin-lint (local, Windows): node_modules\.bin\gherkin-lint.cmd
+INFO     | agents.gherkin_validator                 | ✅ Gherkin Validator initialized (gherkin-lint: enabled, provider: groq, model: llama-3.3-70b-versatile)
+INFO     | agents.gherkin_validator                 |    Running gherkin-lint syntax validation...
+INFO     | agents.gherkin_validator                 |    gherkin-lint: 0 issues found
+INFO     | agents.gherkin_validator                 |    Semantic check: 0 issues found
+INFO     | agents.gherkin_validator                 |    Running LLM validation...
+INFO     | agents.gherkin_validator                 | [DEBUG] Validation Context:
+INFO     | agents.gherkin_validator                 |    Scenarios in Gherkin: 39
+INFO     | agents.gherkin_validator                 |    Acceptance Criteria found: 0
+INFO     | agents.gherkin_validator                 |    Business Rules found: 0
+INFO     | agents.gherkin_validator                 |    Error Messages expected: 0
+WARNING  | agents.gherkin_validator                 |    ⚠️  Skipping LLM validation (using heuristic to avoid timeout)
+INFO     | agents.gherkin_validator                 | Heuristic validation: 39 scenarios vs 1 requirements = 100% coverage
+SUCCESS  | agents.gherkin_validator                 | ✅ Validation PASSED - Coverage: 100.0%
+INFO     | graph.workflow                           | [OK] Validation passed -> test writing
+INFO     | agents.test_writer                       | [OK] TestWriter (Deterministic) initialized — provider: groq model: llama-3.3-70b-versatile
+INFO     | agents.test_writer                       | =================================================================
+INFO     | agents.test_writer                       | TestWriter (Consolidated E2E) starting
+INFO     | agents.test_writer                       | =================================================================
+INFO     | agents.test_writer                       |    Services: ['auth', 'leave']
+INFO     | agents.test_writer                       |    Running in CONSOLIDATED E2E mode...
+INFO     | agents.test_writer                       |    Building consolidated E2E steps from all services...
+INFO     | agents.test_writer                       |    [auth] using: auth-leave_01_end-to-end-user-journeys_20260427_020726.feature
+WARNING  | agents.test_writer                       |    [leave] fallback to full gherkin_content
+INFO     | agents.test_writer                       |    Using deterministic generation for ConsolidatedE2E steps
+INFO     | agents.test_writer                       |    [ConsolidatedE2E] generating 79 unique steps deterministically from Gherkin + Swagger
+WARNING  | agents.test_writer                       |    javac hint for ConsolidatedE2ESteps: 10 error(s). First: ConsolidatedE2ESteps.java:8: error: package org.junit.jupiter.api does not exist
+WARNING  | agents.test_writer                       |    javac hint for ConsolidatedE2ETestRunner: 9 error(s). First: ConsolidatedE2ETestRunner.java:4: error: package org.junit.platform.suite.api does not exist
+SUCCESS  | agents.test_writer                       |    src\test\java\com\example\e2e\steps\ConsolidatedE2ESteps.java
+SUCCESS  | agents.test_writer                       |    src\test\java\com\example\e2e\ConsolidatedE2ETestRunner.java
+INFO     | agents.test_writer                       |    pom.xml already in place
+INFO     | agents.test_writer                       |    JaCoCo plugin already present with exclusions — skipping injection
+SUCCESS  | agents.test_writer                       |    Generated 1 consolidated E2E test file for 2 services
+SUCCESS  | agents.test_writer                       | TestWriter finished in 2015 ms
+INFO     | graph.workflow                           | [OK] Test files generated -> execution
+INFO     | agents.test_executor                     | ✅ Test Executor initialized  [java=[OK]] [maven=[OK]]
+INFO     | agents.test_executor                     | [START] Test Executor starting for: auth_leave
+WARNING  | agents.test_executor                     | [WARN] TEST_JWT_TOKEN is expired; ignoring it and falling back to auto-login. (exp=2026-04-09T11:11:01+00:00 UTC, now=2026-04-27T01:07:29+00:00 UTC)
+INFO     | agents.test_executor                     |    TEST_JWT_TOKEN is set but will be ignored (expired/invalid); generated steps will fall back to auto-login.
+INFO     | agents.test_executor                     | 1️⃣  Staging .feature files...
+INFO     | agents.test_executor                     |    🗑 Removed old feature: auth-leave_01_end-to-end-user-journeys_20260427_015233.feature
+INFO     | agents.test_executor                     |    [OK] Staged: auth-leave_01_end-to-end-user-journeys_20260427_020726.feature -> D:\project_testRAG - Copie\output\tests\src\test\resources\features\auth-leave_01_end-to-end-user-journeys_20260427_020726.feature
+INFO     | agents.test_executor                     |    1 .feature file(s) staged in D:\project_testRAG - Copie\output\tests\src\test\resources\features
+INFO     | agents.test_executor                     | 2️⃣  Executing Maven contract tests...
+INFO     | agents.test_executor                     |    [OK] Cleared stale artifact directory: D:\project_testRAG - Copie\output\tests\target\surefire-reports
+INFO     | agents.test_executor                     |    [OK] Cleared stale artifact directory: D:\project_testRAG - Copie\output\tests\target\cucumber-reports
+WARNING  | agents.test_executor                     | [WARN] TEST_JWT_TOKEN is expired; ignoring it and falling back to auto-login. (exp=2026-04-09T11:11:01+00:00 UTC, now=2026-04-27T01:07:29+00:00 UTC)
+INFO     | agents.test_executor                     |    Running: C:\Users\MSI\Downloads\apache-maven-3.9.10-bin\apache-maven-3.9.10\bin\mvn clean test -Dmaven.repo.local="D:\project_testRAG - Copie\output\.m2\repository" -Dservice.name=auth_leave -DskipTests=false -DAUTH_BASE_URL=http://127.0.0.1:9000 -DLEAVE_BASE_URL=http://127.0.0.1:9001
+INFO     | agents.test_executor                     |    Working directory: D:\project_testRAG - Copie\output\tests
+WARNING  | agents.test_executor                     | [WARN] TEST_JWT_TOKEN is expired; ignoring it and falling back to auto-login. (exp=2026-04-09T11:11:01+00:00 UTC, now=2026-04-27T01:07:29+00:00 UTC)
+INFO     | agents.test_executor                     |    [OK] Extracted classes: conge=25 demande=30
+INFO     | agents.test_executor                     |    [OK] Applied JaCoCo exclusions before report generation: conge_removed=10 demande_removed=11
+INFO     | agents.test_executor                     |    [OK] Real backend jacoco.xml generated: D:\project_testRAG - Copie\output\jacoco\report\jacoco.xml
+INFO     | agents.test_executor                     | 3️⃣  Parsing test reports...
+INFO     | agents.test_executor                     |    Cucumber JSON report parsed: D:\project_testRAG - Copie\output\tests\target\cucumber-reports\e2e\cucumber.json
+INFO     | agents.test_executor                     |    HTML report: D:\project_testRAG - Copie\output\tests\target\cucumber-reports\e2e\cucumber.html
+WARNING  | agents.test_executor                     | [WARN]️  Tests completed with failures  passed=32  failed=7  skipped=0  pass_rate=82.05%
+WARNING  | agents.test_executor                     |    ↳ [[LEA-001] Create valid leave request with future dates (happy_path)] org.opentest4j.AssertionFailedError: Expected successful HTTP response, got 500: {"timestamp":"2026-04-27","status":500,"error":"Internal Server Error","path":"/api/leave-requests/create"} ==> expecte
+WARNING  | agents.test_executor                     |    ↳ [[LEA-003] Approve pending leave request as Team Leader (happy_path)] org.opentest4j.AssertionFailedError: Expected successful HTTP response, got 400: This exceeds your validation authority ==> expected: <true> but was: <false>
+
+	at org.junit.jupiter.api.AssertionFailur
+WARNING  | agents.test_executor                     |    ↳ [[LEA-004] Reject pending leave request as Employer (happy_path)] org.opentest4j.AssertionFailedError: Expected successful HTTP response, got 400: Exception 24: Leave request has already been rejected ==> expected: <true> but was: <false>
+
+	at org.junit.jupiter.api.
+WARNING  | agents.test_executor                     |    ↳ [[AUT-004S] Unauthorized Access (security)] org.opentest4j.AssertionFailedError: Expected 4xx error, got 200 ==> expected: <true> but was: <false>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+
+	at o
+WARNING  | agents.test_executor                     |    ↳ [[LEA-021S] Access leave endpoint without JWT token (401) (security)] org.opentest4j.AssertionFailedError: Expected 4xx error, got 500 ==> expected: <true> but was: <false>
+
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+
+	at o
+SUCCESS  | agents.test_executor                     | ✅ Test Executor finished in 22107ms
+WARNING  | graph.workflow                           | [STOP] Execution failure will not be retried (failed=7, attempts_used=0, max_attempts=0)
+INFO     | agents.coverage_analyst                  | ✅ Coverage Analyst Agent initialized (JaCoCo / Surefire / heuristic)
+INFO     | agents.coverage_analyst                  | [START] Coverage Analyst starting — service: auth_leave
+INFO     | agents.coverage_analyst                  |    Found JaCoCo XML: D:\project_testRAG - Copie\output\jacoco\report\jacoco.xml
+INFO     | agents.coverage_analyst                  |    Found JaCoCo CSV: D:\project_testRAG - Copie\output\jacoco\report\jacoco.csv
+WARNING  | agents.coverage_analyst                  |    ⚠️  JaCoCo CSV is stale (age: 2872860s) — ignoring
+INFO     | agents.coverage_analyst                  |    Parsing JaCoCo XML: D:\project_testRAG - Copie\output\jacoco\report\jacoco.xml
+INFO     | agents.coverage_analyst                  |    JaCoCo XML parsed: 34 classes across 18 packages
+INFO     | agents.coverage_analyst                  |    Data source: JaCoCo XML [OK]
+INFO     | agents.coverage_analyst                  | 
+────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  | [CHART] COVERAGE REPORT — auth_leave
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  |   Data source      : jacoco-xml
+INFO     | agents.coverage_analyst                  |   Generated at     : 2026-04-27T02:07:51
+INFO     | agents.coverage_analyst                  |   Packages         : 18
+INFO     | agents.coverage_analyst                  |   Classes          : 34
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  |   Line   coverage  :  52.06%  (366/703)
+INFO     | agents.coverage_analyst                  |   Branch coverage  :  24.06%  (77/320)
+INFO     | agents.coverage_analyst                  |   Method coverage  :  72.18%  (96/133)
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+INFO     | agents.coverage_analyst                  |   Tests total      : 39
+INFO     | agents.coverage_analyst                  |   Tests passed     : 32
+INFO     | agents.coverage_analyst                  |   Tests failed     : 7
+INFO     | agents.coverage_analyst                  |   Tests skipped    : 0
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+WARNING  | agents.coverage_analyst                  |   [ERROR] Quality gate   : FAILED
+WARNING  | agents.coverage_analyst                  |        -> branch_coverage_%: 24.06% < threshold 25.0%
+INFO     | agents.coverage_analyst                  | ────────────────────────────────────────────────────────────
+
+SUCCESS  | agents.coverage_analyst                  |    📄 YAML report -> D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_020751.yaml
+SUCCESS  | agents.coverage_analyst                  |    📄 JSON report -> D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_020751.json
+SUCCESS  | agents.coverage_analyst                  | ✅ Coverage Analyst finished in 46 ms  [line=52.06%  branch=24.06%  method=72.18%]
+INFO     | graph.workflow                           | [STOP] Coverage improvement loop disabled -> end
+INFO     | graph.workflow                           | 
+================================================================================
+INFO     | graph.workflow                           | [CHART] WORKFLOW EXECUTION SUMMARY
+INFO     | graph.workflow                           | ================================================================================
+INFO     | graph.workflow                           | Workflow ID : auth_leave_20260427_020536_57bd30b7
+INFO     | graph.workflow                           | Service     : auth_leave
+INFO     | graph.workflow                           | Status      : FAILED
+INFO     | graph.workflow                           | 
+[LIST] Agent Execution:
+INFO     | graph.workflow                           |   [OK] scenario_designer  [110194ms]
+INFO     | graph.workflow                           |   [OK] gherkin_generator  [2ms]
+INFO     | graph.workflow                           |   [OK] gherkin_validator  [44ms]
+INFO     | graph.workflow                           |   [OK] test_writer  [2015ms]
+INFO     | graph.workflow                           |   [FAIL] test_executor  [22107ms]
+INFO     | graph.workflow                           |   [OK] coverage_analyst  [46ms]
+INFO     | graph.workflow                           |       Lines    : 52.06%
+INFO     | graph.workflow                           |       Branches : 24.06%
+INFO     | graph.workflow                           |       Methods  : 72.18%
+INFO     | graph.workflow                           |       QG       : FAILED [ERROR]
+INFO     | graph.workflow                           |       YAML     : D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_020751.yaml
+INFO     | graph.workflow                           |       JSON     : D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_020751.json
+INFO     | graph.workflow                           | 
+[FILE] Artifacts:
+INFO     | graph.workflow                           |   Gherkin files : 1
+INFO     | graph.workflow                           |   Test files    : 4
+INFO     | graph.workflow                           |   Coverage files: 2
+INFO     | graph.workflow                           |   Healing tries : 0
+INFO     | graph.workflow                           |   Coverage tries: 1
+INFO     | graph.workflow                           |     - D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_020751.yaml
+INFO     | graph.workflow                           |     - D:\project_testRAG - Copie\output\reports\coverage_report_auth-leave_20260427_020751.json
+ERROR    | graph.workflow                           |   [ERROR] Test threshold not met: failed=7 total=39 pass_rate=82.05%. min_pass_rate=100.0%, max_failed=0.
+INFO     | graph.workflow                           | ================================================================================
+
+
+================================================================================
+  TEST AUTOMATION PIPELINE (CONSOLIDATED E2E)
+================================================================================
+
+
+================================================================================
+  CONSOLIDATED E2E PIPELINE COMPLETED
+================================================================================
+
+[FAILED] auth_leave                     | Status: failed
+   Generated 1 consolidated feature file(s)
+   Generated 4 test file(s)
+   Coverage: 52.1%
+
+[FAILED] End-to-end consolidated tests failed.
+
+  Pipeline reported failure (exit=1). Continuing to dump JaCoCo for debugging...
+[4/5] Dumping coverage data from JaCoCo agents...
+  [auth] dumped exec -> D:\project_testRAG - Copie\output\jacoco\auth.exec (3479 bytes)
+  [leave] dumped exec -> D:\project_testRAG - Copie\output\jacoco\leave.exec (5247 bytes)
+[5/5] Generating jacoco.xml/html...
+[INFO] Loading execution data file D:\project_testRAG - Copie\output\jacoco\auth.exec.
+[INFO] Loading execution data file D:\project_testRAG - Copie\output\jacoco\leave.exec.
+[INFO] Analyzing 44 classes.
+Done.
+  XML:  output/jacoco/report/jacoco.xml
+  HTML: output/jacoco/report/html/index.html
+  Open: Start-Process .\output\jacoco\report\html\index.html
