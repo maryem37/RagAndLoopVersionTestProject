@@ -4,6 +4,12 @@ An end-to-end **AI-assisted test automation pipeline** that reads business requi
 
 The project is Windows-first, but most Python and Node commands also work on Linux/macOS with small shell changes.
 
+
+
+https://github.com/user-attachments/assets/81276c0a-1050-4afe-93d3-af10c23f7e7f
+
+
+
 ---
 
 ## 📌 What This Project Does
