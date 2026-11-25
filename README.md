@@ -12,6 +12,8 @@ https://github.com/user-attachments/assets/81276c0a-1050-4afe-93d3-af10c23f7e7f
 
 ---
 
+<img width="490" height="949" alt="workflow_graph" src="https://github.com/user-attachments/assets/aa6bc32e-178d-4546-9af6-6fa5349267ec" />
+
 ## 📌 What This Project Does
 
 This repository automates API and end-to-end test creation for microservices.
