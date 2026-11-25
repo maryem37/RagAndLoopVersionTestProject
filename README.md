@@ -37,32 +37,6 @@ The architecture is service-aware, so you can add more services in `config/servi
 ---
 
 ## 🧭 High-Level Architecture
-
-```text
-Business Requirements + User Story + OpenAPI Specs
-                         │
-                         ▼
-              LangGraph Multi-Agent Workflow
-                         │
-     ┌───────────────────┼───────────────────┐
-     ▼                   ▼                   ▼
-Scenario Design    Gherkin Generation   Gherkin Validation
-     │                   │                   │
-     └───────────────────▼───────────────────┘
-                  Java Test Writer
-                         │
-                         ▼
-                  Maven Test Executor
-                         │
-          ┌──────────────┴──────────────┐
-          ▼                             ▼
-   Failure Analyst                Coverage Analyst
-          │                             │
-          └──────── retry loops ────────┘
-                         │
-                         ▼
-                Generated Reports + Tests
-```
 ---
 config:
   flowchart:
@@ -95,6 +69,32 @@ graph TD;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc
+
+```text
+Business Requirements + User Story + OpenAPI Specs
+                         │
+                         ▼
+              LangGraph Multi-Agent Workflow
+                         │
+     ┌───────────────────┼───────────────────┐
+     ▼                   ▼                   ▼
+Scenario Design    Gherkin Generation   Gherkin Validation
+     │                   │                   │
+     └───────────────────▼───────────────────┘
+                  Java Test Writer
+                         │
+                         ▼
+                  Maven Test Executor
+                         │
+          ┌──────────────┴──────────────┐
+          ▼                             ▼
+   Failure Analyst                Coverage Analyst
+          │                             │
+          └──────── retry loops ────────┘
+                         │
+                         ▼
+                Generated Reports + Tests
+```
 
 ---
 
